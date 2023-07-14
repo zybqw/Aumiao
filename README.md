@@ -70,4 +70,4 @@
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=zybqw/CodeMao-AutoCommenter&type=Date)](https://star-history.com/#zybqw/CodeMao-AutoCommenter&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=zybqw/CodeMao-AutoCommenter&type=Date)]
