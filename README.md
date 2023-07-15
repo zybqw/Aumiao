@@ -150,7 +150,7 @@ Cookie 登录直接使用用户输入的 Cookie。🍪
 
 **如果有任何问题欢迎反馈,本项目仅用于技术学习交流。💬**
 
-## **下载地址**
+## 下载地址
 
 - [GitHub访问加速](https://cloud.tsinghua.edu.cn/d/df482a15afb64dfeaff8/)
 - [GitHub下载加速](https://ghproxy.com/) 
@@ -165,3 +165,10 @@ Cookie 登录直接使用用户输入的 Cookie。🍪
 - 邮箱：zybqw@qq.com 📧
 - 个人主页：https://shequ.codemao.cn/user/12770114 🌐
   感谢您的阅读！😉
+
+## 我的Github 统计:
+
+[![zybqw's GitHub stats](https://github-readme-stats.vercel.app/api?username=zybqw&show_icons=true&theme=vue)](https://github.com/zybqw)
+
+
+
