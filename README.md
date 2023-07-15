@@ -4,6 +4,22 @@
 
 这个 Python 项目可以自动在编程猫网站上对作品进行点赞和评论,实现自动化模拟用户行为,以提高作品曝光率。✨
 
+## 作品说明
+
+原作:https://shequ.codemao.cn/community/429585 by [伴雪纷飞](https://shequ.codemao.cn/user/2856172)
+
+#现作者账号转移至 [伴只狗头](https://shequ.codemao.cn/user/1888155714)
+
+参考:
+
+- [PXstate](https://shequ.codemao.cn/user/1258391425) #制作了账号密码登录代码
+- 屏蔽词转换代码 by [伴雪纷飞](https://shequ.codemao.cn/user/2856172)
+- 以及广大cdn社区参考文档
+
+Chat GPT,Claude 参与了代码修改!
+
+感谢《A Byte of Python》(《简明Python教程》)Swaroop C H撰 漠伦译 [说明文档](http://zhuanlan.zhihu.com/p/24672770)
+
 ## 功能列表
 
 - [x] 模拟登录
