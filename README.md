@@ -76,7 +76,7 @@ pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
 1. 配置 Python 环境,安装需要的库 👩‍💻
 
-2. 运行 main.py ▶️
+2. 运行 Automatic-comments.py ▶️
 
 3. 根据提示选择登录方式
 
