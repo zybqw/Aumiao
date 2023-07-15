@@ -1,61 +1,159 @@
-## 介绍
+# CodeMAO-AutoCommenter 🐱
+![signs](https://github.com/zybqw/CodeMao-AutoCommenter/assets/132246733/c5c7067d-3959-4da7-9ea5-3e571d8e6a57)
 
-![](https://github.com/zybqw/CodeMao-AutoCommenter/assets/132246733/08e44e25-aa7e-49c8-8752-a3b2ecafbe93)
+## 项目简介
 
+这个 Python 项目可以自动在编程猫网站上对作品进行点赞和评论,实现自动化模拟用户行为,以提高作品曝光率。✨
 
-这是一个使用 Python 编写的程序，用于自动点赞和评论编程猫网站上的作品。通过模拟用户行为，可以轻松地对多个作品进行点赞和评论。
+## 功能列表
 
-## 使用流程
+- [x] 模拟登录
+  - [x] 支持账号密码登录 👤
+  - [x] 支持直接 Cookie 登录 🍪
+- [x] 获取最新作品
+  - [x] 从网站接口获取最新上传作品列表 🆕
+- [x] 自动点赞
+  - [x] 调用接口对作品点赞 👍
+  - [x] 统计点赞次数 🔢
+- [x] 自动评论
+  - [x] 随机获取评论内容 💬
+  - [x] 随机选择表情 😃
+  - [x] 统计评论次数 🔢 
+- [x] 数据过滤
+  - [x] 跳过已评论过的作品 ❌
+  - [x] 跳过点赞数过多的作品 🙅‍♂️
+- [x] 结果记录
+  - [x] 保存每次运行后的点赞数、评论数 📝
+  - [x] 记录已评论过的作品,避免重复 🙅‍♀️
+- [x] 随机间隔
+  - [x] 每次操作后随机等待一定时间间隔 ⏳
 
-1. 下载代码并安装所需的依赖项。
- 
+## 环境需要
 
-   ```
-   pip install requests
-   pip install beautifulsoup4
-   ```
-   [若下载失败,请点击这里配置国内镜像源👀](https://zhuanlan.zhihu.com/p/339191263)
+### 需要安装的库
 
-3. 运行程序并选择登录方式。
-   用户可以选择账号登录或者 Cookie登录
+- requests
+- beautifulsoup4  
+- configparser
 
-4. 打开程序文件，输入你的编程猫账号和密码或者 Cookie。
+### 库的安装方法
 
-5. 输入文件保存位置
+可以使用 pip 直接安装:
 
-6. 程序会自动从最新作品列表中获取作品并进行点赞和评论。
-   ***请注意，该程序仅供学习和研究使用，请勿滥用。***
+```bash
+pip install requests
+pip install beautifulsoup4
+pip install configparser
+```
 
-## 主要功能
+如果使用pip安装速度慢,可以配置pip国内镜像源加速安装:
 
-### 登录
+```bash
+pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+```
 
-使用账号密码或者 Cookie 登录编程猫网站。
+配置完成后,再使用pip安装库。
 
-### 点赞
+还有其他国内源
 
-对指定作品进行点赞。👍
+- [清华](https://pypi.tuna.tsinghua.edu.cn/simple)
+- [阿里云](http://mirrors.aliyun.com/pypi/simple/)
+- [中国科技大学](https://pypi.mirrors.ustc.edu.cn/simple/)
+- [华中理工大学](http://pypi.hustunique.com/)
+- [山东理工大学](http://pypi.sdutlinux.org/)
+- [豆瓣](http://pypi.douban.com/simple/)
 
-### 评论
+如果有其他更好的安装建议,也欢迎提出,我会继续完善。
 
-对指定作品进行评论，并随机添加表情和文字内容。😃💬
+## 文件结构
 
-### 保护机制
+```
+├── main.py 主程序文件 💻
+├── config.ini 账户信息配置文件 📄
+└── qwq.txt 结果记录文件 📄
+```
 
-如果一个作品已经被评论过，程序会自动跳过，避免重复评论；同时也会排除一些不适合评论的作品，如点赞数已经超过一定数量的作品。
+## 使用方法
 
-## 技术栈
+1. 配置 Python 环境,安装需要的库 👩‍💻
 
-- Python
-- requests 库
-- BeautifulSoup 库
-- configparser 库
-- json库
+2. 运行 main.py ▶️
 
-## 下载地址
+3. 根据提示选择登录方式
+
+   - 选择账号密码登录,输入编程猫账号和密码 👤
+   - 选择 Cookie 登录,输入获取的 Cookie 值 🍪
+
+4. 输入结果记录文件保存路径 📁
+
+5. 选择仅点赞或点赞+评论 ✅
+
+6. 程序将自动运行,打开作品列表并处理 🤖
+
+## 主要功能详解
+
+### 1. 模拟登录
+
+支持账号密码登录和 Cookie 登录两种方式。
+
+账号密码登录会调用登录接口,在登录成功后获取 Cookie 值保存。👤
+
+Cookie 登录直接使用用户输入的 Cookie。🍪
+
+登录成功后会保存账号信息,用于后续请求。🔑(由于cookie具有时效性,并未保存)
+
+### 2. 获取最新作品
+
+使用官方接口获取最新上传的作品列表,作为处理对象。
+
+`https://api.codemao.cn/creation-tools/v1/pc/discover/newest-work?offset=0&limit=20` 🆕
+
+### 3. 自动点赞
+
+对每一个作品调用点赞接口进行点赞:
+
+`https://api.codemao.cn/nemo/v2/works/{work_id}/like`  
+
+如果点赞成功会打印日志,并统计成功点赞数。👍
+
+### 4. 自动评论
+
+从定义好的内容和表情列表中随机选择,构造评论数据,调用评论接口进行评论。
+
+`https://api.codemao.cn/creation-tools/v1/works/{work_id}/comment`
+
+如果评论成功会打印日志,并统计成功评论数。💬
+
+### 5. 数据过滤
+
+在评论前会校验该作品是否已被评论过,如果评论过则跳过。❌
+
+同时也会判断作品点赞数,如果超过 50 则不评论。🙅‍♂️
+
+### 6. 结果记录 
+
+每次运行结束会保存当次的点赞数和评论数。📝
+
+已评论过的作品编号会记录到文本文件中,避免重复评论。🙅‍♀️
+
+### 7. 随机间隔
+
+每个操作完成后会随机等待 12-16 秒左右时间,然后再处理下一个作品,避免请求过于频繁。⏳
+
+## 项目总结
+
+这个项目主要运用了 requests、BeautifulSoup 等库模拟登录并解析页面,通过调用官方 API 实现自动化点赞和评论。✨
+
+程序加入了一定的过滤机制和间隔设置来规避风控。🛡️
+
+可以作为 Python 网络爬虫和接口调用的练手项目,与此同时需要注意合理使用,遵守网站规则。❗️
+
+**如果有任何问题欢迎反馈,本项目仅用于技术学习交流。💬**
+
+## **下载地址**
 
 - [GitHub访问加速](https://cloud.tsinghua.edu.cn/d/df482a15afb64dfeaff8/)
--  [GitHub下载加速](https://ghproxy.com/) 
+- [GitHub下载加速](https://ghproxy.com/) 
 - [123云盘](https://www.123pan.com/s/oRHZVv-PBKtv.html)    提取码:*ygyc* 
 - [蓝奏云网盘](https://zybqw.lanzout.com/b04e5pmcd)    密码:*ygyc* 
 - **解压密码**:***zybqw***
@@ -67,7 +165,3 @@
 - 邮箱：zybqw@qq.com 📧
 - 个人主页：https://shequ.codemao.cn/user/12770114 🌐
   感谢您的阅读！😉
-
-## Star History
-
-![Star History Chart](https://api.star-history.com/svg?repos=zybqw/CodeMao-AutoCommenter&type=Date)
