@@ -1,4 +1,3 @@
-# CodeMAO-AutoCommenter 🐱
 ![signs](https://github.com/zybqw/CodeMao-AutoCommenter/assets/132246733/c5c7067d-3959-4da7-9ea5-3e571d8e6a57)
 
 ## 项目简介
