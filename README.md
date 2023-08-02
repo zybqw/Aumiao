@@ -107,7 +107,7 @@ pip install beautifulsoup4
 
 ```
 ├── main.py 		主程序文件 💻
-├── config.ini 		信息配置文件 📄
+├── config.ini 	信息配置文件 📄
 └── qwq.txt 		结果记录文件 📄
 ```
 
