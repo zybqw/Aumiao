@@ -106,9 +106,9 @@ pip install beautifulsoup4
 ## 文件结构
 
 ```
-├── main.py 		主程序文件 💻
-├── config.ini 	信息配置文件 📄
-└── qwq.txt 		结果记录文件 📄
+├── main.py     主程序文件 💻
+├── config.ini  信息配置文件 📄
+└── qwq.txt     结果记录文件 📄
 ```
 
 ## 使用方法
@@ -235,9 +235,10 @@ pip install beautifulsoup4
 
 - 邮箱：zybqw@qq.com 📧
 - 个人主页：https://shequ.codemao.cn/user/12770114 🌐
-  感谢您的阅读！😉
 - QQ: 3611198191
 - 微信: Aurorzex
+
+**感谢您的阅读！😉**
 
 ## 我的Github 统计:
 
