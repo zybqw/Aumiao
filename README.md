@@ -17,13 +17,14 @@
 
 参考:
 
-- [PXstate](https://shequ.codemao.cn/user/1258391425) #制作了账号密码登录代码
-- 屏蔽词转换代码 by [伴雪纷飞](https://shequ.codemao.cn/user/2856172)
+- 账号密码登录代码 **by** [PXstate](https://shequ.codemao.cn/user/1258391425) 
+- 屏蔽词转换代码 **by** [伴雪纷飞](https://shequ.codemao.cn/user/2856172)
 - 以及广大cdn社区参考文档
 
 Chat GPT,Claude 参与了代码修改!
 
-感谢《A Byte of Python》(《简明Python教程》)Swaroop C H撰 漠伦译 [说明文档](http://zhuanlan.zhihu.com/p/24672770)
+感谢《**A Byte of Python**》(《简明Python教程》)Swaroop C H撰 漠伦译 
+- [说明文档](http://zhuanlan.zhihu.com/p/24672770)
 
 ## 功能列表
 
@@ -55,12 +56,9 @@ Chat GPT,Claude 参与了代码修改!
   - [x] 记录已评论过的作品,避免重复 🙅‍♀️
 - [x] 随机间隔
   - [x] 每次操作后随机等待一定时间间隔 ⏳
-
-- [x] 升级权限
-  - [x] 自动升级脚本权限，方便读取🖋
-
 - [ ] 异步处理
   - [ ] 正在学习**aiohttp**，**asyncio**库
+  - [x] 可能在任何时候都会终止这个计划
 
 ## 环境需要
 
@@ -126,65 +124,65 @@ pip install beautifulsoup4
 
 ### 1. 模拟登录
 
-​	支持账号密码登录和 Cookie 登录两种方式。
+支持账号密码登录和 Cookie 登录两种方式。
 
-​	账号密码登录会调用登录接口,在登录成功后获取 Cookie 值保存。👤
+- 账号密码登录会调用登录接口,在登录成功后获取 Cookie 值保存。👤
 
-​	Cookie 登录直接使用用户输入的 Cookie。🍪
+- Cookie 登录直接使用用户输入的 Cookie。🍪
 
-​	登录成功后会保存账号信息,用于后续请求。🔑
+​登录成功后会保存账号信息,用于后续请求。🔑
 
-​	(由于cookie具有时效性,并未保存)
+(由于cookie具有时效性,并未保存)
 
 ### 2. 获取最新作品
 
-​	使用官方接口获取最新上传的作品列表,作为处理对象。
+​使用官方接口获取最新上传的作品列表,作为处理对象。
 
-​		`https://api.codemao.cn/creation-tools/v1/pc/discover/newest-work?limit={num1}&offset={num2}`🆕
+- `https://api.codemao.cn/creation-tools/v1/pc/discover/newest-work?limit={num1}&offset={num2}`🆕
 
-​	其中`offset`表示忽略前**个作品，`limit`获取之后的作品列表
+​其中`offset`表示忽略前**个作品，`limit`获取之后的作品列表
 
-​		`{num1}`为必填项 # **num2  >=  5**
+- `{num1}`为必填项 # **num2  >=  5**
 
-​		`{num2}`为选填项
+- `{num2}`为选填项
 
 ### 3.获取最新回复
 
-​	使用官方接口获取最新评论与回复,作为处理对象。
+使用官方接口获取最新评论与回复,作为处理对象。
 
-​		`https://api.codemao.cn/web/message-record/count`
+- `https://api.codemao.cn/web/message-record/count`
 
-​	如果有新回复，则获取最新列表
+如果有新回复，则获取最新列表
 
-​		`https://api.codemao.cn/web/message-record?query_type=COMMENT_REPLY&limit={num1}&offset={num2}`
+- `https://api.codemao.cn/web/message-record?query_type=COMMENT_REPLY&limit={num1}&offset={num2}`
 
-​		`{num1}`为必填项 # **num2  >=  5**
+- `{num1}`为必填项 # **num2  >=  5**
 
-​		`{num2}`为选填项
+- `{num2}`为选填项
 
 ### 4. 自动点赞
 
-​	对每一个作品调用点赞接口进行点赞:
+对每一个作品调用点赞接口进行点赞:
 
-​		`https://api.codemao.cn/nemo/v2/works/{work_id}/like`  
+- `https://api.codemao.cn/nemo/v2/works/{work_id}/like`  
 
-​	如果点赞成功会打印日志,并统计成功点赞数。👍
+如果点赞成功会打印日志,并统计成功点赞数。👍
 
-​		`{work_id}`需获取最新作品，见响应体
+- `{work_id}`需获取最新作品，见响应体
 
 ### 5. 自动评论
 
-​	从定义好的内容和表情列表中随机选择,构造评论数据,调用评论接口进行评论。
+从定义好的内容和表情列表中随机选择,构造评论数据,调用评论接口进行评论。
 
-​		`https://api.codemao.cn/creation-tools/v1/works/{work_id}/comment`
+- `https://api.codemao.cn/creation-tools/v1/works/{work_id}/comment`
 
-​		`{work_id}`需获取最新作品，见响应体
+- `{work_id}`需获取最新作品，见响应体
 
-​	如果评论成功会打印日志,并统计成功评论数，否则会打印错误码💬
+如果评论成功会打印日志,并统计成功评论数，否则会打印错误码💬
 
 ### 6. 自动回复
 
-​	从定义好的内容中随机选择,构造回复数据,调用回复接口进行评论。
+从定义好的内容中随机选择,构造回复数据,调用回复接口进行评论。
 
 - `https://api.codemao.cn/web/forums/replies/{replied_id}/comments`
   - 回复类型为WORK_COMMENT
