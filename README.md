@@ -1,9 +1,5 @@
 ![signs](https://github.com/zybqw/CodeMao-AutoCommenter/assets/132246733/c5c7067d-3959-4da7-9ea5-3e571d8e6a57)
 
-## Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=zybqw/CodeMao-AutoCommenter&type=Date)](https://star-history.com/#zybqw/CodeMao-AutoCommenter&Date)
-
 ## 项目简介
 
 这个 Python 项目可以自动在编程猫网站上对作品进行**点赞**,**评论**以及**回复**,实现自动化模拟用户行为,以提高作品曝光率。✨
@@ -240,10 +236,12 @@ pip install beautifulsoup4
 - QQ: 3611198191
 - 微信: Aurorzex
 
-**感谢您的阅读！😉**
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=zybqw/CodeMao-AutoCommenter&type=Date)](https://star-history.com/#zybqw/CodeMao-AutoCommenter&Date)
 
 ## 我的Github 统计:
 
 [![zybqw's GitHub stats](https://github-readme-stats.vercel.app/api?username=zybqw&show_icons=true&theme=vue)](https://github.com/zybqw)
 
-
+## 感谢您的阅读！😉
