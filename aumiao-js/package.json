@@ -1,0 +1,22 @@
+{
+  "name": "aumiao-js",
+  "version": "0.1.0",
+  "description": "Aumiao for Javascript",
+  "main": "./index.js",
+  "bin": "./index.js",
+  "scripts": {
+    "run": "node index.js",
+    "test": "node ./test/index.js"
+  },
+  "author": "helloyork@icloud.com",
+  "license": "MIT",
+  "type": "module",
+  "types": "./src/types/index.d.ts",
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "inquirer": "^9.2.23"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^9.0.7"
+  }
+}
