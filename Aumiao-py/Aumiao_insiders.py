@@ -1,6 +1,5 @@
 import json
 import os
-import random
 import time
 from typing import Any, Dict, List, Optional
 
@@ -49,7 +48,7 @@ except ModuleNotFoundError:
 
 
 class CodeMaoData:
-    Account: Dict[str, str] = {
+    Account = {
         "identity": " ",
         "password": " ",
         "id": " ",
@@ -152,9 +151,11 @@ class CodeMaoTool:
 
     def __init__(self) -> None:
         self.path = self.CONFIG_FILE_PATH
-        self.time = time
+        self.data = CodeMaoData()
 
-    def process_reject(self, data, reserve=None, exclude=None):
+    def process_reject(
+        self, data: List | Dict, reserve: List = None, exclude: List = None
+    ) -> List | Dict:
         """
         Filters keys in a dictionary or list of dictionaries based on reserved or excluded keys.
         Args:
@@ -192,10 +193,42 @@ class CodeMaoTool:
         return result
 
     # 时间戳转换为时间
-    def process_timestamp(self, time: int) -> str:
-        timeArray = time.localtime(time)
+    def process_timestamp(self, times: int) -> str:
+        timeArray = time.localtime(times)
         StyleTime = time.strftime("%Y-%m-%d %H:%M:%S", timeArray)
         return StyleTime
+
+    # 从配置文件加载账户信息的函数
+    def account_load(self) -> bool:
+        try:
+            with open(self.path, "r", encoding="utf-8") as file:
+                data = json.loads(file.read())
+            data.Account.update(data["Account"])
+            data.Data.update(data["Data"])
+            return True
+        except ValueError as err:
+            print("文件错误", err)
+            return False
+
+    # 检查文件
+    def check_file(self, path: str) -> bool:
+        try:
+            with open(path, "r"):
+                return True
+        except IOError:
+            return False
+
+    # 将文本写入到指定文件的函数
+    def write(
+        self, path: str, text: str | Dict, type: str = "str" | "dict", method: str = "w"
+    ) -> None:
+        with open(path, mode=method, encoding="utf-8") as file:
+            if type == "str":
+                file.write(text + "\n")
+            elif type == "dict":
+                file.write(json.dumps(text, ensure_ascii=False, indent=4))
+            else:
+                print("不支持的写入方法")
 
 
 class CodeMaoClient:
@@ -205,13 +238,19 @@ class CodeMaoClient:
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Edg/124.0.0.0",
     }
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.session = requests.Session()
-        self.cookie_pr = requests.utils.dict_from_cookiejar
         self.session.headers.update(self.HEADERS)
         self.tool = CodeMaoTool()
 
-    def send_request(self, url, method, params=None, data=None, headers=HEADERS):
+    def send_request(
+        self,
+        url: str,
+        method: str,
+        params: Dict = None,
+        data: Any = None,
+        headers: Dict = HEADERS,
+    ) -> Optional[Any]:
         url = f"{self.BASE_URL}{url}"
         try:
             response = self.session.request(
@@ -219,25 +258,23 @@ class CodeMaoClient:
             )
             response.raise_for_status()
             return response
-        except (HTTPError, ConnectionError, Timeout, RequestException) as e:
-            print(f"网络请求异常: {e}")
+        except (HTTPError, ConnectionError, Timeout, RequestException) as err:
+            print(f"网络请求异常: {err}")
             return None
 
     # 获取用户账号信息
     # (简略)
-    def get_user_data(self, user_id: str) -> Optional[Dict[str, Any]]:
+    def get_user_data(self, user_id: str) -> Dict:
         response = self.send_request(
             method="get", url=f"/api/user/info/detail/{user_id}"
         )
-        if response:
-            return self.tool.process_reject(
-                data=response.json().get("data").get("userInfo"),
-                exclude=["work", "isFollowing"],
-            )
-        return None
+        return self.tool.process_reject(
+            data=response.json().get("data").get("userInfo"),
+            exclude=["work", "isFollowing"],
+        )
 
     # (详细)
-    def get_user_details(self):
+    def get_user_details(self) -> Dict:
         response = self.send_request(
             method="get",
             url="/web/users/details",
@@ -254,7 +291,7 @@ class CodeMaoClient:
             ],
         )
 
-    def get_user_honor(self, user_id):
+    def get_user_honor(self, user_id: str) -> Dict:
         params = {"user_id": user_id}
         response = self.send_request(
             url="/creation-tools/v1/user/center/honor",
@@ -282,8 +319,8 @@ class CodeMaoClient:
             ],
         )
 
-    # 获取作品列表的函数
-    def get_user_works(self, user_id: str) -> List[int]:
+    # 获取个人作品列表的函数
+    def get_user_works(self, user_id: str) -> List[Dict[str, str]]:
         params = {
             "type": "newest",
             "user_id": user_id,
@@ -314,7 +351,7 @@ class CodeMaoClient:
         return result
 
     # 获取粉丝列表
-    def get_user_fans(self, user_id: str):
+    def get_user_fans(self, user_id: str) -> List[Dict[str, str]]:
         _dict = []
         for item in range(
             int(self.get_user_honor(user_id=user_id).get("fans_total") / 200) + 1
@@ -334,17 +371,191 @@ class CodeMaoClient:
         return result
 
     # 获取随机昵称
-    def get_name_random(self):
+    def get_name_random(self) -> str:
         response = self.send_request(
             method="get",
             url="/api/user/random/nickname",
         )
         return response.json().get("data").get("nickname")
 
+    # 获取新作品的函数
+    def get_works_new(self, limit: int) -> List[Dict[str, str | int]]:
+        params = {"limit": limit}
+        response = self.send_request(
+            url="/creation-tools/v1/pc/discover/newest-work",
+            method="get",
+            params=params,
+        )  # 为防止封号,limit建议调大
+        _dict = json.loads(response.text)
+        print("\n已找到{}个新作品捏".format(len(_dict["items"])))
+        return self.tool.process_reject(
+            data=_dict["items"],
+            reserve=[
+                "work_id",
+                "work_name",
+                "user_id",
+                "nickname",
+                "views_count",
+                "likes_count",
+            ],
+        )
+
+    # 获取评论区特定信息
+    def get_comments_detail(
+        self,
+        work_id: int,
+        method: str = "user_id" | "comments",
+    ) -> List[str] | List[Dict[str, int | bool]]:
+        result = []
+        try:
+            params = {"limit": 20, "offset": 0}
+            response = self.send_request(
+                url=f"/creation-tools/v1/works/{work_id}/comments",
+                method="get",
+                params=params,
+            )
+            num = response.json().get("page_total")
+        except (KeyError, NameError) as err:
+            print(err)
+            return False
+        for item in range(
+            int(num / 20) + 1
+        ):  # 等效于num // 20 , floor(num / 20) ,int(num / 20)
+            try:
+                params = {"limit": 20, "offset": item * 20}
+                response = self.send_request(
+                    url=f"/creation-tools/v1/works/{work_id}/comments",
+                    method="get",
+                    params=params,
+                )  # limit 根据评论+回复综合来定
+                comments = response.text.json()("items")
+                if method == "user_id":
+                    result = [item["user"]["id"] for item in comments]
+                elif method == "comments":
+                    result.extend(
+                        self.tool.process_reject(
+                            data=comments,
+                            reserve=["id", "content", "is_top"],
+                        )
+                    )
+                else:
+                    print(f"不支持的请求方法{method}")
+            except (KeyError, NameError) as err:
+                print(err)
+                pass
+            return result
+        return False
+
+    # 获取工作室简介(简易,需登录工作室成员账号)
+    def get_shops_simple(self):
+        response = self.send_request(url="/web/work_shops/simple", method="get")
+        result = response.json().get("work_shop")
+        return result
+
+    # 获取工作室简介
+    def get_shop_detials(self, id: str) -> Dict:
+        response = self.send_request(url=f"/web/shops/{id}", method="get")
+        result = self.tool.process_reject(
+            data=json.loads(response.text),
+            reserve=[
+                "id",
+                "shop_id",
+                "name",
+                "total_score",
+                "preview_url",
+                "description",
+                "n_works",
+                "n_views",
+                "level",
+            ],
+        )
+        return result
+
+    # 更新工作室简介
+    def update_shop_detials(
+        self, description: str, id: str, name: str, preview_url: str
+    ) -> bool:
+        response = self.send_request(
+            url="/web/work_shops/update",
+            method="post",
+            data=json.dumps(
+                {
+                    "description": description,
+                    "id": id,
+                    "name": name,
+                    "preview_url": preview_url,
+                }
+            ),
+        )
+        if response.status_code == 200:
+            return True
+        else:
+            return False
+
+    # 关注的函数
+
+    def follow_work(self, user_id: int) -> bool:
+        response = self.send_request(
+            url=f"/nemo/v2/user/{user_id}/follow",
+            method="post",
+            data=json.dumps({}),
+        )
+        if response.status_code == 204:
+            return True
+        else:
+            return False
+
+    # 收藏的函数
+    def collection_work(self, work_id: int) -> bool:
+        response = self.send_request(
+            url=f"/nemo/v2/works/{work_id}/collection",
+            method="post",
+            data=json.dumps({}),
+        )
+        if response.status_code == 200:
+            return True
+        else:
+            return False
+
+    # 对某个作品进行点赞的函数
+    def like_work(self, work_id: int) -> bool:
+        # 对某个作品进行点赞
+        response = self.send_request(
+            url=f"/nemo/v2/works/{work_id}/like",
+            method="post",
+            data=json.dumps({}),
+        )
+        if response.status_code == 200:
+            return True
+        else:
+            return False
+
+    # 对某个作品进行评论的函数
+    def comment_work(self, comment, emoji, work_id: int) -> bool:
+        response = self.send_request(
+            url=f"/creation-tools/v1/works/{work_id}/comment",
+            method="post",
+            data=json.dumps(
+                {
+                    "content": comment,
+                    "emoji_content": emoji,
+                }
+            ),
+        )
+        if response.status_code == 201:
+            return True
+        else:
+            return False
+
     # 登录函数, 处理登录逻辑并保存登录状态
     def login(
-        self, method: str, identity=None, password=None, cookies=None
+        self,
+        method: str = "password" | "cookie",
+        identity: str | int = None,
+        password: Any = None,
+        cookies: Any = None,
     ) -> Optional[str]:
+        self.cookie_pr = requests.utils.dict_from_cookiejar
         if method == "password":
             # cookies = utils.dict_from_cookiejar(response.cookies)
 
@@ -399,4 +610,5 @@ if __name__ == "__main__":
     client = CodeMaoClient()
     if client.login(method="password", identity="Aurzex", password="CODExhr1106.mao"):
         user_details = client.get_user_works("12770114")
+        client.get_comments_detail()
         print(user_details)
