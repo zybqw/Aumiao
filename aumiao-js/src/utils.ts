@@ -110,3 +110,149 @@ export class Logger {
         return this;
     }
 }
+
+export class RPM {
+    static subscribers: RPM[] = [];
+    static intervalId: null | number | NodeJS.Timeout = null;
+    interval: number;
+    queue: {
+        task: (...args: Array<unknown>) => void;
+        args: Array<unknown>;
+    }[];
+    lastRunTimestamp: number;
+    static exit() {
+        if (RPM.intervalId !== null)clearInterval(RPM.intervalId);
+    }
+
+    static tick() {
+        for (const subscriber of RPM.subscribers) {
+            subscriber.runNextTask();
+        }
+    }
+
+    constructor(maxRPM: number) {
+        this.interval = 60000 / maxRPM;
+        this.queue = [];
+        this.lastRunTimestamp = 0;
+        RPM.subscribers.push(this);
+        if (RPM.intervalId === null) {
+            RPM.intervalId = setInterval(RPM.tick, this.interval);
+        }
+    }
+
+    addTask(task: () => void, ...args: undefined[]) {
+        this.queue.push({ task, args });
+    }
+
+    runNextTask() {
+        if (this.queue.length > 0 && Date.now() - this.lastRunTimestamp >= this.interval) {
+            const { task, args } = this.queue.shift()!;
+            this.lastRunTimestamp = Date.now();
+            task(...args);
+        }
+    }
+
+    createTask(taskFunction: (...args: Array<unknown>) => any, ...args: any[]) {
+        return async () => {
+            return new Promise(resolve => {
+                this.addTask(() => {
+                    const f = taskFunction(...args);
+                    if (f.then) f.then(resolve);
+                    else resolve(f);
+                });
+            });
+        };
+    }
+
+    exit() {
+        RPM.exit();
+    }
+}
+
+export class TaskPool {
+    maxConcurrent: any;
+    delayBetweenTasks: any;
+    taskQueue: (() => Promise<unknown>)[];
+    running: boolean;
+    allTasksDone: null | Promise<unknown>;
+    allTasksDoneResolve!: (value: unknown) => void;
+    constructor(maxConcurrent: any, delayBetweenTasks: any) {
+        this.maxConcurrent = maxConcurrent;
+        this.delayBetweenTasks = delayBetweenTasks;
+        this.taskQueue = [];
+        this.running = false;
+        this.allTasksDone = null;
+    }
+
+    addTask(asyncTask: any) {
+        this.taskQueue.push(asyncTask);
+        return this;
+    }
+
+    addTasks(asyncTasks: any) {
+        this.taskQueue.push(...asyncTasks);
+        return this;
+    }
+
+    start() {
+        this.running = true;
+        this.allTasksDone = new Promise(resolve => this.allTasksDoneResolve = resolve);
+        this.runTasks();
+        return this.allTasksDone;
+    }
+
+    runTasks() {
+        const tasksPromises = [];
+        for (let i = 0; i < this.maxConcurrent && this.taskQueue.length > 0; i++) {
+            tasksPromises.push(this.executeNextTask());
+        }
+        Promise.allSettled(tasksPromises).then(() => {
+            if (this.taskQueue.length > 0) {
+                this.runTasks();
+            } else {
+                this.allTasksDoneResolve(void 0);
+            }
+        });
+    }
+
+    async executeNextTask(): Promise<unknown> {
+        if (!this.running) return;
+        await new Promise(resolve => setTimeout(resolve, this.delayBetweenTasks));
+        if (this.taskQueue.length === 0) return;
+        const task = this.taskQueue.shift()!;
+        return task().finally(() => {
+            if (this.running && this.taskQueue.length > 0) {
+                return this.executeNextTask();
+            }
+        });
+    }
+
+    stop() {
+        this.running = false;
+        return this;
+    }
+}
+
+export class Rejected extends Error {
+    static isRejected(r: any) {
+        return r instanceof Rejected;
+    }
+
+    constructor(message: string | undefined) {
+        super(message);
+        this.name = "Rejected";
+    }
+}
+
+export function randomInt(min: number, max: number) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+export function sleep(ms: number | undefined) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export function isValidUrl(string: string) {
+    const urlRegex = /^(https?:\/\/)?((([a-z\d]([a-z\d-]*[a-z\d])*)\.)+[a-z]{2,}|((\d{1,3}\.){3}\d{1,3}))(:\d+)?(\/[-a-z\d%_.~+]*)*(\?[;&a-z\d%_.~+=-]*)?(#[-a-z\d_]*)?$/i;
+    return urlRegex.test(string);
+}
