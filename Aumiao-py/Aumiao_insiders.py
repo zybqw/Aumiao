@@ -150,6 +150,10 @@ class CodeMaoData:
 class CodeMaoTool:
     CONFIG_FILE_PATH: str = os.path.join(os.getcwd(), "config.json")
 
+    def __init__(self) -> None:
+        self.path = self.CONFIG_FILE_PATH
+        self.time = time
+
     def process_reject(self, data, reserve=None, exclude=None):
         """
         Filters keys in a dictionary or list of dictionaries based on reserved or excluded keys.
@@ -164,21 +168,34 @@ class CodeMaoTool:
         """
         if reserve and exclude:
             raise ValueError(
-                "请仅提供 'reserve' 或 'exclude' 中的一个参数,不要同时使用。"
+                "请仅提供 'reserve' 或 'exclude' 中的一个参数，不要同时使用。"
             )
-        if not isinstance(data, (list, dict)):
-            raise ValueError("不支持的数据类型,仅接受列表或字典。")
 
         def filter_keys(item):
             if reserve is not None:
                 return {key: value for key, value in item.items() if key in reserve}
-            if exclude is not None:
+            elif exclude is not None:
                 return {key: value for key, value in item.items() if key not in exclude}
             return item
 
         if isinstance(data, list):
             return [filter_keys(item) for item in data]
-        return filter_keys(data)
+        elif isinstance(data, dict):
+            return filter_keys(data)
+        else:
+            raise ValueError("不支持的数据类型，仅接受列表或字典。")
+
+    # 对评论内容进行处理的函数
+    def process_shielding(self, content: str) -> str:
+        content_bytes = [item.encode("UTF-8") for item in content]
+        result = b"\xe2\x80\x8b".join(content_bytes).decode("UTF-8")
+        return result
+
+    # 时间戳转换为时间
+    def process_timestamp(self, time: int) -> str:
+        timeArray = time.localtime(time)
+        StyleTime = time.strftime("%Y-%m-%d %H:%M:%S", timeArray)
+        return StyleTime
 
 
 class CodeMaoClient:
@@ -293,13 +310,14 @@ class CodeMaoClient:
                 params=params,
             )
             _dict.extend(response.json().get("items"))
-        result = self.tool.process_reject(data=_dict, reserve=["id", "work_name"])
+        result = self.tool.process_reject(_dict, reserve=["id", "work_name"])
         return result
 
+    # 获取粉丝列表
     def get_user_fans(self, user_id: str):
         _dict = []
         for item in range(
-            int(self.get_user_honor(user_id=user_id)["fans_total"] / 200) + 1
+            int(self.get_user_honor(user_id=user_id).get("fans_total") / 200) + 1
         ):
             params = {
                 "user_id": user_id,
@@ -311,9 +329,17 @@ class CodeMaoClient:
                 method="get",
                 params=params,
             )
-            _dict.extend(json.loads(response.text)["items"])
-        result = self.tool.process_reject(data=_dict, reserve=["id", "nickname"])
+            _dict.extend(response.json().get("items"))
+        result = self.tool.process_reject(_dict, reserve=["id", "nickname"])
         return result
+
+    # 获取随机昵称
+    def get_name_random(self):
+        response = self.send_request(
+            method="get",
+            url="/api/user/random/nickname",
+        )
+        return response.json().get("data").get("nickname")
 
     # 登录函数, 处理登录逻辑并保存登录状态
     def login(
@@ -372,5 +398,5 @@ class CodeMaoClient:
 if __name__ == "__main__":
     client = CodeMaoClient()
     if client.login(method="password", identity="Aurzex", password="CODExhr1106.mao"):
-        user_details = client.get_user_details()
+        user_details = client.get_user_works("12770114")
         print(user_details)
