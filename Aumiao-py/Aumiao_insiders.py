@@ -1,7 +1,7 @@
 import json
 import os
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 # 在获取任何数据时, 链接参数中的`offset`表示忽略前**个作品, `limit`获取之后的作品列表
 # offset为非必选项, limit为必选项, 且必须大于等于5, 小于等于200
@@ -186,6 +186,18 @@ class CodeMaoTool:
         else:
             raise ValueError("不支持的数据类型，仅接受列表或字典。")
 
+    # 通过点分隔的键路径从嵌套字典中获取值
+    def get_by_path(self, data: Dict, path: str) -> Any:
+        """
+        :param data: 字典数据。
+        :param path: 键名的路径，用点分隔。
+        """
+        keys = path.split(".")
+        value = data
+        for key in keys:
+            value = value.get(key, {})
+        return value
+
     # 对评论内容进行处理的函数
     def process_shielding(self, content: str) -> str:
         content_bytes = [item.encode("UTF-8") for item in content]
@@ -220,7 +232,11 @@ class CodeMaoTool:
 
     # 将文本写入到指定文件的函数
     def write(
-        self, path: str, text: str | Dict, type: str = "str" | "dict", method: str = "w"
+        self,
+        path: str,
+        text: Union[str, Dict],
+        type: str = "str",
+        method: str = "w",
     ) -> None:
         with open(path, mode=method, encoding="utf-8") as file:
             if type == "str":
@@ -247,9 +263,9 @@ class CodeMaoClient:
         self,
         url: str,
         method: str,
-        params: Dict = None,
+        params: Optional[Dict] = None,
         data: Any = None,
-        headers: Dict = HEADERS,
+        headers: Optional[Dict] = None,
     ) -> Optional[Any]:
         url = f"{self.BASE_URL}{url}"
         try:
@@ -261,6 +277,33 @@ class CodeMaoClient:
         except (HTTPError, ConnectionError, Timeout, RequestException) as err:
             print(f"网络请求异常: {err}")
             return None
+
+    def fetch_all_data(
+        self, url: str, params: Dict[str, any], total_key: str, data_key: str
+    ) -> List[Dict]:
+        """
+        通用的数据获取函数，用于处理带分页的API请求。
+        :param url: API的URL。
+        :param params: 请求参数。
+        :param total_key: JSON响应中表示总数的键名。
+        :param data_key: JSON响应中包含实际数据的键名。。
+        """
+        # 发送初始请求以获取总数
+        initial_response = self.send_request(url=url, method="get", params=params)
+        total_items = int(self.tool.get_by_path(initial_response.json(), total_key))
+        items_per_page = params["limit"]
+        total_pages = (total_items // items_per_page) + (
+            1 if total_items % items_per_page > 0 else 0
+        )
+        all_data = []
+
+        # 遍历所有页面收集数据
+        for page in range(total_pages):
+            params["offset"] = page * items_per_page
+            response = self.send_request(url=url, method="get", params=params)
+            all_data.extend(self.tool.get_by_path(response.json(), data_key))
+
+        return all_data
 
     # 获取用户账号信息
     # (简略)
@@ -327,47 +370,29 @@ class CodeMaoClient:
             "offset": 0,
             "limit": 5,
         }
-        response = self.send_request(
+        works = self.fetch_all_data(
             url="/creation-tools/v2/user/center/work-list",
-            method="get",
             params=params,
+            total_key="total",
+            data_key="items",
         )
-
-        _dict = []
-        for item in range(int(response.json().get("total") / 200) + 1):
-            params = {
-                "type": "newest",
-                "user_id": user_id,
-                "offset": item * 200,
-                "limit": 200,
-            }
-            response = self.send_request(
-                url="/creation-tools/v2/user/center/work-list",
-                method="get",
-                params=params,
-            )
-            _dict.extend(response.json().get("items"))
-        result = self.tool.process_reject(_dict, reserve=["id", "work_name"])
+        result = self.tool.process_reject(works, reserve=["id", "work_name"])
         return result
 
     # 获取粉丝列表
     def get_user_fans(self, user_id: str) -> List[Dict[str, str]]:
-        _dict = []
-        for item in range(
-            int(self.get_user_honor(user_id=user_id).get("fans_total") / 200) + 1
-        ):
-            params = {
-                "user_id": user_id,
-                "offset": item * 200,
-                "limit": 200,
-            }
-            response = self.send_request(
-                url="/creation-tools/v1/user/fans",
-                method="get",
-                params=params,
-            )
-            _dict.extend(response.json().get("items"))
-        result = self.tool.process_reject(_dict, reserve=["id", "nickname"])
+        params = {
+            "user_id": user_id,
+            "offset": 0,
+            "limit": 15,
+        }
+        fans = self.fetch_all_data(
+            url="/creation-tools/v1/user/fans",
+            params=params,
+            total_key="total",
+            data_key="items",
+        )
+        result = self.tool.process_reject(fans, reserve=["id", "nickname"])
         return result
 
     # 获取随机昵称
@@ -404,7 +429,7 @@ class CodeMaoClient:
     def get_comments_detail(
         self,
         work_id: int,
-        method: str = "user_id" | "comments",
+        method: str = "user_id",
     ) -> List[str] | List[Dict[str, int | bool]]:
         result = []
         try:
@@ -487,10 +512,7 @@ class CodeMaoClient:
                 }
             ),
         )
-        if response.status_code == 200:
-            return True
-        else:
-            return False
+        return response.status_code == 200
 
     # 关注的函数
 
@@ -500,10 +522,8 @@ class CodeMaoClient:
             method="post",
             data=json.dumps({}),
         )
-        if response.status_code == 204:
-            return True
-        else:
-            return False
+
+        return response.status_code == 204
 
     # 收藏的函数
     def collection_work(self, work_id: int) -> bool:
@@ -512,10 +532,7 @@ class CodeMaoClient:
             method="post",
             data=json.dumps({}),
         )
-        if response.status_code == 200:
-            return True
-        else:
-            return False
+        return response.status_code == 200
 
     # 对某个作品进行点赞的函数
     def like_work(self, work_id: int) -> bool:
@@ -525,10 +542,7 @@ class CodeMaoClient:
             method="post",
             data=json.dumps({}),
         )
-        if response.status_code == 200:
-            return True
-        else:
-            return False
+        return response.status_code == 200
 
     # 对某个作品进行评论的函数
     def comment_work(self, comment, emoji, work_id: int) -> bool:
@@ -542,15 +556,12 @@ class CodeMaoClient:
                 }
             ),
         )
-        if response.status_code == 201:
-            return True
-        else:
-            return False
+        return response.status_code == 201
 
     # 登录函数, 处理登录逻辑并保存登录状态
     def login(
         self,
-        method: str = "password" | "cookie",
+        method: str = "password",
         identity: str | int = None,
         password: Any = None,
         cookies: Any = None,
@@ -584,7 +595,7 @@ class CodeMaoClient:
                 # 将cookie字符串分割成键值对,并存储到cookie_dict字典中
                 cookie_dict = dict([item.split("=", 1) for item in cookies.split("; ")])
             except (KeyError, ValueError) as err:
-                print("表达式输入不合法 {}".format(err))
+                print(f"表达式输入不合法 {err}")
                 return False
             # 将cookie_dict字典转换为cookiejar对象并设置到ses.cookies中
             self.session.cookies = self.cookie_pr(
@@ -610,5 +621,4 @@ if __name__ == "__main__":
     client = CodeMaoClient()
     if client.login(method="password", identity="Aurzex", password="CODExhr1106.mao"):
         user_details = client.get_user_works("12770114")
-        client.get_comments_detail()
         print(user_details)
