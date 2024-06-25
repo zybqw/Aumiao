@@ -30,8 +30,6 @@
 
 ## 功能列表
 
-{% fold info @功能 %}
-
 - [x] 模拟登录 🔓
   - [x] 支持账号密码登录 🔐
   - [x] 支持直接 Cookie 登录 🍪
@@ -68,8 +66,6 @@
 - [x] 配置文件 📑
   - [x] 支持修改信息 ✍
 
-{% endfold %}
-
 ## 使用教程
 
 - **如果您使用的是以`.exe`结尾的可执行文件版本,可省略配置 python,安装所需库以及运行文件这几步**
@@ -85,8 +81,6 @@
 ### 安装所需库
 
 - tips: 代码已内置自动安装功能,可跳过这一步骤
-
-{% fold info @手动安装 %}
 
 - requests
 
@@ -116,8 +110,6 @@ pip install example -i https://pypi.tuna.tsinghua.edu.cn/simple # 暂时设置
 - [华中理工大学](http://pypi.hustunique.com/)
 - [山东理工大学](http://pypi.sdutlinux.org/)
 - [豆瓣](http://pypi.douban.com/simple/)
-
-{% endfold %}
 
 ### 运行文件
 
@@ -206,7 +198,7 @@ pip install nuitka
 
 如果您对此项目有任何问题或建议,欢迎随时联系我.😊
 
-- 博客: zybqw.github.io
+- 博客: aurzex.top
 - 邮箱: <zybqw@qq.com> 📧
 - 猫站主页: <https://shequ.codemao.cn/user/12770114> 🌐
 - QQ: 3611198191
