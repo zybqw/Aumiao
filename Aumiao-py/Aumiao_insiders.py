@@ -412,7 +412,6 @@ class CodeMaoClient:
             params=params,
         )  # 为防止封号,limit建议调大
         _dict = json.loads(response.text)
-        print("\n已找到{}个新作品捏".format(len(_dict["items"])))
         return self.tool.process_reject(
             data=_dict["items"],
             reserve=[
