@@ -118,7 +118,7 @@ export async function checkbox(message: string, choices: string[]): Promise<stri
     return answer;
 }
 
-export async function hex(color: string) {
+export function hex(color: string) {
     return chalk.hex(color);
 }
 

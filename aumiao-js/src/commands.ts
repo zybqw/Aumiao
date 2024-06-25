@@ -2,15 +2,17 @@ import { CommandDefinition } from "./types/command.js"
 
 const Commands: CommandDefinition[] = [
     {
-        name: "hello",
-        description: "Say hello",
-        options: [
-            {
-                flags: "-n, --name <name>",
-                description: "Your name",
-                defaultValue: "World"
-            }
-        ]
+        name: "login",
+        description: "登录社区",
+        options: [{
+            flags: "-s, --allow-store",
+            description: "允许本地储存登录凭据",
+            defaultValue: true
+        }, {
+            flags: "-f, --file <file>",
+            description: "登录凭据文件（要求绝对路径）",
+            defaultValue: ""
+        }]
     }
 ]
 

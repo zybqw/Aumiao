@@ -2,11 +2,12 @@ import { App } from "./app.js";
 
 import * as path from "path";
 import { pathToFileURL } from 'url';
+import fs from "fs/promises";
 
 type LogLevel = "INFO" | "ERROR" | "DEBUG" | "WARN" | "LOG" | "VERBOSE" | "UNKNOWN";
 type LogLevelConfig = {
     color: string;// typeof UI.Colors[keyof typeof UI.Colors];
-    colorMessage?: (v: string) => Promise<string>;
+    colorMessage?: (v: string) => string;
     name: string;
 };
 
@@ -18,22 +19,22 @@ export class Logger {
         this.LevelConfig = {
             INFO: {
                 color: this.app.UI.Colors.Gray,
-                colorMessage: (v) => this.app.UI.hex(this.app.UI.Colors.Gray).then((f: (arg0: string) => any) => f(v)),
+                colorMessage: (v) => this.app.UI.hex(this.app.UI.Colors.Gray)(v),
                 name: "INFO"
             },
             ERROR: {
                 color: this.app.UI.Colors.Red,
-                colorMessage: (v) => this.app.UI.hex(this.app.UI.Colors.Red).then((f: (arg0: string) => any) => f(v)),
+                colorMessage: (v) => this.app.UI.hex(this.app.UI.Colors.Red)(v),
                 name: "ERROR"
             },
             DEBUG: {
                 color: this.app.UI.Colors.Navy,
-                colorMessage: (v) => this.app.UI.hex(this.app.UI.Colors.Navy).then((f: (arg0: string) => any) => f(v)),
+                colorMessage: (v) => this.app.UI.hex(this.app.UI.Colors.Navy)(v),
                 name: "DEBUG"
             },
             WARN: {
                 color: this.app.UI.Colors.Yellow,
-                colorMessage: (v) => this.app.UI.hex(this.app.UI.Colors.Yellow).then((f: (arg0: string) => any) => f(v)),
+                colorMessage: (v) => this.app.UI.hex(this.app.UI.Colors.Yellow)(v),
                 name: "WARN"
             },
             LOG: {
@@ -42,7 +43,7 @@ export class Logger {
             },
             VERBOSE: {
                 color: this.app.UI.Colors.Gray,
-                colorMessage: (v) => this.app.UI.hex(this.app.UI.Colors.Gray).then((f: (arg0: string) => any) => f(v)),
+                colorMessage: (v) => this.app.UI.hex(this.app.UI.Colors.Gray)(v),
                 name: "VERBOSE"
             },
             UNKNOWN: {
@@ -62,8 +63,8 @@ export class Logger {
         UNKNOWN: "UNKNOWN"
     };
 
-    async generate({ level = this.Levels.UNKNOWN, message } : { level: LogLevel, message: string | Error }) {
-        return `${this.app.UI.hex(this.LevelConfig[level].color).then((v: (arg0: string) => any)=>v("[" + level + "]"))} ${await this.LevelConfig[level]?.colorMessage?.(
+    async generate({ level = this.Levels.UNKNOWN, message }: { level: LogLevel, message: string | Error }) {
+        return `${this.app.UI.hex(this.LevelConfig[level].color)("[" + level + "]")} ${this.LevelConfig[level]?.colorMessage?.(
             message instanceof Error ? message.message : message
         ) || message}`;
     }
@@ -103,7 +104,7 @@ export class Logger {
     }
 
     verbose(message: string) {
-        if (this.app.config.verbose) this.generate({ level: this.Levels.VERBOSE, message }).then(v => console.log(v));
+        if (this.app.config.verbose || this.app.options["verbose"]) this.generate({ level: this.Levels.VERBOSE, message }).then(v => console.log(v));
         return this;
     }
 
@@ -123,7 +124,7 @@ export class RPM {
     }[];
     lastRunTimestamp: number;
     static exit() {
-        if (RPM.intervalId !== null)clearInterval(RPM.intervalId);
+        if (RPM.intervalId !== null) clearInterval(RPM.intervalId);
     }
 
     static tick() {
@@ -266,4 +267,29 @@ export function sleep(ms: number | undefined) {
 export function isValidUrl(string: string) {
     const urlRegex = /^(https?:\/\/)?((([a-z\d]([a-z\d-]*[a-z\d])*)\.)+[a-z]{2,}|((\d{1,3}\.){3}\d{1,3}))(:\d+)?(\/[-a-z\d%_.~+]*)*(\?[;&a-z\d%_.~+=-]*)?(#[-a-z\d_]*)?$/i;
     return urlRegex.test(string);
+}
+
+export async function createFileIfNotExist(path: string, content: string) {
+    try {
+        await fs.access(path);
+    } catch {
+        await fs.writeFile(path, content);
+    }
+}
+
+export async function createDirIfNotExist(path: string) {
+    try {
+        await fs.access(path);
+    } catch {
+        await fs.mkdir(path, { recursive: true });
+    }
+}
+
+export async function readJSON(path: string) {
+    try {
+        const data = await fs.readFile(path, "utf-8");
+        return JSON.parse(data);
+    } catch {
+        return {};
+    }
 }

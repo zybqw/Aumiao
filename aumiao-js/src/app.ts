@@ -2,22 +2,39 @@ import type { UI } from "./types/ui.js";
 import { Logger } from "./utils.js";
 
 import * as commander from "commander";
+import path from "path";
 import { EventEmitter } from "events";
 
 import { CommandDefinition, ProgramDefinision } from "./types/command.js";
 import { route } from "./app/router.js";
+
+import { config } from "dotenv";
 
 const { program, Option } = commander;
 
 export type AppConfig = {
     debug: boolean;
     verbose: boolean;
+    envFile?: string;
+    tempDir?: string;
+    allowStore?: boolean;
+}
+export type EnvConfig = {
+    PASSWORD: string;
+    USERNAME: string;
 }
 
 export class App {
     static DefaultConfig: AppConfig = {
         debug: false,
         verbose: false,
+        envFile: path.resolve(import.meta.dirname, "../.env"), // equals to path.resolve(__dirname, "../.env")
+        tempDir: path.resolve(import.meta.dirname, "../temp"),
+        allowStore: true,
+    };
+    static DefaultEnvConfig: EnvConfig = {
+        PASSWORD: "",
+        USERNAME: "",
     };
     static StaticConfig = {
         MAX_TRY: 128,
@@ -48,6 +65,7 @@ export class App {
     program: commander.Command;
     App: typeof App = App;
     commands: { [name: string]: commander.Command };
+    envConfig: EnvConfig = App.DefaultEnvConfig;
 
     get options() {
         return this.program.opts();
@@ -70,8 +88,12 @@ export class App {
 
     public start() {
         this.events.emit(App.EVENTS.START);
-        this.Logger.verbose("Starting app...");
         this.program.parse(process.argv);
+        this.Logger.verbose("App started");
+        this.envConfig = { ...this.envConfig, ...config({
+            path: this.config.envFile,
+            override: true,
+        }).parsed };
     }
 
     public registerProgram({ name, description, version }: ProgramDefinision) {
@@ -80,6 +102,10 @@ export class App {
             .version(version)
             .action(async () => {
                 await route("index", this);
+            }).option("-v, --verbose", "Enable verbose logging", () => {
+                this.config.verbose = true;
+            }).option("-d, --debug", "Enable debug logging", () => {
+                this.config.debug = true;
             });
         return this;
     }
