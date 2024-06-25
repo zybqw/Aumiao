@@ -1,3 +1,3 @@
 
-import { default as UI } from '../ui';
+import { default as UI } from '../ui.js';
 export { UI };

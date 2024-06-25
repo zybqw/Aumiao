@@ -1,10 +1,12 @@
-import { App } from "./app";
-import { UI } from "./types/ui";
+import { App } from "./app.js";
+
+import * as path from "path";
+import { pathToFileURL } from 'url';
 
 type LogLevel = "INFO" | "ERROR" | "DEBUG" | "WARN" | "LOG" | "VERBOSE" | "UNKNOWN";
 type LogLevelConfig = {
-    color: typeof UI.Colors[keyof typeof UI.Colors];
-    colorMessage?: (v: string) => string;
+    color: string;// typeof UI.Colors[keyof typeof UI.Colors];
+    colorMessage?: (v: string) => Promise<string>;
     name: string;
 };
 
@@ -16,22 +18,22 @@ export class Logger {
         this.LevelConfig = {
             INFO: {
                 color: this.app.UI.Colors.Gray,
-                colorMessage: (v) => this.app.UI.hex(this.app.UI.Colors.Gray)(v),
+                colorMessage: (v) => this.app.UI.hex(this.app.UI.Colors.Gray).then((f: (arg0: string) => any) => f(v)),
                 name: "INFO"
             },
             ERROR: {
                 color: this.app.UI.Colors.Red,
-                colorMessage: (v) => this.app.UI.hex(this.app.UI.Colors.Red)(v),
+                colorMessage: (v) => this.app.UI.hex(this.app.UI.Colors.Red).then((f: (arg0: string) => any) => f(v)),
                 name: "ERROR"
             },
             DEBUG: {
                 color: this.app.UI.Colors.Navy,
-                colorMessage: (v) => this.app.UI.hex(this.app.UI.Colors.Navy)(v),
+                colorMessage: (v) => this.app.UI.hex(this.app.UI.Colors.Navy).then((f: (arg0: string) => any) => f(v)),
                 name: "DEBUG"
             },
             WARN: {
                 color: this.app.UI.Colors.Yellow,
-                colorMessage: (v) => this.app.UI.hex(this.app.UI.Colors.Yellow)(v),
+                colorMessage: (v) => this.app.UI.hex(this.app.UI.Colors.Yellow).then((f: (arg0: string) => any) => f(v)),
                 name: "WARN"
             },
             LOG: {
@@ -40,7 +42,7 @@ export class Logger {
             },
             VERBOSE: {
                 color: this.app.UI.Colors.Gray,
-                colorMessage: (v) => this.app.UI.hex(this.app.UI.Colors.Gray)(v),
+                colorMessage: (v) => this.app.UI.hex(this.app.UI.Colors.Gray).then((f: (arg0: string) => any) => f(v)),
                 name: "VERBOSE"
             },
             UNKNOWN: {
@@ -60,8 +62,8 @@ export class Logger {
         UNKNOWN: "UNKNOWN"
     };
 
-    generate({ level = this.Levels.UNKNOWN, message } : { level: LogLevel, message: string | Error }) {
-        return `${this.app.UI.hex(this.LevelConfig[level].color)("[" + level + "]")} ${this.LevelConfig[level]?.colorMessage?.(
+    async generate({ level = this.Levels.UNKNOWN, message } : { level: LogLevel, message: string | Error }) {
+        return `${this.app.UI.hex(this.LevelConfig[level].color).then((v: (arg0: string) => any)=>v("[" + level + "]"))} ${await this.LevelConfig[level]?.colorMessage?.(
             message instanceof Error ? message.message : message
         ) || message}`;
     }
@@ -72,23 +74,23 @@ export class Logger {
         try {
             if (message instanceof Error) message = message.message + "\n" + message.stack;
         } catch { /* empty */ }
-        console.log(this.generate({ level: this.Levels.LOG, message }));
+        this.generate({ level: this.Levels.LOG, message }).then(v => console.log(v));
         return this;
     }
 
     warn(message: string): Logger {
-        console.warn(this.generate({ level: this.Levels.WARN, message }));
+        this.generate({ level: this.Levels.WARN, message }).then(v => console.warn(v));
         return this;
     }
 
     info(message: string): Logger {
-        console.log(this.generate({ level: this.Levels.INFO, message }));
+        this.generate({ level: this.Levels.INFO, message }).then(v => console.info(v));
         return this;
     }
 
     error(message: string | Error): Error {
         if (message instanceof Error) message = message.message + "\n" + message.stack;
-        console.error(this.generate({ level: this.Levels.ERROR, message }));
+        this.generate({ level: this.Levels.ERROR, message }).then(v => console.error(v));
         return new Error(message);
     }
 
@@ -96,12 +98,12 @@ export class Logger {
         try {
             if (typeof message !== "string") message = JSON.stringify(message);
         } catch { /* empty */ }
-        if (this.app.config.debug) console.log(this.generate({ level: this.Levels.DEBUG, message }));
+        if (this.app.config.debug) this.generate({ level: this.Levels.DEBUG, message }).then(v => console.debug(v));
         return this;
     }
 
     verbose(message: string) {
-        if (this.app.config.verbose) console.log(this.generate({ level: this.Levels.VERBOSE, message }));
+        if (this.app.config.verbose) this.generate({ level: this.Levels.VERBOSE, message }).then(v => console.log(v));
         return this;
     }
 
@@ -231,6 +233,15 @@ export class TaskPool {
         this.running = false;
         return this;
     }
+}
+
+export async function moduleLoader(mods: string[]) {
+    const modules = mods.map(mod => {
+        const modulePath = mod.startsWith(".") ? path.resolve("../", mod) : mod;
+        const moduleURL = mod.startsWith(".") ? pathToFileURL(modulePath).href : modulePath;
+        return import(moduleURL);
+    });
+    return Promise.all(modules);
 }
 
 export class Rejected extends Error {
