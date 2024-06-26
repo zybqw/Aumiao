@@ -614,11 +614,3 @@ class CodeMaoClient:
         else:
             print(f"登录失败惹,错误码: {response.status_code}")
             return False
-
-
-# Example usage
-if __name__ == "__main__":
-    client = CodeMaoClient()
-    if client.login(method="password", identity="Aurzex", password="CODExhr1106.mao"):
-        user_details = client.get_user_fans("12770114")
-        print(user_details)
