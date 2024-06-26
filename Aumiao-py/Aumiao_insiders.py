@@ -306,7 +306,7 @@ class CodeMaoClient:
             method="get", url=f"/api/user/info/detail/{user_id}"
         )
         return self.tool.process_reject(
-            data=response.json().get("data").get("userInfo"),
+            data=response.json()["data"]["userInfo"],
             exclude=["work", "isFollowing"],
         )
 
@@ -396,7 +396,7 @@ class CodeMaoClient:
             method="get",
             url="/api/user/random/nickname",
         )
-        return response.json().get("data").get("nickname")
+        return response.json()["data"]["nickname"]
 
     # 获取新作品的函数
     def get_works_new(self, limit: int) -> List[Dict[str, str | int]]:
@@ -406,7 +406,7 @@ class CodeMaoClient:
             method="get",
             params=params,
         )  # 为防止封号,limit建议调大
-        _dict = json.loads(response.text)
+        _dict = response.json()
         return self.tool.process_reject(
             data=_dict["items"],
             reserve=[
@@ -449,14 +449,14 @@ class CodeMaoClient:
     # 获取工作室简介(简易,需登录工作室成员账号)
     def get_shops_simple(self):
         response = self.send_request(url="/web/work_shops/simple", method="get")
-        result = response.json().get("work_shop")
+        result = response.json()["work_shop"]
         return result
 
     # 获取工作室简介
     def get_shop_detials(self, id: str) -> Dict:
         response = self.send_request(url=f"/web/shops/{id}", method="get")
         result = self.tool.process_reject(
-            data=json.loads(response.text),
+            data=response.json(),
             reserve=[
                 "id",
                 "shop_id",
@@ -531,6 +531,30 @@ class CodeMaoClient:
             ),
         )
         return response.status_code == 201
+
+    # 获取新回复
+    def get_new_replies(self) -> List[Dict[str, Any]]:
+        _dict = []
+        while True:
+            record = self.send_request(
+                url="/web/message-record/count",
+                method="get",
+            )
+            reply_num = record.text.json()[0]["count"]
+            if reply_num == 0:
+                break
+            list_num = sorted([5, reply_num, 200])[1]
+            params = {
+                "query_type": "COMMENT_REPLY",
+                "limit": list_num,
+            }
+            response = self.send_request(
+                url="/web/message-record",
+                method="get",
+                params=params,
+            )
+            _dict.extend(response.json()["items"][:reply_num])
+        return _dict
 
     # 登录函数, 处理登录逻辑并保存登录状态
     def login(
@@ -629,7 +653,7 @@ class CodeMaoUnion:
                 url="/web/message-record/count",
                 method="get",
             )
-            counts = [json.loads(record.text)[i]["count"] for i in range(3)]
+            counts = [record.json()[i]["count"] for i in range(3)]
             if all(count == 0 for count in counts):
                 return True  # 所有消息类型处理完毕
 
