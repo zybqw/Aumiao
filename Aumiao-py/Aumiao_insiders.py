@@ -48,6 +48,12 @@ except ModuleNotFoundError:
 
 
 class CodeMaoData:
+    BASE_URL = "https://api.codemao.cn"
+    CONFIG_FILE_PATH: str = os.path.join(os.getcwd(), "config.json")
+    HEADERS = {
+        "Content-Type": "application/json",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Edg/124.0.0.0",
+    }
     Account = {
         "identity": " ",
         "password": " ",
@@ -147,12 +153,6 @@ class CodeMaoData:
 
 
 class CodeMaoTool:
-    CONFIG_FILE_PATH: str = os.path.join(os.getcwd(), "config.json")
-
-    def __init__(self) -> None:
-        self.path = self.CONFIG_FILE_PATH
-        self.data = CodeMaoData()
-
     def process_reject(
         self, data: List | Dict, reserve: List = None, exclude: List = None
     ) -> List | Dict:
@@ -248,16 +248,11 @@ class CodeMaoTool:
 
 
 class CodeMaoClient:
-    BASE_URL = "https://api.codemao.cn"
-    HEADERS = {
-        "Content-Type": "application/json",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Edg/124.0.0.0",
-    }
-
     def __init__(self) -> None:
-        self.session = requests.Session()
-        self.session.headers.update(self.HEADERS)
+        self.data = CodeMaoData()
         self.tool = CodeMaoTool()
+        self.session = requests.Session()
+        self.session.headers.update(self.data.HEADERS)
 
     def send_request(
         self,
@@ -514,7 +509,6 @@ class CodeMaoClient:
         return response.status_code == 200
 
     # 关注的函数
-
     def follow_work(self, user_id: int) -> bool:
         response = self.send_request(
             url=f"/nemo/v2/user/{user_id}/follow",
@@ -588,15 +582,11 @@ class CodeMaoClient:
                 ),
             )
         elif method == "cookie":
-            # 重新编写设置cookie的代码,使其更简洁和清晰
-            # 获取用户输入的cookie字符串
             try:
-                # 将cookie字符串分割成键值对,并存储到cookie_dict字典中
                 cookie_dict = dict([item.split("=", 1) for item in cookies.split("; ")])
             except (KeyError, ValueError) as err:
                 print(f"表达式输入不合法 {err}")
                 return False
-            # 将cookie_dict字典转换为cookiejar对象并设置到ses.cookies中
             self.session.cookies = self.cookie_pr(
                 cookie_dict, cookiejar=None, overwrite=True
             )
@@ -613,6 +603,90 @@ class CodeMaoClient:
         else:
             print(f"登录失败惹,错误码: {response.status_code}")
             return False
+
+
+class CodeMaoUnion:
+
+    def __init__(self) -> None:
+        self.tool = CodeMaoTool()
+        self.cilent = CodeMaoClient()
+        self.data = CodeMaoData()
+
+    # 清除作品广告的函数
+    def clear_ad(self, keys) -> bool:
+        works_list = self.cilent.get_user_works(self.data.Account["id"])
+        for item0 in works_list:
+            comments = self.cilent.get_comments_detail(
+                work_id=item0["id"], method="comments"
+            )
+            work_id = item0["id"]
+            for item1 in comments:
+                comment_id = item1["id"]
+                content = item1["content"].lower()  # 转换小写
+                if (
+                    any(item2 in content for item2 in keys)
+                    and not item1["is_top"]  # 取消置顶评论监测
+                ):
+                    print(
+                        "在作品 {} 中发现广告: {} ".format(item0["work_name"], content)
+                    )
+                    response = self.cilent.send_request(
+                        url=f"/creation-tools/v1/works/{work_id}/comment/{comment_id}",
+                        method="delete",
+                    )
+                    print("*" * 50)
+                    if response.status_code != 204:
+                        return False
+        return True
+
+    def clear_redpoint(self) -> bool:
+        item = 0
+        query_types = ["LIKE_FORK", "COMMENT_REPLY", "SYSTEM"]
+        while True:
+            # 检查是否所有消息类型的红点数为0
+            record = self.client.send_request(
+                url="/web/message-record/count",
+                method="get",
+            )
+            counts = [json.loads(record.text)[i]["count"] for i in range(3)]
+            if all(count == 0 for count in counts):
+                return True  # 所有消息类型处理完毕
+
+            # 如果还有未处理的消息，按类型查询并清理
+            params = {
+                "query_type": "ANYTHING",
+                "limit": 200,
+                "offset": item,
+            }
+            responses = {}
+            for query_type in query_types:
+                params["query_type"] = query_type
+                response = self.client.send_request(
+                    url="/web/message-record",
+                    method="get",
+                    params=params,
+                )
+                responses[query_type] = response.status_code
+
+            # 如果任何一次请求失败，即状态码不为200，返回False
+            if any(status != 200 for status in responses.values()):
+                return False
+
+            # 更新偏移量以查询下一批数据
+            item += 200
+
+    # 给某人作品全点赞
+    def like_all_work(self, user_id: str):
+        works_list = self.cilent.get_user_works(user_id)
+        for item in works_list:
+            response = self.cilent.send_request(
+                url="/nemo/v2/works/{}/like".format(item["id"]),
+                method="post",
+                data=json.dumps({}),
+            )
+            if response.status_code != 200:
+                return False
+        return True
 
 
 # Example usage
