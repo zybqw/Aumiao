@@ -63,7 +63,7 @@ export class Logger {
         UNKNOWN: "UNKNOWN"
     };
 
-    async generate({ level = this.Levels.UNKNOWN, message }: { level: LogLevel, message: string | Error }) {
+    generate({ level = this.Levels.UNKNOWN, message }: { level: LogLevel, message: string | Error }) {
         return `${this.app.UI.hex(this.LevelConfig[level].color)("[" + level + "]")} ${this.LevelConfig[level]?.colorMessage?.(
             message instanceof Error ? message.message : message
         ) || message}`;
@@ -75,23 +75,23 @@ export class Logger {
         try {
             if (message instanceof Error) message = message.message + "\n" + message.stack;
         } catch { /* empty */ }
-        this.generate({ level: this.Levels.LOG, message }).then(v => console.log(v));
+        console.log(this.generate({ level: this.Levels.LOG, message }));
         return this;
     }
 
     warn(message: string): Logger {
-        this.generate({ level: this.Levels.WARN, message }).then(v => console.warn(v));
+        console.warn(this.generate({ level: this.Levels.WARN, message }));
         return this;
     }
 
     info(message: string): Logger {
-        this.generate({ level: this.Levels.INFO, message }).then(v => console.info(v));
+        console.info(this.generate({ level: this.Levels.INFO, message }));
         return this;
     }
 
     error(message: string | Error): Error {
         if (message instanceof Error) message = message.message + "\n" + message.stack;
-        this.generate({ level: this.Levels.ERROR, message }).then(v => console.error(v));
+        console.error(this.generate({ level: this.Levels.ERROR, message }));
         return new Error(message);
     }
 
@@ -99,12 +99,12 @@ export class Logger {
         try {
             if (typeof message !== "string") message = JSON.stringify(message);
         } catch { /* empty */ }
-        if (this.app.config.debug) this.generate({ level: this.Levels.DEBUG, message }).then(v => console.debug(v));
+        if (this.app.config.debug) console.debug(this.generate({ level: this.Levels.DEBUG, message }));
         return this;
     }
 
     verbose(message: string) {
-        if (this.app.config.verbose || this.app.options["verbose"]) this.generate({ level: this.Levels.VERBOSE, message }).then(v => console.log(v));
+        if (this.app.config.verbose || this.app.options["verbose"]) console.log(this.generate({ level: this.Levels.VERBOSE, message }));
         return this;
     }
 
@@ -254,6 +254,9 @@ export class Rejected extends Error {
         super(message);
         this.name = "Rejected";
     }
+    toString() {
+        return this.message;
+    }
 }
 
 export function randomInt(min: number, max: number) {
@@ -267,6 +270,32 @@ export function sleep(ms: number | undefined) {
 export function isValidUrl(string: string) {
     const urlRegex = /^(https?:\/\/)?((([a-z\d]([a-z\d-]*[a-z\d])*)\.)+[a-z]{2,}|((\d{1,3}\.){3}\d{1,3}))(:\d+)?(\/[-a-z\d%_.~+]*)*(\?[;&a-z\d%_.~+=-]*)?(#[-a-z\d_]*)?$/i;
     return urlRegex.test(string);
+}
+
+export function deepMergeObject<T extends Record<string, any>>(
+    a: T,
+    b: Record<string, any>
+): T {
+    function deepMerge(target: Record<string, any>, source: Record<string, any>): Record<string, any> {
+        Object.keys(source).forEach(key => {
+            if (source[key] instanceof Object && target[key] instanceof Object) {
+                target[key] = deepMerge(target[key], source[key]);
+            } else {
+                target[key] = source[key];
+            }
+        });
+        return target;
+    }
+
+    return deepMerge({ ...a }, b) as T;
+}
+
+export function readObject<T>(obj: Record<string, T> | undefined, key: string): T | undefined {
+    return obj ? obj[key] : undefined;
+}
+
+export function resolve(p: string, d: string) {
+    return path.resolve(p, d);
 }
 
 export async function createFileIfNotExist(path: string, content: string) {
@@ -285,11 +314,64 @@ export async function createDirIfNotExist(path: string) {
     }
 }
 
-export async function readJSON(path: string) {
+export async function readJSON(path: string, onError?: (e: Error) => void) {
     try {
         const data = await fs.readFile(path, "utf-8");
         return JSON.parse(data);
-    } catch {
+    } catch (e) {
+        if (onError) onError(e as Error);
         return {};
+    }
+}
+
+export async function writeJSON(path: string, data: any) {
+    await fs.writeFile(path, JSON.stringify(data, null, 2));
+}
+
+export async function isFileExist(path: string) {
+    try {
+        await fs.access(path);
+        return true;
+    } catch {
+        return false;
+    }
+}
+
+export class FallTask {
+    static fall(app: App, tasks: string[]) {
+        const fall = new FallTask(app);
+        tasks.forEach((task, i) => {
+            if (i === 0) fall.start(task);
+            else if (i === tasks.length - 1) fall.end(task);
+            else fall.step(task);
+        });
+    }
+    constructor(protected app: App) { }
+    start(str: string) {
+        this.app.Logger.tagless(`${this.app.UI.color.gray("╭─")} ${str}`);
+        return this;
+    }
+    step(str: string, steps = 0) {
+        for (let i = 0; i < steps; i++) {
+            this.app.Logger.tagless(`${this.app.UI.color.gray("│ ")}`);
+        }
+        this.app.Logger.tagless(`${this.app.UI.color.gray("│ ")} ${str}`);
+        return this;
+    }
+    end(str: string) {
+        this.app.Logger.tagless(`${this.app.UI.color.gray("╰─")} ${str}`);
+        return this;
+    }
+    error(str: string) {
+        str.split("\n").forEach((line) => {
+            this.step(this.app.UI.color.red(line));
+        });
+        return this;
+    }
+    async input(prompt: string) {
+        return await this.app.UI.input(prompt, this.app.UI.color.gray("│ "));
+    }
+    async password(prompt: string) {
+        return await this.app.UI.password(prompt, this.app.UI.color.gray("│ "));
     }
 }

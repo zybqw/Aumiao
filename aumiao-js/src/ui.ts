@@ -15,13 +15,13 @@ enum Colors {
 }
 
 const inq = (function (){
-    let _inq: any, _chalk: any;
+    let _inq: any;
     return {
         async inquirer() {
             if (!_inq) {
-                _inq = await moduleLoader(["inquirer"]);
+                _inq = (await moduleLoader(["inquirer"]))[0];
             }
-            return _inq;
+            return _inq.default;
         },
     }
 })();
@@ -29,14 +29,17 @@ const inq = (function (){
 /**
  * Prompt for text input.
  * @param message - The message to display to the user.
+ * @param prefix - Optional. Customize the prefix symbol in the prompt.
  * @returns The user's input.
  */
-export async function input(message: string): Promise<string> {
-    const { answer } = await (await inq.inquirer()).prompt({
+export async function input(message: string, prefix?: string): Promise<string> {
+    const promptOptions = {
         type: "input",
         name: "answer",
-        message
-    });
+        message,
+        ...(prefix && { prefix }),
+    };
+    const { answer } = await (await inq.inquirer()).prompt(promptOptions);
     return answer;
 }
 
@@ -45,12 +48,13 @@ export async function input(message: string): Promise<string> {
  * @param message - The message to display to the user.
  * @returns The user's input.
  */
-export async function password(message: string): Promise<string> {
+export async function password(message: string, prefix?: string): Promise<string> {
     const { answer } = await (await inq.inquirer()).prompt({
         type: "password",
         name: "answer",
         message,
-        mask: "*"
+        mask: "*",
+        ...(prefix && { prefix })
     });
     return answer;
 }
@@ -89,7 +93,7 @@ export async function select(message: string, choices: string[]): Promise<string
  * Prompt for a single selection from a list of objects.
  * @param message - The message to display to the user.
  * @param choiceObj - The list of choices.
- * @returns The result of the selected function.
+ * @returns The result of the selected value.
  * @example selectByObject("Select a color", { "Red": Colors.Red, "Green": Colors.Green });
  */
 export async function selectByObject(message: string, choiceObj: { [key: string]: any }): Promise<any> {
@@ -126,6 +130,19 @@ export async function separator() {
     return new (await inq.inquirer()).Separator();
 }
 
+export const color = {
+    red: (v: string) => chalk.hex(Colors.Red)(v),
+    green: (v: string) => chalk.hex(Colors.Green)(v),
+    blue: (v: string) => chalk.hex(Colors.Blue)(v),
+    yellow: (v: string) => chalk.hex(Colors.Yellow)(v),
+    purple: (v: string) => chalk.hex(Colors.Purple)(v),
+    cyan: (v: string) => chalk.hex(Colors.Cyan)(v),
+    white: (v: string) => chalk.hex(Colors.White)(v),
+    black: (v: string) => chalk.hex(Colors.Black)(v),
+    gray: (v: string) => chalk.hex(Colors.Gray)(v),
+    navy: (v: string) => chalk.hex(Colors.Navy)(v)
+}
+
 export default {
     input,
     password,
@@ -135,7 +152,8 @@ export default {
     checkbox,
     hex,
     separator,
-    Colors
+    Colors,
+    color
 };
 
 export {
