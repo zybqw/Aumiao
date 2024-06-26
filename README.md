@@ -1,12 +1,12 @@
 ![Top Image](https://capsule-render.vercel.app/api?type=waving&color=66ccff&height=250&section=header)
 
-![Big text](https://readme-typing-svg.demolab.com?font=Hanalei+Fill&size=50&duration=8000&pause=15000&color=66CCFF&vCenter=true&multiline=true&width=800&height=90&lines=%22Aumiao%22)
+![Typing SVG](https://readme-typing-svg.demolab.com?font=Hanalei+Fill&size=50&pause=1000&color=66CCFF&background=FFFFFF00&center=%E7%9C%9F&vCenter=%E7%9C%9F&repeat=%E7%9C%9F&random=%E5%81%87&width=200&height=100&lines=Aumiao)
 
 # Aumiao
 
 [![猫鱼a](https://img.shields.io/badge/猫鱼a-66ccff)](https://github.com/zybqw/)
 [![Nomen](https://img.shields.io/badge/Nomen-66ccff)](https://github.com/helloyork/)
-[![满月叶](https://img.shields.io/badge/满月叶-66ccff)](https://github.com/Moonleeeaf/)
+[![满月叶](https://img.shields.io/badge/满月叶-66ccff)](https://github.com/MoonLeeeaf/)
 [![Python Badge](https://img.shields.io/badge/-Python-66ccff?style=flat&logo=Python&logoColor=white)](https://www.python.org/)
 [![Node.js Badge](https://img.shields.io/badge/-Node.js-66ccff?style=flat&logo=nodedotjs&logoColor=white)](https://nodejs.org/zh-cn)
 
@@ -32,7 +32,7 @@ Aumiao-JS是由**Nomen**开发的Aumiao子项目，用于支持NodeJS并且使�
 
 ### 这和Aumiao有什么区别
 
-Aumiao-JS与Aumiao实现的功能基本一致，更多信息请访问[README.md](../README.md)
+Aumiao-JS与Aumiao实现的功能基本一致
 
 ### 功能列表
 
