@@ -1,20 +1,71 @@
-## 目录
+![Top Image](https://capsule-render.vercel.app/api?type=waving&color=66ccff&height=250&section=header)
 
-- [项目简介](#项目简介)
+![Big text](https://readme-typing-svg.demolab.com?font=Hanalei+Fill&size=50&duration=8000&pause=15000&color=66CCFF&vCenter=true&multiline=true&width=800&height=90&lines=%22Aumiao%22)
 
-- [作品说明](#作品说明)
+# Aumiao
 
-- [功能列表](#功能列表)
+[![猫鱼a](https://img.shields.io/badge/猫鱼a-66ccff)](https://github.com/zybqw/)
+[![Nomen](https://img.shields.io/badge/Nomen-66ccff)](https://github.com/helloyork/)
+[![满月叶](https://img.shields.io/badge/满月叶-66ccff)](https://github.com/Moonleeeaf/)
+[![Python Badge](https://img.shields.io/badge/-Python-66ccff?style=flat&logo=Python&logoColor=white)](https://www.python.org/)
+[![Node.js Badge](https://img.shields.io/badge/-Node.js-66ccff?style=flat&logo=nodedotjs&logoColor=white)](https://nodejs.org/zh-cn)
 
-- [使用教程](#使用教程)
+## 这是什么
 
-## 项目简介
+Aumiao是一款针对于编程猫社区的爬虫(划掉)
 
-猫毡（雾）最强爬虫）
+你说的对，但是《Aumiao》是一款由Aumiao开发团队开发的编程猫自动化工具
+于2023年5月2日发布，工具以编程猫宇宙为舞台，玩家可以扮演扮演毛毡用户在这个答辩💩社区毛线🧶坍缩并邂逅各种不同的乐子人😋。在领悟了《猫站圣经》后，打败强敌扫厕所😡，在维护编程猫核邪铀删的局面的同时，逐步揭开编程猫社区的真相
 
-这个 Python 项目可以自动在编程猫网站上实现自动化行为,以提高作品曝光率.✨
+官方网站（暂定）:<https://aurzex.top/article/Aumiao>
 
-## 作品说明
+# 子项目
+
+- **Aumiao-PY**
+- **Aumiao-JS**
+
+## Aumiao-JS
+
+### 这是什么
+
+Aumiao-JS是由**Nomen**开发的Aumiao子项目，用于支持NodeJS并且使用更强大的界面控制
+
+### 这和Aumiao有什么区别
+
+Aumiao-JS与Aumiao实现的功能基本一致，更多信息请访问[README.md](../README.md)
+
+### 功能列表
+
+- [ ] 身份验证
+  - [ ] 单账号登录
+    - [x] 本地凭据储存
+    - [ ] Auth
+      - [x] 凭据登录
+      - [ ] Cookie登录
+  - [ ] 多账号登录
+    - [ ] 本地群组凭据管理
+- [ ] 用户行为
+  - [ ] 点赞作品
+- [ ] 信息获取
+  - [ ] 获取个人资料
+
+### 如何使用
+
+1. 安装NodeJS 18或以上
+2. 运行`npm install -g typescript`
+3. 将仓库克隆到本地
+4. 运行`cd aumiao-js`
+5. 运行`npm i`
+6. 运行`npm run compile`
+7. 运行`node ./dist/index.js --help`
+
+### TODO
+
+增加使用env文件的登录
+
+## Aumiao-PY
+
+### 作品说明
 
 原作:
 
@@ -28,7 +79,7 @@
 
 为讲解方便,文档中的{FILEPATH}为您的爬虫所在目录
 
-## 功能列表
+### 功能列表
 
 - [x] 模拟登录 🔓
   - [x] 支持账号密码登录 🔐
@@ -66,11 +117,11 @@
 - [x] 配置文件 📑
   - [x] 支持修改信息 ✍
 
-## 使用教程
+### 使用教程
 
 - **如果您使用的是以`.exe`结尾的可执行文件版本,可省略配置 python,安装所需库以及运行文件这几步**
 
-### 配置 Python
+#### 配置 Python
 
 访问如下网址`https://www.python.org/downloads/`
 
@@ -78,7 +129,7 @@
 
 - tips: 不会安装可以去看这篇文章[Python 安装教程](https://zhuanlan.zhihu.com/p/632097212)
 
-### 安装所需库
+#### 安装所需库
 
 - tips: 代码已内置自动安装功能,可跳过这一步骤
 
@@ -111,7 +162,7 @@ pip install example -i https://pypi.tuna.tsinghua.edu.cn/simple # 暂时设置
 - [山东理工大学](http://pypi.sdutlinux.org/)
 - [豆瓣](http://pypi.douban.com/simple/)
 
-### 运行文件
+#### 运行文件
 
 使用 Python 自带的 idle 或其他 IDE 打开
 
@@ -133,7 +184,7 @@ cookies 获取教程(以 edge 浏览器为例)
 
 - 在标头中的请求表头中找到`Cookie`一项,右键复制,粘贴到爬虫中
 
-### 文件结构
+#### 文件结构
 
 如果您已经运行过了一遍爬虫,爬虫将会生成三个文件:
 
@@ -142,7 +193,7 @@ cookies 获取教程(以 edge 浏览器为例)
 -   config.json 信息配置文件 📄 位于{FILEPATH}
 ```
 
-### 自定义配置
+#### 自定义配置
 
 请打开{FILEPATH}中的 config.json
 
@@ -163,7 +214,7 @@ cookies 获取教程(以 edge 浏览器为例)
 - `answers`存储了发送的回复列表,爬虫会随机选取一个进行发送,您可以在此更改回复内容
 - `ad`存储了广告的关键词,爬虫会根据关键词来筛选广告并删除,您可以在此更改关键词
 
-### 编译
+#### 编译
 
 如若您想让爬虫文件经过编译成为可执行文件
 
@@ -191,18 +242,6 @@ pip install nuitka
 - tips: 如若没有 ico 文件,请删除`--windows-icon-from-ico=luo.ico`字段后再运行
 - tips: 如果没有 upx 文件,请删除`--plugin-enable=upx --upx-binary="E:\zybqw\upx\upx.exe"`字段
     等待运行完成,即可在{FILEPATH}下的 out 目录使用可执行文件版
-
-**如果有任何问题欢迎反馈,本项目仅用于技术学习交流.💬**
-
-## 联系我
-
-如果您对此项目有任何问题或建议,欢迎随时联系我.😊
-
-- 博客: aurzex.top
-- 邮箱: <zybqw@qq.com> 📧
-- 猫站主页: <https://shequ.codemao.cn/user/12770114> 🌐
-- QQ: 3611198191
-- 微信: Aurorzex
 
 ## Star History
 

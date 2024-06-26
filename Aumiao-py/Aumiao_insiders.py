@@ -302,7 +302,7 @@ class CodeMaoClient:
             params["offset"] = page * items_per_page
             response = self.send_request(url=url, method="get", params=params)
             all_data.extend(self.tool.get_by_path(response.json(), data_key))
-
+            print(all_data)
         return all_data
 
     # 获取用户账号信息
@@ -334,6 +334,7 @@ class CodeMaoClient:
             ],
         )
 
+    # 获取用户荣誉
     def get_user_honor(self, user_id: str) -> Dict:
         params = {"user_id": user_id}
         response = self.send_request(
@@ -619,5 +620,5 @@ class CodeMaoClient:
 if __name__ == "__main__":
     client = CodeMaoClient()
     if client.login(method="password", identity="Aurzex", password="CODExhr1106.mao"):
-        user_details = client.get_user_works("12770114")
+        user_details = client.get_user_fans("12770114")
         print(user_details)
