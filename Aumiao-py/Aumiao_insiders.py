@@ -425,32 +425,51 @@ class CodeMaoClient:
             ],
         )
 
+    # 获取评论区特定信息
     def get_comments_detail(
         self,
         work_id: int,
         method: str = "user_id",
     ) -> List[str] | List[Dict[str, int | bool]]:
-        # 定义API基础参数
-        params = {"limit": 20, "offset": 0}
-        url = f"/creation-tools/v1/works/{work_id}/comments"
-
-        # 使用fetch_all_data获取所有评论数据
-        comments = self.fetch_all_data(
-            url=url, params=params, total_key="page_total", data_key="items"
-        )
-
-        # 处理获取到的评论数据
         result = []
-        if method == "user_id":
-            result = [comment["user"]["id"] for comment in comments]
-        elif method == "comments":
-            result = self.tool.process_reject(
-                data=comments, reserve=["id", "content", "is_top"]
+        try:
+            params = {"limit": 20, "offset": 0}
+            response = self.send_request(
+                url=f"/creation-tools/v1/works/{work_id}/comments",
+                method="get",
+                params=params,
             )
-        else:
-            raise ValueError(f"不支持的请求方法 {method}")
-
-        return result
+            num = response.json().get("page_total")
+        except (KeyError, NameError) as err:
+            print(err)
+            return False
+        for item in range(
+            int(num / 20) + 1
+        ):  # 等效于num // 20 , floor(num / 20) ,int(num / 20)
+            try:
+                params = {"limit": 20, "offset": item * 20}
+                response = self.send_request(
+                    url=f"/creation-tools/v1/works/{work_id}/comments",
+                    method="get",
+                    params=params,
+                )  # limit 根据评论+回复综合来定
+                comments = response.text.json()("items")
+                if method == "user_id":
+                    result = [item["user"]["id"] for item in comments]
+                elif method == "comments":
+                    result.extend(
+                        self.tool.process_reject(
+                            data=comments,
+                            reserve=["id", "content", "is_top"],
+                        )
+                    )
+                else:
+                    print(f"不支持的请求方法{method}")
+            except (KeyError, NameError) as err:
+                print(err)
+                pass
+            return result
+        return False
 
     # 获取工作室简介(简易,需登录工作室成员账号)
     def get_shops_simple(self):
