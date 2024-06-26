@@ -19,9 +19,9 @@ try:
     )
 except ModuleNotFoundError:
     # 提示用户未安装requests库,并询问安装位置
-    print("检测到您未下载requests库,正在为您安装。")
+    print("检测到您未下载requests库,正在为您安装.")
     step = input(
-        "如果安装了多个python版本,请输入要安装的位置（例如:3.x）,否则直接回车跳过: "
+        "如果安装了多个python版本,请输入要安装的位置(例如:3.x),否则直接回车跳过: "
     )
     if step.strip():
         # 如果用户指定了Python版本,按照指定的版本安装
@@ -43,11 +43,17 @@ except ModuleNotFoundError:
         )
     except ModuleNotFoundError:
         # 如果安装失败,则退出程序
-        print("安装requests库失败,请手动安装后再运行程序。")
+        print("安装requests库失败,请手动安装后再运行程序.")
         exit(1)
 
 
 class CodeMaoData:
+    BASE_URL = "https://api.codemao.cn"
+    CONFIG_FILE_PATH: str = os.path.join(os.getcwd(), "config.json")
+    HEADERS = {
+        "Content-Type": "application/json",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Edg/124.0.0.0",
+    }
     Account = {
         "identity": " ",
         "password": " ",
@@ -147,12 +153,6 @@ class CodeMaoData:
 
 
 class CodeMaoTool:
-    CONFIG_FILE_PATH: str = os.path.join(os.getcwd(), "config.json")
-
-    def __init__(self) -> None:
-        self.path = self.CONFIG_FILE_PATH
-        self.data = CodeMaoData()
-
     def process_reject(
         self, data: List | Dict, reserve: List = None, exclude: List = None
     ) -> List | Dict:
@@ -169,7 +169,7 @@ class CodeMaoTool:
         """
         if reserve and exclude:
             raise ValueError(
-                "请仅提供 'reserve' 或 'exclude' 中的一个参数，不要同时使用。"
+                "请仅提供 'reserve' 或 'exclude' 中的一个参数,不要同时使用."
             )
 
         def filter_keys(item):
@@ -184,13 +184,13 @@ class CodeMaoTool:
         elif isinstance(data, dict):
             return filter_keys(data)
         else:
-            raise ValueError("不支持的数据类型，仅接受列表或字典。")
+            raise ValueError("不支持的数据类型,仅接受列表或字典.")
 
     # 通过点分隔的键路径从嵌套字典中获取值
     def get_by_path(self, data: Dict, path: str) -> Any:
         """
-        :param data: 字典数据。
-        :param path: 键名的路径，用点分隔。
+        :param data: 字典数据.
+        :param path: 键名的路径,用点分隔.
         """
         keys = path.split(".")
         value = data
@@ -248,16 +248,11 @@ class CodeMaoTool:
 
 
 class CodeMaoClient:
-    BASE_URL = "https://api.codemao.cn"
-    HEADERS = {
-        "Content-Type": "application/json",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Edg/124.0.0.0",
-    }
-
     def __init__(self) -> None:
-        self.session = requests.Session()
-        self.session.headers.update(self.HEADERS)
+        self.data = CodeMaoData()
         self.tool = CodeMaoTool()
+        self.session = requests.Session()
+        self.session.headers.update(self.data.HEADERS)
 
     def send_request(
         self,
@@ -282,11 +277,11 @@ class CodeMaoClient:
         self, url: str, params: Dict[str, any], total_key: str, data_key: str
     ) -> List[Dict]:
         """
-        通用的数据获取函数，用于处理带分页的API请求。
-        :param url: API的URL。
-        :param params: 请求参数。
-        :param total_key: JSON响应中表示总数的键名。
-        :param data_key: JSON响应中包含实际数据的键名。。
+        通用的数据获取函数,用于处理带分页的API请求.
+        :param url: API的URL.
+        :param params: 请求参数.
+        :param total_key: JSON响应中表示总数的键名.
+        :param data_key: JSON响应中包含实际数据的键名..
         """
         # 发送初始请求以获取总数
         initial_response = self.send_request(url=url, method="get", params=params)
@@ -302,7 +297,6 @@ class CodeMaoClient:
             params["offset"] = page * items_per_page
             response = self.send_request(url=url, method="get", params=params)
             all_data.extend(self.tool.get_by_path(response.json(), data_key))
-            print(all_data)
         return all_data
 
     # 获取用户账号信息
@@ -312,7 +306,7 @@ class CodeMaoClient:
             method="get", url=f"/api/user/info/detail/{user_id}"
         )
         return self.tool.process_reject(
-            data=response.json().get("data").get("userInfo"),
+            data=response.json()["data"]["userInfo"],
             exclude=["work", "isFollowing"],
         )
 
@@ -402,7 +396,7 @@ class CodeMaoClient:
             method="get",
             url="/api/user/random/nickname",
         )
-        return response.json().get("data").get("nickname")
+        return response.json()["data"]["nickname"]
 
     # 获取新作品的函数
     def get_works_new(self, limit: int) -> List[Dict[str, str | int]]:
@@ -412,7 +406,7 @@ class CodeMaoClient:
             method="get",
             params=params,
         )  # 为防止封号,limit建议调大
-        _dict = json.loads(response.text)
+        _dict = response.json()
         return self.tool.process_reject(
             data=_dict["items"],
             reserve=[
@@ -474,14 +468,14 @@ class CodeMaoClient:
     # 获取工作室简介(简易,需登录工作室成员账号)
     def get_shops_simple(self):
         response = self.send_request(url="/web/work_shops/simple", method="get")
-        result = response.json().get("work_shop")
+        result = response.json()["work_shop"]
         return result
 
     # 获取工作室简介
     def get_shop_detials(self, id: str) -> Dict:
         response = self.send_request(url=f"/web/shops/{id}", method="get")
         result = self.tool.process_reject(
-            data=json.loads(response.text),
+            data=response.json(),
             reserve=[
                 "id",
                 "shop_id",
@@ -515,7 +509,6 @@ class CodeMaoClient:
         return response.status_code == 200
 
     # 关注的函数
-
     def follow_work(self, user_id: int) -> bool:
         response = self.send_request(
             url=f"/nemo/v2/user/{user_id}/follow",
@@ -558,6 +551,30 @@ class CodeMaoClient:
         )
         return response.status_code == 201
 
+    # 获取新回复
+    def get_new_replies(self) -> List[Dict[str, Any]]:
+        _dict = []
+        while True:
+            record = self.send_request(
+                url="/web/message-record/count",
+                method="get",
+            )
+            reply_num = record.text.json()[0]["count"]
+            if reply_num == 0:
+                break
+            list_num = sorted([5, reply_num, 200])[1]
+            params = {
+                "query_type": "COMMENT_REPLY",
+                "limit": list_num,
+            }
+            response = self.send_request(
+                url="/web/message-record",
+                method="get",
+                params=params,
+            )
+            _dict.extend(response.json()["items"][:reply_num])
+        return _dict
+
     # 登录函数, 处理登录逻辑并保存登录状态
     def login(
         self,
@@ -589,15 +606,11 @@ class CodeMaoClient:
                 ),
             )
         elif method == "cookie":
-            # 重新编写设置cookie的代码,使其更简洁和清晰
-            # 获取用户输入的cookie字符串
             try:
-                # 将cookie字符串分割成键值对,并存储到cookie_dict字典中
                 cookie_dict = dict([item.split("=", 1) for item in cookies.split("; ")])
             except (KeyError, ValueError) as err:
                 print(f"表达式输入不合法 {err}")
                 return False
-            # 将cookie_dict字典转换为cookiejar对象并设置到ses.cookies中
             self.session.cookies = self.cookie_pr(
                 cookie_dict, cookiejar=None, overwrite=True
             )
