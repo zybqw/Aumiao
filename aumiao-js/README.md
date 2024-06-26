@@ -26,12 +26,14 @@ Aumiao-JS与Aumiao实现的功能基本一致，更多信息请访问[README.md]
 
 ## 如何使用
 
-1. 运行`npm install -g typescript`
-2. 将仓库克隆到本地
-3. 运行`cd aumiao-js`
-4. 运行`npm i`
-5. 运行`npm run compile`
-6. 运行`node ./dist/index.js --help`
+
+1. 安装NodeJS 18或以上
+2. 运行`npm install -g typescript`
+3. 将仓库克隆到本地
+4. 运行`cd aumiao-js`
+5. 运行`npm i`
+6. 运行`npm run compile`
+7. 运行`node ./dist/index.js --help`
 
 ## TODO
 
