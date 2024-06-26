@@ -30,7 +30,6 @@ import { moduleLoader } from './src/utils.js';
 import path from 'path';
 import { fileURLToPath, pathToFileURL } from 'url';
 
-console.log("running: " + path.resolve(path.dirname(fileURLToPath(import.meta.url)), './index.js'));
 moduleLoader([pathToFileURL(path.resolve(path.dirname(fileURLToPath(import.meta.url)), './src/ui.js')).toString()])
     .then(([UI]) => {
         new App({

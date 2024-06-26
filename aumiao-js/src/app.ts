@@ -1,5 +1,5 @@
 import type { UI } from "./types/ui.js";
-import { Logger } from "./utils.js";
+import { Logger, isFileExist } from "./utils.js";
 
 import * as commander from "commander";
 import path from "path";
@@ -15,9 +15,9 @@ const { program, Option } = commander;
 export type AppConfig = {
     debug: boolean;
     verbose: boolean;
-    envFile?: string;
-    tempDir?: string;
-    allowStore?: boolean;
+    envFile: string;
+    tempDir: string;
+    allowStore: boolean;
 }
 export type EnvConfig = {
     PASSWORD: string;
@@ -86,14 +86,11 @@ export class App {
         this.commands = {};
     }
 
-    public start() {
+    public async start() {
         this.events.emit(App.EVENTS.START);
         this.program.parse(process.argv);
         this.Logger.verbose("App started");
-        this.envConfig = { ...this.envConfig, ...config({
-            path: this.config.envFile,
-            override: true,
-        }).parsed };
+        await this.loadEnv();
     }
 
     public registerProgram({ name, description, version }: ProgramDefinision) {
@@ -138,6 +135,25 @@ export class App {
             this.Logger.error(err as any);
             this.exit(this.App.EXIT_CODES.ERROR);
         }
+    }
+
+    async loadEnv() {
+        let file = this.options["env"] || this.config.envFile;
+        if ((!this.options["env"] && !this.config.envFile) || !(await isFileExist(
+            file
+        ))) {
+            this.Logger.warn("无可用的env文件或无法访问该文件" + (file? `: ${file}` : ""));
+            return;
+        }
+        let parsed = config({
+            path: this.config.envFile,
+            override: true,
+        });
+        if (parsed.error) {
+            this.Logger.error("尝试读取.env文件时出错: " + parsed.error.message);
+            return;
+        }
+        this.envConfig = { ...this.envConfig, ...(parsed.parsed || {}) };
     }
 
     on(event: string, listener: (...args: any[]) => void) {
