@@ -424,7 +424,7 @@ export class FallTask {
         const loadingTask = new LoadingTask(this.app, this, frame);
         loadingTask.start(this.app.UI.color.gray(str));
         return handler(
-            (message: string) => loadingTask.end(this.app.UI.color.gray(message)),
+            (message: string) => loadingTask.end(this.app.UI.color.gray(message ? message + "\n" : "")),
             (message: string) => (loadingTask.end(), this.error(message)),
             (text: string) => loadingTask.setText(this.app.UI.color.gray(text))
         );

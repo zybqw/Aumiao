@@ -5,6 +5,7 @@ export async function route(name: string, app: App) {
     const routes = {
         "index": () => import("./index.js"),
         "login": () => import("./login.js"),
+        "update": () => import("./update.js"),
     };
     return name in routes ? (await (routes[name as keyof typeof routes]()))?.default(app) : null;
 }

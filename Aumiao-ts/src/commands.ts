@@ -26,6 +26,11 @@ const Commands: CommandDefinition[] = [
         name: "login",
         description: "登录社区（单账户）",
         options: [Options.allowStore, Options.file, Options.env],
+    },
+    {
+        name: "update",
+        description: "更新整个Aumiao项目",
+        options: [],
     }
 ]
 
