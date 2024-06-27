@@ -262,7 +262,7 @@ class CodeMaoClient:
         data: Any = None,
         headers: Optional[Dict] = None,
     ) -> Optional[Any]:
-        url = f"{self.BASE_URL}{url}"
+        url = f"{self.data.BASE_URL}{url}"
         try:
             response = self.session.request(
                 method=method, url=url, headers=headers, params=params, data=data
@@ -390,6 +390,22 @@ class CodeMaoClient:
         result = self.tool.process_reject(fans, reserve=["id", "nickname"])
         return result
 
+    # 获取关注列表
+    def get_user_follows(self, user_id: str) -> List[Dict[str, str]]:
+        params = {
+            "user_id": user_id,
+            "offset": 0,
+            "limit": 15,
+        }
+        follows = self.fetch_all_data(
+            url="/creation-tools/v1/user/followers",
+            params=params,
+            total_key="total",
+            data_key="items",
+        )
+        result = self.tool.process_reject(follows, reserve=["id", "nickname"])
+        return result
+
     # 获取随机昵称
     def get_name_random(self) -> str:
         response = self.send_request(
@@ -398,25 +414,20 @@ class CodeMaoClient:
         )
         return response.json()["data"]["nickname"]
 
-    # 获取新作品的函数
-    def get_works_new(self, limit: int) -> List[Dict[str, str | int]]:
-        params = {"limit": limit}
+    def get_works(self, method: str, limit: int, offest: int = 0):
+        params = {"limit": limit, "offest": offest}
+        if method == "subject":
+            url = "/creation-tools/v1/pc/discover/subject-work"
+        elif method == "newest":
+            url = "/creation-tools/v1/pc/discover/newest-work"
         response = self.send_request(
-            url="/creation-tools/v1/pc/discover/newest-work",
+            url=url,
             method="get",
             params=params,
         )  # 为防止封号,limit建议调大
         _dict = response.json()
         return self.tool.process_reject(
-            data=_dict["items"],
-            reserve=[
-                "work_id",
-                "work_name",
-                "user_id",
-                "nickname",
-                "views_count",
-                "likes_count",
-            ],
+            data=_dict["items"], exclude=["preview_url", "avatar_url"]
         )
 
     # 获取评论区特定信息
@@ -691,12 +702,8 @@ class CodeMaoUnion:
                     params=params,
                 )
                 responses[query_type] = response.status_code
-
-            # 如果任何一次请求失败,即状态码不为200,返回False
             if any(status != 200 for status in responses.values()):
                 return False
-
-            # 更新偏移量以查询下一批数据
             item += 200
 
     # 给某人作品全点赞
@@ -711,3 +718,8 @@ class CodeMaoUnion:
             if response.status_code != 200:
                 return False
         return True
+
+
+if __name__ == "__main__":
+    cilent = CodeMaoClient()
+    print(cilent.get_user_honor(user_id="12770114"))
