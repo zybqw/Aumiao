@@ -36,8 +36,9 @@ Aumiao-ts 使用 TypeScript 进行编写，并且使用了更加现代化的统�
 2. 安装Git
 3. 确保nodejs安装成功: `node --version`
 4. 克隆仓库: `git clone https://github.com/zybqw/Aumiao.git && cd ./Aumiao/Aumiao-ts`
-5. 安装依赖: `node ./scripts/install.js`
-6. 启动！`node ./dist/index.js`
+5. 启动`node aumiao`
+
+
 
 ### 一句话指令
 
@@ -46,13 +47,13 @@ Aumiao-ts 使用 TypeScript 进行编写，并且使用了更加现代化的统�
 CMD (Windows >= 10)
 
 ```bash
-git clone https://github.com/zybqw/Aumiao.git && cd ./Aumiao/Aumiao-ts && node ./scripts/install.js && node ./dist/index.js
+git clone https://github.com/zybqw/Aumiao.git && cd ./Aumiao/Aumiao-ts && node ./scripts/install.js && node aumiao.js
 ```
 
 Windows PowerShell
 
 ```bash
-git clone https://github.com/zybqw/Aumiao.git; cd .\Aumiao\Aumiao-ts; node .\scripts\install.js; node .\dist\index.js
+git clone https://github.com/zybqw/Aumiao.git; cd .\Aumiao\Aumiao-ts; node .\scripts\install.js; node .\aumiao.js
 ```
 
 ## 如何更新
@@ -77,6 +78,10 @@ git pull origin main; npm run compile
 
 如果尝试更新出错，可以删除整个本地仓库并且重新安装
 
+## 文档
+
+- [如何获得Cookie](./docs/how-to-get-cookie.md)
+- [如何使用环境登录](./docs/how-to-use-env-login.md)
 
 ## TODO
 

@@ -21,8 +21,8 @@ export type AppConfig = {
     allowStore: boolean;
 }
 export type EnvConfig = {
-    PASSWORD: string;
-    USERNAME: string;
+    CODEMAO_PASSWORD: string;
+    CODEMAO_USERNAME: string;
 }
 
 export class App {
@@ -34,8 +34,8 @@ export class App {
         allowStore: true,
     };
     static DefaultEnvConfig: EnvConfig = {
-        PASSWORD: "",
-        USERNAME: "",
+        CODEMAO_PASSWORD: "",
+        CODEMAO_USERNAME: "",
     };
     static StaticConfig = {
         MAX_TRY: 128,
@@ -65,6 +65,7 @@ export class App {
     App: typeof App = App;
     commands: { [name: string]: commander.Command };
     envConfig: EnvConfig = App.DefaultEnvConfig;
+    version: string;
 
     get options() {
         return this.program.opts();
@@ -83,6 +84,7 @@ export class App {
         this.program = program;
         this.Logger = new Logger(this);
         this.commands = {};
+        this.version = "0.0.0";
     }
 
     public async start() {
@@ -93,6 +95,7 @@ export class App {
     }
 
     public registerProgram({ name, description, version }: ProgramDefinision) {
+        this.version = version;
         this.program.name(name)
             .description(description)
             .version(version)

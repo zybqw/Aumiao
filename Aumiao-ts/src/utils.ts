@@ -246,13 +246,16 @@ export async function moduleLoader(mods: string[]) {
 }
 
 export class Rejected extends Error {
+    code: string | number | undefined;
+    
     static isRejected(r: any): r is Rejected {
         return r instanceof Rejected;
     }
 
-    constructor(message: string | undefined) {
+    constructor(message: string | undefined, code?: number | string) {
         super(message);
         this.name = "Rejected";
+        this.code = code;
     }
     toString() {
         return this.message;
@@ -414,7 +417,7 @@ export class FallTask {
         return this;
     }
     waitForLoading<T>(
-        handler: (resolve: (message: string) => void, reject: (message: string) => void) => Promise<T>,
+        handler: (resolve: (message: string) => void, reject: (message: string) => void, setText: (text: string) => void) => Promise<T>,
         str: string,
         frame: keyof typeof LoadingTask.Frames = 0
     ) {
@@ -423,6 +426,7 @@ export class FallTask {
         return handler(
             (message: string) => loadingTask.end(this.app.UI.color.gray(message)),
             (message: string) => (loadingTask.end(), this.error(message)),
+            (text: string) => loadingTask.setText(this.app.UI.color.gray(text))
         );
     }
     end(str: string) {
@@ -444,4 +448,36 @@ export class FallTask {
     async password(prompt: string) {
         return await this.app.UI.password(prompt, this.app.UI.color.gray("│ "));
     }
+}
+
+export async function readJSONData<T extends Record<string, any>>(p: string, defaultValue: T): Promise<T> {
+    try {
+        await createDirIfNotExist(path.dirname(p));
+        if (await isFileExist(p)) {
+            return await readJSON(p);
+        } else {
+            await createFileIfNotExist(p, JSON.stringify(defaultValue));
+            return defaultValue;
+        }
+    } catch (e: any) {
+        throw new Rejected(e.message);
+    }
+}
+
+export async function writeJSONData(p: string, data: any) {
+    try {
+        await createDirIfNotExist(path.dirname(p));
+        await writeJSON(p, data);
+    } catch (e: any) {
+        throw new Rejected(e.message);
+    }
+}
+
+export async function execBash(command: string) {
+    return new Promise(async (resolve, reject) => {
+        (await import("child_process")).exec(command, (error: any, stdout: any) => {
+            if (error) reject(error);
+            else resolve(stdout);
+        });
+    });
 }

@@ -24,6 +24,11 @@ export type LoginInfo = {
     }
 }
 
+const FailedReasons: Record<string| number, string> = {
+    400: "请求参数错误",
+    403: "账号或密码错误",
+}
+
 export class Cred implements AuthProvider {
     static LOGIN_PID = "65edCTyg";
     constructor(protected app: App, protected client: CodeMaoClient) { }
@@ -49,7 +54,7 @@ export class Cred implements AuthProvider {
             if (!Rejected.isRejected(r)) {
                 resolve("");
             } else {
-                reject("登录失败！" + r.toString());
+                reject(`登录失败！${r.message}\n可能的原因：${r.code ? FailedReasons[r.code] : "未知"}`);
             }
             return r;
         }, "正在登录…")
@@ -99,9 +104,9 @@ export class EnvCred extends Cred {
         const fall = new FallTask(this.app);
         fall.start(this.app.UI.color.blue("登录codemao.cn"));
 
-        if (this.app.envConfig.PASSWORD && this.app.envConfig.USERNAME) {
-            state.username = this.app.envConfig.USERNAME;
-            state.password = this.app.envConfig.PASSWORD;
+        if (this.app.envConfig.CODEMAO_PASSWORD && this.app.envConfig.CODEMAO_USERNAME) {
+            state.username = this.app.envConfig.CODEMAO_USERNAME;
+            state.password = this.app.envConfig.CODEMAO_PASSWORD;
         } else if (process.env.PASSWORD && process.env.USERNAME) {
             state.username = process.env.USERNAME;
             state.password = process.env.PASSWORD;
@@ -120,7 +125,7 @@ export class EnvCred extends Cred {
             if (!Rejected.isRejected(r)) {
                 resolve("");
             } else {
-                reject("登录失败！" + r.toString());
+                reject(`登录失败！${r.message}\n可能的原因：${r.code ? FailedReasons[r.code] : "未知"}`);
             }
             return r;
         }, "正在登录…")

@@ -77,7 +77,7 @@ export class CodeMaoClient {
             }
         });
         if (!res.ok) {
-            return new Rejected(`Request failed with status ${res.status}: ${res.statusText}`);
+            return new Rejected(`Request failed with status ${res.status}: ${res.statusText}`, res.status);
         }
         return await res.json() as T;
     }
