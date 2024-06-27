@@ -10,16 +10,16 @@ Aumiao-ts 与 Aumiao-py 实现的功能基本一致
 
 ## 这和 Aumiao-js 有什么区别
 
-Aumiao-ts 是使用 TypeScript 编写的，界面更加易用
+Aumiao-ts 使用 TypeScript 进行编写，并且使用了更加现代化的统一命令框架和界面
 
 ## 功能列表
 
 - [ ] 身份验证
-  - [ ] 单账号登录
+  - [x] 单账号登录
     - [x] 本地凭据储存
-    - [ ] Auth
+    - [x] Auth
       - [x] 凭据登录
-      - [ ] Cookie登录
+      - [x] Cookie登录
   - [ ] 多账号登录
     - [ ] 本地群组凭据管理
 - [ ] 用户行为
@@ -30,12 +30,12 @@ Aumiao-ts 是使用 TypeScript 编写的，界面更加易用
 ## 如何使用
 
 1. 安装 Node.js 18 或以上
-2. 运行 `npm install -g typescript`
+2. 运行 `npm install -g typescript` 下载编译工具
 3. 将仓库克隆到本地
-4. 运行 `cd aumiao-js`
-5. 运行 `npm i`
-6. 运行 `npm run compile`
-7. 运行 `node ./dist/index.js --help`
+4. 在项目根目录中运行 `cd Aumiao-ts` 导航到子项目
+5. 运行 `npm i` 下载所需的依赖
+6. 运行 `npm run compile` 进行编译
+7. 运行 `node ./dist/index.js --help` 并且享受
 
 ## TODO
 

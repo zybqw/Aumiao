@@ -1,6 +1,6 @@
 import { App } from "../../app.js";
 import { FallTask, Rejected } from "../../utils.js";
-import { CodeMaoClient } from "../CodeMaoClient.js";
+import { CodeMaoClient, LoggedData } from "../CodeMaoClient.js";
 import { AuthProvider } from "../auth.js";
 
 
@@ -29,7 +29,7 @@ export class Cred implements AuthProvider {
     constructor(protected app: App, protected client: CodeMaoClient) {}
 
     token: string = "";
-    async login(): Promise<LoginInfo | null> {
+    async login(): Promise<LoggedData | null> {
         const state: {
             username: string;
             password: string;
@@ -47,23 +47,34 @@ export class Cred implements AuthProvider {
             state.username = await fall.input("用户名:");
             state.password = await fall.password("密码:");
         }
-        fall.step(this.app.UI.color.gray("正在登录…"), 1);
-        fall.step(this.app.UI.color.gray("发送请求…"));
+        fall.step(this.app.UI.color.gray(""), 1);
 
-        let res = await this._SendLoginRequest(state.username, state.password);
+        let res = await fall.waitForLoading<LoginInfo | Rejected>(async (resolve, reject) => {
+            let r = await this._SendLoginRequest(state.username, state.password);
+            if (!Rejected.isRejected(r)) {
+                resolve("");
+            } else {
+                reject("登录失败！" + r.toString());
+            }
+            return r;
+        }, "正在登录…")
+
         if (!Rejected.isRejected(res) && (res as LoginInfo).auth.token) {
             fall.end(this.app.UI.color.green("登录成功！"));
 
             this.token = (res as LoginInfo).auth.token;
-            return (res as LoginInfo);
+            return {
+                id: (res as LoginInfo).user_info.id.toString(),
+                nickname: (res as LoginInfo).user_info.nickname,
+                token: this.token
+            }
         } else {
-            fall.error("登录失败！\n" + (res as Rejected).toString());
             fall.end(this.app.UI.color.red("登录失败！"));
             return null;
         }
     }
     async isLogin(): Promise<boolean> {
-        throw new Error("Method not implemented.");
+        return !!(await this.client.syncDetails(true));
     }
     private async _SendLoginRequest(username: string, password: string): Promise<LoginInfo | Rejected> {
         return this.client.request<LoginInfo>(CodeMaoClient.ENDPOINTS.login, {

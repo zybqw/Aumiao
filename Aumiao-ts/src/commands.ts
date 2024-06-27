@@ -13,8 +13,13 @@ const Options = {
     "env": {
         flags: "-e, --env <env>",
         description: "环境变量文件（要求绝对路径）",
+    },
+    "sensei": {
+        flags: "-n, --no-sensei",
+        description: "禁止让面板叫你Sensei",
     }
 }
+const Opt: Record<keyof typeof Options, any> = Object.fromEntries(Object.entries(Options).map(([key]) => [key, key])) as Record<keyof typeof Options, any>;
 
 const Commands: CommandDefinition[] = [
     {
@@ -24,4 +29,14 @@ const Commands: CommandDefinition[] = [
     }
 ]
 
+const GlobalOptions: {
+    flags: string;
+    description: string;
+    defaultValue?: any;
+}[] = [Options.env, Options.sensei]
+
 export default Commands;
+export {
+    GlobalOptions,
+    Opt
+}
