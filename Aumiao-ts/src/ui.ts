@@ -32,12 +32,13 @@ const inq = (function (){
  * @param prefix - Optional. Customize the prefix symbol in the prompt.
  * @returns The user's input.
  */
-export async function input(message: string, prefix?: string): Promise<string> {
+export async function input(message: string, prefix?: string, options?: import("inquirer").InputQuestionOptions): Promise<string> {
     const promptOptions = {
         type: "input",
         name: "answer",
         message,
         ...(prefix && { prefix }),
+        ...(options && { options })
     };
     const { answer } = await (await inq.inquirer()).prompt(promptOptions);
     return answer;

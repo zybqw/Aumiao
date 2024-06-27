@@ -1,5 +1,6 @@
 import { App } from "../app.js";
 import { CodeMaoClient } from "../client/CodeMaoClient.js";
+import { Opt } from "../commands.js";
 import { FallTask, createDirIfNotExist, deepMergeObject, isFileExist, readJSON, readObject, resolve, writeJSON } from "../utils.js";
 
 export enum LoginType {
@@ -52,24 +53,32 @@ export default async function main(app: App) {
         }
     }
 
+    // normal login
     app.Logger.debug(JSON.stringify(state.stored, null, 2));
     if (
         readObject(state.stored.data, "token")?.length
         && !await app.UI.confirm("你已经储存了凭据并且已经准备好用于登录，重新登录会覆盖当前状态，你要重新登录吗？")
     ) {
         state.client.token = readObject(state.stored?.data, "token") as string;
-        if (!await state.client.syncDetails()) {
-            app.Logger.error("本地凭据已过期，请重新登录");
+        let fall = new FallTask(app);
+        if (
+            !await fall.waitForLoading(async (resolve, reject) => {
+                let r = await state.client.syncDetails(true);
+                if (r) resolve("");
+                else reject("本地凭据已过期，请重新登录");
+                return r;
+            }, "正在登录…")
+        ){
+            await writeJSON(state.file, defaultStored);
         } else {
             app.Logger.verbose("login state initialized");
-            FallTask.fall(app, [
-                "欢迎回来！" + state.client.userDetails?.nickname || "",
-                `ID: ${state.client.userDetails?.id || ""}`
-            ]);
+
+            await MainPanel(app, state.client)();
             return;
         }
     }
 
+    // initial login
     app.Logger.verbose("login state initialized");
     let method = await app.UI.selectByObject("登录方式：", {
         "文本凭据": LoginType.Credentials,
@@ -83,9 +92,30 @@ export default async function main(app: App) {
     }
 
     const fall = new FallTask(app);
-    fall.start(app.UI.color.white("欢迎回来！" + state.client.loginInfo?.user_info.nickname || ""));
-    fall.end(app.UI.color.gray(`ID: ${state.client.loginInfo?.user_info.id}`));
-
-    app.exit(app.App.EXIT_CODES.SUCCESS);
+    await MainPanel(app, state.client)();
     return;
+}
+
+export function MainPanel(app: App, client: CodeMaoClient) {
+    return async () => {
+        const [
+            userDetails,
+            messageRecord
+        ] = await Promise.all([
+            client.syncDetails(true),
+            client.getMessageRecordCound()
+                .then(v => v?.filter(v => v.query_type === "COMMENT_REPLY")
+                    .map(v => v.count)
+                    .reduce((a, b) => a + b, 0))
+        ]);
+    
+        console.log(app.options)
+        const panel = [
+            `欢迎回来, ${userDetails?.nickname || ""} ${(!app.options[Opt.sensei]) ? "" : "Sensei!"}`,
+            `ID: ${userDetails?.id || ""}`,
+            `未读消息: ${app.UI.color.yellow(messageRecord? messageRecord.toString() : "0")}`,
+        ];
+
+        FallTask.fall(app, panel);
+    }
 }

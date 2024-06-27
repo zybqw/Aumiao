@@ -1,8 +1,10 @@
 import { App } from "../app.js"
 import { LoginStored, LoginType } from "../app/login.js";
+import { MessageCount, UserDetails } from "../types/api.js";
 import { Rejected, readObject } from "../utils.js";
 import { AuthProvider } from "./auth.js";
-import { Cred, LoginInfo } from "./auth/cred.js";
+import { Cookie } from "./auth/cookie.js";
+import { Cred } from "./auth/cred.js";
 import { ua } from "./ua.js";
 
 type CodeMaoClientConfig = {
@@ -10,41 +12,25 @@ type CodeMaoClientConfig = {
 }
 
 
-type UserDetails = {
+export type LoggedData = {
     id: string;
     nickname: string;
-    avatar_url: string;
-    email: string;
-    gold: number;
-    qq: string;
-    real_name: string;
-    sex: 'FEMALE' | 'MALE';
-    username: string;
-    voice_forbidden: boolean;
-    birthday: number;
-    description: string;
-    phone_number: string;
-    create_time: number;
-    oauths: Array<object>;
-    has_password: boolean;
-    user_type: number;
-    show_guide_flag: number;
-    has_signed: boolean;
-    has_seen_primary_course: number;
-    author_level: number;
-};
+    token: string;
+}
 
 export class CodeMaoClient {
     static BASE_URL = "https://api.codemao.cn";
     static ENDPOINTS = {
-        login: "/tiger/v3/web/accounts/login"
+        login: "/tiger/v3/web/accounts/login",
+        message_record: "/web/message-record/count",
+        user_details: "/web/users/details"
     };
     app: App;
     ua: string;
 
     authProvider: AuthProvider | null = null;
     token: string = "";
-    loginInfo: LoginInfo | null = null;
+    loginInfo: LoggedData | null = null;
     userDetails: UserDetails | null = null;
     constructor(protected config: CodeMaoClientConfig) {
         this.app = config.app;
@@ -59,7 +45,7 @@ export class CodeMaoClient {
         } else {
             this.authProvider = this.getAuthProvider(type);
             this.loginInfo = await this.authProvider.login();
-            this.token = this.loginInfo?.auth.token || "";
+            this.token = this.loginInfo?.token || "";
         }
 
         if (!this.token || !this.loginInfo) {
@@ -70,10 +56,10 @@ export class CodeMaoClient {
 
         return this;
     }
-    getAuthProvider(type: LoginType) {
+    getAuthProvider(type: LoginType): AuthProvider {
         return Reflect.construct(({
             [LoginType.Credentials]: Cred,
-            [LoginType.Cookie]: Cred
+            [LoginType.Cookie]: Cookie
         })[type], [this.app, this])
     }
     async request<T>(endpoint: string, options: RequestInit): Promise<T | Rejected> {
@@ -103,16 +89,25 @@ export class CodeMaoClient {
         };
     }
 
-    public async syncDetails() {
-        let details = await this.request<UserDetails>("/web/users/details", {
-            method: "GET"
-        });
-        if (Rejected.isRejected(details)) {
-            this.app.Logger.error("Failed to get user details");
+    private async requestEndpoint<T>(endpoint: string, options: RequestInit, silent = false): Promise<T | null> {
+        let res = await this.request<T>(endpoint, options);
+        if (Rejected.isRejected(res)) {
+            if (!silent) this.app.Logger.error("Failed to request endpoint: " + endpoint + "\n" + res.toString());
             return null;
         }
-        this.userDetails = details as UserDetails;
-        return this.userDetails;
+        return res;
+    }
+
+    public async syncDetails(silent = false) {
+        return await this.requestEndpoint<UserDetails>(CodeMaoClient.ENDPOINTS.user_details, {
+            method: "GET"
+        }, silent);
+    }
+
+    public async getMessageRecordCound() {
+        return await this.requestEndpoint<MessageCount[]>(CodeMaoClient.ENDPOINTS.message_record, {
+            method: "GET"
+        });
     }
 }
 

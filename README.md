@@ -22,7 +22,7 @@ Aumiao是一款针对于编程猫社区的爬虫(划掉)
 ## 子项目
 
 - [Aumiao-py (主)](Aumiao-py/readme.md)
-- [Aumiao-ts](Aumiao-ts/readme.md)
+- [Aumiao-ts](Aumiao-ts/README.md)
 - [Aumiao-js](Aumiao-js/readme.md)
 
 ## Star History
