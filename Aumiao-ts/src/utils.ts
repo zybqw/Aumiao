@@ -246,7 +246,7 @@ export async function moduleLoader(mods: string[]) {
 }
 
 export class Rejected extends Error {
-    static isRejected(r: any) {
+    static isRejected(r: any): r is Rejected {
         return r instanceof Rejected;
     }
 
@@ -337,7 +337,55 @@ export async function isFileExist(path: string) {
     }
 }
 
+export function sliceString(str: string, n: number): string[] {
+    return Array.from({ length: Math.ceil(str.length / n) }, (_, i) => str.slice(i * n, (i + 1) * n));
+}
+
+class LoadingTask {
+    static Frames = {
+        0: ["-", "\\", "|", "/"],
+        1: ['◴', '◷', '◶', '◵'],
+        2: ['◐', '◓', '◑', '◒'],
+        3: ['▖', '▘', '▝', '▗'],
+    }
+
+    text: string | undefined;
+    frame: keyof typeof LoadingTask.Frames;
+    _tick: number | undefined;
+    _interval: NodeJS.Timeout | undefined;
+    constructor(protected app: App, protected fallTask: FallTask, frame: keyof typeof LoadingTask.Frames = 0) {
+        this.frame = frame;
+    }
+    start(str: string) {
+        this.text = str;
+        this._interval = setInterval(() => this.tick(), 100);
+        return this;
+    }
+    end(str?: string) {
+        if (this._interval) clearInterval(this._interval);
+        const clearLine = '\r' + ' '.repeat(process.stdout.columns);
+        if (str) process.stdout.write(`${clearLine}\r${this.fallTask.getPrefix()} ${str}`);
+        else process.stdout.write(`${clearLine}\r`);
+    }
+    tick() {
+        if (this._tick === undefined) this._tick = 0;
+        else this._tick++;
+        let output = [this.fallTask.getPrefix(), this.getAnimation(this._tick), this.text].join(" ");
+        process.stdout.write(`\r${output}`);
+        return this;
+    }
+    setText(str: string) {
+        this.text = str;
+        return this;
+    }
+    getAnimation(tick: number) {
+        const frames = LoadingTask.Frames[this.frame];
+        return frames[tick % frames.length];
+    }
+}
+
 export class FallTask {
+    static LoadingTask = LoadingTask;
     static fall(app: App, tasks: string[]) {
         const fall = new FallTask(app);
         tasks.forEach((task, i) => {
@@ -355,8 +403,27 @@ export class FallTask {
         for (let i = 0; i < steps; i++) {
             this.app.Logger.tagless(`${this.app.UI.color.gray("│ ")}`);
         }
-        this.app.Logger.tagless(`${this.app.UI.color.gray("│ ")} ${str}`);
+        let o = str.split("\n")
+            .map((line, i) => line.length > process.stdout.columns - (this.getPrefix().length + 2)
+                ? sliceString(line, process.stdout.columns - (this.getPrefix().length + 2))
+                : line
+            )
+        o.forEach((line) => {
+            this.app.Logger.tagless(`${this.app.UI.color.gray("│ ")} ${line}`);
+        });
         return this;
+    }
+    waitForLoading<T>(
+        handler: (resolve: (message: string) => void, reject: (message: string) => void) => Promise<T>,
+        str: string,
+        frame: keyof typeof LoadingTask.Frames = 0
+    ) {
+        const loadingTask = new LoadingTask(this.app, this, frame);
+        loadingTask.start(this.app.UI.color.gray(str));
+        return handler(
+            (message: string) => loadingTask.end(this.app.UI.color.gray(message)),
+            (message: string) => (loadingTask.end(), this.error(message)),
+        );
     }
     end(str: string) {
         this.app.Logger.tagless(`${this.app.UI.color.gray("╰─")} ${str}`);
@@ -368,8 +435,11 @@ export class FallTask {
         });
         return this;
     }
-    async input(prompt: string) {
-        return await this.app.UI.input(prompt, this.app.UI.color.gray("│ "));
+    getPrefix() {
+        return this.app.UI.color.gray("│ ");
+    }
+    async input(prompt: string, options?: import("inquirer").InputQuestionOptions) {
+        return await this.app.UI.input(prompt, this.app.UI.color.gray("│ "), options);
     }
     async password(prompt: string) {
         return await this.app.UI.password(prompt, this.app.UI.color.gray("│ "));

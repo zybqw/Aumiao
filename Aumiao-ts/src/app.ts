@@ -9,6 +9,7 @@ import { CommandDefinition, ProgramDefinision } from "./types/command.js";
 import { route } from "./app/router.js";
 
 import { config } from "dotenv";
+import { GlobalOptions } from "./commands.js";
 
 const { program, Option } = commander;
 
@@ -28,7 +29,7 @@ export class App {
     static DefaultConfig: AppConfig = {
         debug: false,
         verbose: false,
-        envFile: path.resolve(import.meta.dirname, "../.env"), // equals to path.resolve(__dirname, "../.env")
+        envFile: path.resolve(import.meta.dirname, "../../.env"), // equals to path.resolve(__dirname, "../.env")
         tempDir: path.resolve(import.meta.dirname, "../temp"),
         allowStore: true,
     };
@@ -38,15 +39,13 @@ export class App {
     };
     static StaticConfig = {
         MAX_TRY: 128,
-        ART_TEXT: `
- ________  ___  ___  _____ ______   ___  ________  ________                     ___  ________      
-|\\   __  \\|\\  \\|\\  \\|\\   _ \\  _   \\|\\  \\|\\   __  \\|\\   __  \\                   |\\  \\|\\   ____\\     
-\\ \\  \\|\\  \\ \\  \\\\\\  \\ \\  \\\\\\__\\ \\  \\ \\  \\ \\  \\|\\  \\ \\  \\|\\  \\  ____________    \\ \\  \\ \\  \\___|_    
- \\ \\   __  \\ \\  \\\\\\  \\ \\  \\\\|__| \\  \\ \\  \\ \\   __  \\ \\  \\\\\\  \\|\\____________\\__ \\ \\  \\ \\_____  \\   
-  \\ \\  \\ \\  \\ \\  \\\\\\  \\ \\  \\    \\ \\  \\ \\  \\ \\  \\ \\  \\ \\  \\\\\\  \\|____________|\\  \\\\_\\  \\|____|\\  \\  
-   \\ \\__\\ \\__\\ \\_______\\ \\__\\    \\ \\__\\ \\__\\ \\__\\ \\__\\ \\_______\\            \\ \\________\\____\\_\\  \\ 
-    \\|__|\\|__|\\|_______|\\|__|     \\|__|\\|__|\\|__|\\|__|\\|_______|             \\|________|\\_________\\
-                                                                                       \\|_________|`,
+        ART_TEXT: `    ___       ___       ___       ___       ___       ___       ___       ___   
+   /\\  \\     /\\__\\     /\\__\\     /\\  \\     /\\  \\     /\\  \\     /\\  \\     /\\  \\  
+  /::\\  \\   /:/ _/_   /::L_L_   _\\:\\  \\   /::\\  \\   /::\\  \\    \\:\\  \\   /::\\  \\ 
+ /::\\:\\__\\ /:/_/\\__\\ /:/L:\\__\\ /\\/::\\__\\ /::\\:\\__\\ /:/\\:\\__\\   /::\\__\\ /\\:\\:\\__\\
+ \\/\\::/  / \\:\\/:/  / \\/_/:/  / \\::/\\/__/ \\/\\::/  / \\:\\/:/  /  /:/\\/__/ \\:\\:\\/__/
+   /:/  /   \\::/  /    /:/  /   \\:\\__\\     /:/  /   \\::/  /   \\/__/     \\::/  / 
+   \\/__/     \\/__/     \\/__/     \\/__/     \\/__/     \\/__/               \\/__/  `,
     };
     static EXIT_CODES = {
         SUCCESS: 0,
@@ -104,6 +103,9 @@ export class App {
             }).option("-d, --debug", "Enable debug logging", () => {
                 this.config.debug = true;
             });
+        GlobalOptions.forEach(option => {
+            this.program.option(option.flags, option.description, option.defaultValue);
+        });
         return this;
     }
     public registerCommand(command: CommandDefinition, parent = this.program, root: Record<string, any> = {}) {
@@ -112,7 +114,7 @@ export class App {
             .action(async () => {
                 await this.runCommand(cmd, command);
             });
-        command.options?.forEach(option => {
+        Array.from(new Set([...(command.options || []), ...GlobalOptions])).forEach(option => {
             cmd.option(option.flags, option.description, option.defaultValue);
         });
         parent.addCommand(cmd);
