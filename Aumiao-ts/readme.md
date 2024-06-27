@@ -29,13 +29,17 @@ Aumiao-ts 使用 TypeScript 进行编写，并且使用了更加现代化的统�
 
 ## 如何使用
 
-1. 安装 Node.js 18 或以上
-2. 运行 `npm install -g typescript` 下载编译工具
-3. 将仓库克隆到本地
-4. 在项目根目录中运行 `cd Aumiao-ts` 导航到子项目
-5. 运行 `npm i` 下载所需的依赖
-6. 运行 `npm run compile` 进行编译
-7. 运行 `node ./dist/index.js --help` 并且享受
+1. 安装Node.js 18或以上从 [Nodejs.org](https://nodejs.org/)
+2. 确保nodejs安装成功: `node --version && npm --version`
+3. 克隆仓库: `git clone https://github.com/zybqw/Aumiao.git && cd ./Aumiao/Aumiao-ts`
+4. 安装依赖: `node ./scripts/install.js`
+5. 启动！`node ./dist/index.js`
+
+### 一句话指令
+
+```bash
+git clone https://github.com/zybqw/Aumiao.git && cd ./Aumiao/Aumiao-ts && node ./scripts/install.js && node ./dist/index.js
+```
 
 ## TODO
 
