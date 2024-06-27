@@ -5,7 +5,8 @@ import { FallTask, createDirIfNotExist, deepMergeObject, isFileExist, readJSON, 
 
 export enum LoginType {
     Credentials = "credentials",
-    Cookie = "cookie"
+    Cookie = "cookie",
+    EnvCred = "env-cred"
 }
 export type LoginStored = {
     data: {
@@ -83,6 +84,7 @@ export default async function main(app: App) {
     let method = await app.UI.selectByObject("登录方式：", {
         "文本凭据": LoginType.Credentials,
         "Cookie": LoginType.Cookie,
+        "Env文件": LoginType.EnvCred
     });
     app.Logger.debug(`selected login method: ${method}`);
     await state.client.tryLogin(undefined, method as LoginType);

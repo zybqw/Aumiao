@@ -4,7 +4,7 @@ import { MessageCount, UserDetails } from "../types/api.js";
 import { Rejected, readObject } from "../utils.js";
 import { AuthProvider } from "./auth.js";
 import { Cookie } from "./auth/cookie.js";
-import { Cred } from "./auth/cred.js";
+import { Cred, EnvCred } from "./auth/cred.js";
 import { ua } from "./ua.js";
 
 type CodeMaoClientConfig = {
@@ -59,7 +59,8 @@ export class CodeMaoClient {
     getAuthProvider(type: LoginType): AuthProvider {
         return Reflect.construct(({
             [LoginType.Credentials]: Cred,
-            [LoginType.Cookie]: Cookie
+            [LoginType.Cookie]: Cookie,
+            [LoginType.EnvCred]: EnvCred
         })[type], [this.app, this])
     }
     async request<T>(endpoint: string, options: RequestInit): Promise<T | Rejected> {
