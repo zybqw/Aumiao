@@ -37,8 +37,16 @@ Aumiao-ts 使用 TypeScript 进行编写，并且使用了更加现代化的统�
 
 ### 一句话指令
 
+CMD (Windows >= 10)
+
 ```bash
 git clone https://github.com/zybqw/Aumiao.git && cd ./Aumiao/Aumiao-ts && node ./scripts/install.js && node ./dist/index.js
+```
+
+Windows PowerShell
+
+```bash
+git clone https://github.com/zybqw/Aumiao.git; cd .\Aumiao\Aumiao-ts; node .\scripts\install.js; node .\dist\index.js
 ```
 
 ## TODO
