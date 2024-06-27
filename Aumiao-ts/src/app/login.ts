@@ -91,7 +91,6 @@ export default async function main(app: App) {
         app.Logger.verbose(`stored login data to ${state.file}`);
     }
 
-    const fall = new FallTask(app);
     await MainPanel(app, state.client)();
     return;
 }
@@ -109,7 +108,6 @@ export function MainPanel(app: App, client: CodeMaoClient) {
                     .reduce((a, b) => a + b, 0))
         ]);
     
-        console.log(app.options)
         const panel = [
             `欢迎回来, ${userDetails?.nickname || ""} ${(!app.options[Opt.sensei]) ? "" : "Sensei!"}`,
             `ID: ${userDetails?.id || ""}`,
