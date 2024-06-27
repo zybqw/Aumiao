@@ -1,6 +1,8 @@
 import { App } from "../app.js";
 import { CodeMaoClient } from "../client/CodeMaoClient.js";
+import { tip } from "../client/tips.js";
 import { Opt } from "../commands.js";
+import { UserDetails } from "../types/api.js";
 import { FallTask, createDirIfNotExist, deepMergeObject, isFileExist, readJSON, readObject, resolve, writeJSON } from "../utils.js";
 
 import { dirname } from "path";
@@ -106,21 +108,26 @@ export async function tryLogin(app: App, client: CodeMaoClient, token: string): 
 
 export function MainPanel(app: App, client: CodeMaoClient) {
     return async () => {
+
+        let fall = new FallTask(app);
         const [
             userDetails,
             messageRecord
-        ] = await Promise.all([
-            client.syncDetails(true),
-            client.getMessageRecordCound()
-                .then(v => v?.filter(v => v.query_type === "COMMENT_REPLY")
-                    .map(v => v.count)
-                    .reduce((a, b) => a + b, 0))
-        ]);
+        ] = await fall.waitForLoading<Promise<[UserDetails | null, number | undefined]>>(async (resolve, reject) => {
+            return await Promise.all([
+                client.syncDetails(true),
+                client.getMessageRecordCound()
+                    .then(v => v?.filter(v => v.query_type === "COMMENT_REPLY")
+                        .map(v => v.count)
+                        .reduce((a, b) => a + b, 0))
+            ]).then(v => (resolve(""), v)).catch(v => (reject(v), v));
+        }, "正在获取用户信息…");
 
         const panel = [
-            `欢迎回来, ${userDetails?.nickname || ""} ${(!app.options[Opt.sensei]) ? "" : "Sensei!"}`,
-            `ID: ${userDetails?.id || ""}`,
-            `未读消息: ${app.UI.color.yellow(messageRecord ? messageRecord.toString() : "0")}`,
+            `${app.UI.color.gray("欢迎回来,")} ${userDetails?.nickname || ""} ${(!app.options[Opt.sensei]) ? "" : "Sensei!"}`,
+            `${app.UI.color.gray("ID:")} ${userDetails?.id || ""}`,
+            `${app.UI.color.gray("未读消息:")} ${app.UI.color.yellow(messageRecord ? messageRecord.toString() : "0")}`,
+            `${app.UI.color.gray("Tips: " + tip())}`
         ];
 
         FallTask.fall(app, panel);

@@ -3,8 +3,6 @@ import { FallTask } from "../../utils.js";
 import { CodeMaoClient, LoggedData } from "../CodeMaoClient.js";
 import { UserDetails } from "../../types/api.js";
 import { AuthProvider } from "../auth.js";
-import { LoginInfo } from "./cred.js";
-
 
 export class Cookie implements AuthProvider {
     constructor(protected app: App, protected client: CodeMaoClient) {}
@@ -22,7 +20,7 @@ export class Cookie implements AuthProvider {
         while (!state.authorization) {
             state.authorization = await fall.input("请输入你的cookie:");
             if (!state.authorization) {
-                fall.error("Cookie不能为空！\n如果你需要寻找你的cookie，请查看 ./Aumiao-py/README.md");
+                fall.error("Cookie不能为空！\n如果你需要寻找你的cookie，请查看 https://github.com/zybqw/Aumiao/blob/main/Aumiao-ts/docs/how-to-get-cookie.md");
             }
         }
 
