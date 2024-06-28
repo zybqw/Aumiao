@@ -4,7 +4,7 @@ import time
 from typing import Any, Dict, List, Optional, Union
 
 # 在获取任何数据时, 链接参数中的`offset`表示忽略前**个作品, `limit`获取之后的作品列表
-# offset为非必选项, limit为必选项, 且必须大于等于5, 小于等于200
+# offset为非必选项, limit为必选项,大多数必须大于等于5, 小于等于200
 # 获取某人作品列表limit无限制
 # user_id为一串数字, 但api返回时返回类型为字符串, 故在爬虫中采用字符串类型
 
@@ -45,6 +45,7 @@ except ModuleNotFoundError:
         # 如果安装失败,则退出程序
         print("安装requests库失败,请手动安装后再运行程序.")
         exit(1)
+session = requests.session()
 
 
 class CodeMaoData:
@@ -251,8 +252,7 @@ class CodeMaoClient:
     def __init__(self) -> None:
         self.data = CodeMaoData()
         self.tool = CodeMaoTool()
-        self.session = requests.Session()
-        self.session.headers.update(self.data.HEADERS)
+        global session
 
     def send_request(
         self,
@@ -260,11 +260,12 @@ class CodeMaoClient:
         method: str,
         params: Optional[Dict] = None,
         data: Any = None,
-        headers: Optional[Dict] = None,
+        headers: Dict = None,
     ) -> Optional[Any]:
+        headers = headers or self.data.HEADERS
         url = f"{self.data.BASE_URL}{url}"
         try:
-            response = self.session.request(
+            response = session.request(
                 method=method, url=url, headers=headers, params=params, data=data
             )
             response.raise_for_status()
@@ -305,10 +306,11 @@ class CodeMaoClient:
         response = self.send_request(
             method="get", url=f"/api/user/info/detail/{user_id}"
         )
-        return self.tool.process_reject(
+        result = self.tool.process_reject(
             data=response.json()["data"]["userInfo"],
             exclude=["work", "isFollowing"],
         )
+        return result
 
     # (详细)
     def get_user_details(self) -> Dict:
@@ -316,8 +318,7 @@ class CodeMaoClient:
             method="get",
             url="/web/users/details",
         )
-
-        return self.tool.process_reject(
+        result = self.tool.process_reject(
             data=response.json(),
             reserve=[
                 "id",
@@ -327,6 +328,7 @@ class CodeMaoClient:
                 "author_level",
             ],
         )
+        return result
 
     # 获取用户荣誉
     def get_user_honor(self, user_id: str) -> Dict:
@@ -336,7 +338,7 @@ class CodeMaoClient:
             method="get",
             params=params,
         )
-        return self.tool.process_reject(
+        result = self.tool.process_reject(
             data=response.json(),
             exclude=[
                 "avatar_url",
@@ -356,6 +358,7 @@ class CodeMaoClient:
                 "small_head_frame_url",
             ],
         )
+        return result
 
     # 获取个人作品列表的函数
     def get_user_works(self, user_id: str) -> List[Dict[str, str]]:
@@ -414,8 +417,8 @@ class CodeMaoClient:
         )
         return response.json()["data"]["nickname"]
 
-    def get_works(self, method: str, limit: int, offest: int = 0):
-        params = {"limit": limit, "offest": offest}
+    def get_works(self, method: str, limit: int, offset: int = 0):
+        params = {"limit": limit, "offset": offset}
         if method == "subject":
             url = "/creation-tools/v1/pc/discover/subject-work"
         elif method == "newest":
@@ -426,9 +429,10 @@ class CodeMaoClient:
             params=params,
         )  # 为防止封号,limit建议调大
         _dict = response.json()
-        return self.tool.process_reject(
+        result = self.tool.process_reject(
             data=_dict["items"], exclude=["preview_url", "avatar_url"]
         )
+        return result
 
     # 获取评论区特定信息
     def get_comments_detail(
@@ -586,6 +590,35 @@ class CodeMaoClient:
             _dict.extend(response.json()["items"][:reply_num])
         return _dict
 
+    # 获取工作室列表的函数
+    def get_work_shops(
+        self,
+        level: int = 4,
+        limit: int = 14,
+        works_limit: int = 4,
+        offset: int = 0,
+        sort: str = None,
+    ):  # 不要问我limit默认值为啥是14，因为api默认获取14个
+        # sort可以不填,参数为-latest_joined_at,-created_at这两个可以互换位置，但不能填一个
+        params = {
+            "level": level,
+            "works_limit": works_limit,
+            "limit": limit,
+            "offset": offset,
+            "sort": sort,
+        }
+        shops = self.fetch_all_data(
+            url="/web/work-shops/search",
+            params=params,
+            total_key="total",
+            data_key="items",
+        )
+        result = self.tool.process_reject(
+            data=shops,
+            reserve=["id", "name", "description", "total_works"],
+        )
+        return result
+
     # 登录函数, 处理登录逻辑并保存登录状态
     def login(
         self,
@@ -622,16 +655,14 @@ class CodeMaoClient:
             except (KeyError, ValueError) as err:
                 print(f"表达式输入不合法 {err}")
                 return False
-            self.session.cookies = self.cookie_pr(
-                cookie_dict, cookiejar=None, overwrite=True
-            )
             response = self.send_request(
                 url="/nemo/v2/works/174408420/like",
                 method="post",
                 data=json.dumps({}),
-                # headers={**HEADERS, "cookie": cookie_str},
+                headers={**self.data.HEADERS, "cookie": cookie_dict},
             )
         if response.status_code == 200:
+            session.cookies.update(response.cookies)  # 确保cookies被更新
             return True
         elif response.status_code == 403:
             return "Wrong"
@@ -644,14 +675,14 @@ class CodeMaoUnion:
 
     def __init__(self) -> None:
         self.tool = CodeMaoTool()
-        self.cilent = CodeMaoClient()
+        self.client = CodeMaoClient()
         self.data = CodeMaoData()
 
     # 清除作品广告的函数
     def clear_ad(self, keys) -> bool:
-        works_list = self.cilent.get_user_works(self.data.Account["id"])
+        works_list = self.client.get_user_works(self.data.Account["id"])
         for item0 in works_list:
-            comments = self.cilent.get_comments_detail(
+            comments = self.client.get_comments_detail(
                 work_id=item0["id"], method="comments"
             )
             work_id = item0["id"]
@@ -665,7 +696,7 @@ class CodeMaoUnion:
                     print(
                         "在作品 {} 中发现广告: {} ".format(item0["work_name"], content)
                     )
-                    response = self.cilent.send_request(
+                    response = self.client.send_request(
                         url=f"/creation-tools/v1/works/{work_id}/comment/{comment_id}",
                         method="delete",
                     )
@@ -683,6 +714,7 @@ class CodeMaoUnion:
                 url="/web/message-record/count",
                 method="get",
             )
+            print(record)
             counts = [record.json()[i]["count"] for i in range(3)]
             if all(count == 0 for count in counts):
                 return True  # 所有消息类型处理完毕
@@ -708,9 +740,9 @@ class CodeMaoUnion:
 
     # 给某人作品全点赞
     def like_all_work(self, user_id: str):
-        works_list = self.cilent.get_user_works(user_id)
+        works_list = self.client.get_user_works(user_id)
         for item in works_list:
-            response = self.cilent.send_request(
+            response = self.client.send_request(
                 url="/nemo/v2/works/{}/like".format(item["id"]),
                 method="post",
                 data=json.dumps({}),
@@ -721,5 +753,5 @@ class CodeMaoUnion:
 
 
 if __name__ == "__main__":
-    cilent = CodeMaoClient()
-    print(cilent.get_user_honor(user_id="12770114"))
+    client = CodeMaoClient()
+    print(client.get_work_shops(level=4, limit=1, works_limit=4, offset=0))
