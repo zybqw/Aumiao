@@ -17,6 +17,11 @@ const Options = {
     "sensei": {
         flags: "-n, --no-sensei",
         description: "禁止让面板叫你Sensei",
+    },
+    "force": {
+        flags: "-F, --force",
+        description: "强制执行",
+        defaultValue: false
     }
 }
 const Opt: Record<keyof typeof Options, any> = Object.fromEntries(Object.entries(Options).map(([key]) => [key, key])) as Record<keyof typeof Options, any>;
@@ -30,7 +35,7 @@ const Commands: CommandDefinition[] = [
     {
         name: "update",
         description: "更新整个Aumiao项目",
-        options: [],
+        options: [Options.force],
     }
 ]
 

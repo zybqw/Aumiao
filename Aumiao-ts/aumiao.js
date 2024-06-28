@@ -19,7 +19,7 @@ import { spawn } from "child_process";
     });
   }
   const args = process.argv.slice(2);
-  const child = spawn('node', ['./dist/index.js', args], { shell: true, stdio: 'inherit' });
+  const child = spawn('node', ['./dist/index.js', ...args], { shell: true, stdio: 'inherit' });
   child.on("close", (code) => {
     process.exit(code);
   });

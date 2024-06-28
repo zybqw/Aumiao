@@ -38,8 +38,6 @@ Aumiao-ts 使用 TypeScript 进行编写，并且使用了更加现代化的统�
 4. 克隆仓库: `git clone https://github.com/zybqw/Aumiao.git && cd ./Aumiao/Aumiao-ts`
 5. 启动`node aumiao`
 
-
-
 ### 一句话指令
 
 **需先安装Node.js和Git**
@@ -60,18 +58,10 @@ git clone https://github.com/zybqw/Aumiao.git; cd .\Aumiao\Aumiao-ts; node .\scr
 
 ### 通常
 
-CMD (Windows >= 10)
-
-使用git指令拉取最新更改并且编译
-
-```base
-git pull origin main && npm run compile
-```
-
-Windows PowerShell
+使用以下指令进行更新
 
 ```bash
-git pull origin main; npm run compile
+node aumiao update
 ```
 
 ### 出错了

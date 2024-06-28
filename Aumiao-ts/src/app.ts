@@ -66,9 +66,13 @@ export class App {
     commands: { [name: string]: commander.Command };
     envConfig: EnvConfig = App.DefaultEnvConfig;
     version: string;
+    activeCmd: commander.Command | null = null;
 
     get options() {
-        return this.program.opts();
+        return {
+            ...this.program.opts(),
+            ...(this.activeCmd ? this.activeCmd.opts() : {}),
+        };
     }
 
     constructor({
@@ -115,9 +119,10 @@ export class App {
         const cmd = new commander.Command(command.name)
             .description(command.description)
             .action(async () => {
+                this.activeCmd = cmd;
                 await this.runCommand(cmd, command);
             });
-        Array.from(new Set([...(command.options || []), ...GlobalOptions])).forEach(option => {
+        Array.from(new Set([...GlobalOptions, ...(command.options || [])])).forEach(option => {
             cmd.option(option.flags, option.description, option.defaultValue);
         });
         parent.addCommand(cmd);
