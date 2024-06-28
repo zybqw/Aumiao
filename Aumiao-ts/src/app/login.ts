@@ -22,7 +22,6 @@ const defaultStored: LoginStored = {
 };
 
 export default async function main(app: App) {
-    app.Logger.tagless(app.App.StaticConfig.ART_TEXT);
 
     const state: { file: string, stored: LoginStored, client: CodeMaoClient, localToken: string } = {
         file: "",

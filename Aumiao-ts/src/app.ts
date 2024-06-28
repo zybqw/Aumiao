@@ -139,6 +139,7 @@ export class App {
 
     protected async runCommand(command: commander.Command, config: CommandDefinition) {
         try {
+            this.Logger.tagless(this.App.StaticConfig.ART_TEXT);
             await route(config.name, this);
         } catch (err) {
             this.Logger.error("Crashed while executing the command: " + config.name || command.name());
