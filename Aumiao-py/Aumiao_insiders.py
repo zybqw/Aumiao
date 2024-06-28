@@ -440,45 +440,24 @@ class CodeMaoClient:
         work_id: int,
         method: str = "user_id",
     ) -> List[str] | List[Dict[str, int | bool]]:
-        result = []
-        try:
-            params = {"limit": 20, "offset": 0}
-            response = self.send_request(
-                url=f"/creation-tools/v1/works/{work_id}/comments",
-                method="get",
-                params=params,
+        params = {"limit": 15, "offset": 0}
+        comments = self.fetch_all_data(
+            url=f"/creation-tools/v1/works/{work_id}/comments",
+            params=params,
+            total_key="page_total",
+            data_key="items",
+        )
+        if method == "user_id":
+            result = [item["user"]["id"] for item in comments]
+        elif method == "comments":
+            result = self.tool.process_reject(
+                data=comments,
+                reserve=["id", "content", "is_top"],
             )
-            num = response.json().get("page_total")
-        except (KeyError, NameError) as err:
-            print(err)
-            return False
-        for item in range(
-            int(num / 20) + 1
-        ):  # 等效于num // 20 , floor(num / 20) ,int(num / 20)
-            try:
-                params = {"limit": 20, "offset": item * 20}
-                response = self.send_request(
-                    url=f"/creation-tools/v1/works/{work_id}/comments",
-                    method="get",
-                    params=params,
-                )  # limit 根据评论+回复综合来定
-                comments = response.text.json()("items")
-                if method == "user_id":
-                    result = [item["user"]["id"] for item in comments]
-                elif method == "comments":
-                    result.extend(
-                        self.tool.process_reject(
-                            data=comments,
-                            reserve=["id", "content", "is_top"],
-                        )
-                    )
-                else:
-                    print(f"不支持的请求方法{method}")
-            except (KeyError, NameError) as err:
-                print(err)
-                pass
-            return result
-        return False
+
+        else:
+            print(f"不支持的请求方法{method}")
+        return result
 
     # 获取工作室简介(简易,需登录工作室成员账号)
     def get_shops_simple(self):
@@ -754,4 +733,4 @@ class CodeMaoUnion:
 
 if __name__ == "__main__":
     client = CodeMaoClient()
-    print(client.get_work_shops(level=4, limit=1, works_limit=4, offset=0))
+    print(client.get_comments_detail(work_id=215246857, method="comments"))
