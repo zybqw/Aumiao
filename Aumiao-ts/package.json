@@ -1,5 +1,5 @@
 {
-  "name": "aumiao-js",
+  "name": "aumiao-ts",
   "version": "0.1.0",
   "description": "Aumiao for Javascript",
   "main": "./index.js",
