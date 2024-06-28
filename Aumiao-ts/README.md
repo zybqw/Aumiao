@@ -12,6 +12,10 @@ Aumiao-ts 与 Aumiao-py 实现的功能基本一致
 
 Aumiao-ts 使用 TypeScript 进行编写，并且使用了更加现代化的统一命令框架和界面
 
+## FAQ
+
+见 [faq.md](./docs/faq.md)
+
 ## 功能列表
 
 - [ ] 身份验证
@@ -72,6 +76,8 @@ node aumiao update
 
 - [如何获得Cookie](./docs/how-to-get-cookie.md)
 - [如何使用环境登录](./docs/how-to-use-env-login.md)
+- [常见问题一览](./docs/faq.md)
 
 ## TODO
 
+1. 用户行为
