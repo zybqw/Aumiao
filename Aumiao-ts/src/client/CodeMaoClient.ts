@@ -148,7 +148,7 @@ class API {
                     get: "/web/forums/posts/hots/all"
                 },
                 all: {
-                    get: "/web/forums/posts/all?ids="
+                    get: "/web/forums/posts/all/"
                 }
             }
         }
@@ -240,8 +240,8 @@ class API {
      * @param postIds 
      */
     public async getPostCaches(postIds: string[]) {
-        return await this.client.request<CommunityAPI.Post[]>(
-            this.getUrl(API.Endpoints.forum.post.all.get, postIds.join(",")),
+        return await this.client.request<{items: CommunityAPI.CachedPost[]}>(
+            this.getUrl(API.Endpoints.forum.post.all.get, "?ids=" + postIds.join(",")),
             {
                 method: "GET"
             }

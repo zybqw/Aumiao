@@ -42,7 +42,7 @@ export class Community {
             n_views: DataTypes.INTEGER,
             n_replies: DataTypes.INTEGER,
             n_comments: DataTypes.INTEGER,
-            is_cached: DataTypes.BOOLEAN,
+            is_cached: DataTypes.INTEGER,
             user: {
                 type: DataTypes.JSON,
                 get() {
@@ -75,7 +75,9 @@ export class Community {
     sync(options?: SyncOptions) {
         return this.model.sync(options as any);
     }
-    insert(data: CommunityAPI.Post) {
+    insert(data: Partial<CommunityAPI.Post> & {
+        is_cached: boolean | number;
+    }) {
         const {
             is_authorized,
             is_featured,
@@ -95,7 +97,7 @@ export class Community {
             id,
         });
     }
-    getFlags(data: CommunityAPI.Post): number[] {
+    getFlags(data: Partial<CommunityAPI.Post>): number[] {
         let flags: number[] = [];
         Object.keys(Community.Flags).forEach((key) => {
             if (key in data && !!data[key as keyof typeof Community.Flags]) {
@@ -160,11 +162,11 @@ export class Community {
             '\\$&'
         );
     }
-    async exec(query: string) {
+    async select(query: string): Promise<unknown[]> {
         const [results] = await this.database.sequelize.query(query, {
-            type: QueryTypes.SELECT
+            type: QueryTypes.SELECT,
         });
-        return results;
+        return [results];
     }
     async updateById(id: string, data: Partial<CommunityAPI.Post>) {
         return this.model.update(data, {

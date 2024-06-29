@@ -42,12 +42,16 @@ export default async function main(app: App) {
 
 async function editTable(app: App, db: Database) {
     const comDB = new Community(app, db);
-    await comDB.sync();
+    await comDB.sync({
+        alter: true
+    });
 
     if (!await app.UI.confirm(`你确定要编辑数据库吗？${app.UI.color.red("该操作会影响数据库的数据，并且无法撤销！")}`)) return;
 
     let query = await app.UI.input("请输入SQL查询语句（SQLite，仅限select）");
-    let result = await comDB.exec(query) as CommunityAPI.Post[];
+    let result = await comDB.select(query) as CommunityAPI.Post[];
+
+    app.Logger.debug(`查询结果: ${JSON.stringify(result, null, 2)}`);
     if (!result || !result.length) {
         app.Logger.info("没有找到任何数据");
         return;
@@ -65,7 +69,9 @@ async function editTable(app: App, db: Database) {
     );
 
     if (!await app.UI.confirm("你确定要保存更改吗？")) return;
-    await Promise.all(res["communities"].result);
+    await Promise.all(res["communities"].result.map(v => comDB.updateById(v.id as string, v)));
+
+    app.Logger.info("保存成功");
 }
 
 async function findPost(app: App, db: Database) {
@@ -127,7 +133,7 @@ async function findPost(app: App, db: Database) {
         return;
     }
     app.Logger.debug(JSON.stringify(target, null, 2));
-    if (!target || !target.title) {
+    if (!target || !target.id) {
         app.Logger.info("没有找到任何帖子");
         return;
     }
@@ -184,18 +190,17 @@ ID: ${rawPost.id}
 
 async function showReplies(app: App, db: Database, replies: CommunityAPI.Reply[]) {
     app.Logger.debug(`开始分页回复: ${JSON.stringify(replies, null, 2)}`);
-
-    let repliesPerPage = 10;
-    return await paginate(app, async (page) => {
-        return replies.slice((page) * repliesPerPage, (page + 1) * repliesPerPage)
-            .map(v => {
-                let content = removeHTMLTags(v.content).replace(/\n/g, "");
-                return {
-                    preview: `${v.user.nickname}: ${content.length > 20 ? (content?.slice(0, 15) + "…" || "") : content}`,
-                    content: content,
-                }
-            });
-    }, repliesPerPage, {});
+    let exited = false;
+    while (!exited) {
+        let reply: CommunityAPI.Reply = await app.UI.selectByObject("请选择回复", Object.fromEntries(replies.map(v => [
+            `${app.UI.color.gray(v.user?.nickname || "未知")}: ${removeHTMLTags(v.content).replace(/\n/g, "").slice(0, 20)}`,
+            v
+        ])));
+        (await app.UI.selectByObject(`${app.UI.color.gray(reply.user?.nickname || "未知") + ":"} ${reply.content}`, {
+            "返回": () => { },
+            "结束": () => exited = true,
+        }))();
+    }
 }
 
 async function exportPosts(app: App, db: Database) {
@@ -260,13 +265,6 @@ async function scrapePosts(app: App, db: Database) {
             }
             return { start, end };
         },
-        // "获取前300条帖子": async () => {
-        //     let posts = await client.api.getHotsPosts();
-        //     if (Rejected.isRejected(posts)) {
-        //         throw new Error(posts.toString());
-        //     }
-        //     return posts;
-        // }
     }))() as (string | number)[] | {
         start: number;
         end: number;
@@ -291,7 +289,7 @@ async function scrapePosts(app: App, db: Database) {
             }
         });
 
-    let pool = new TaskPool(5, 1000);
+    let pool = new TaskPool(5, 1000), waitForCached: string[] = [];
 
     app.Logger.debug(`开启池子`);
     let progr = await fall.waitForProgress<(CommunityAPI.Post | Rejected)[]>(async (resolve, reject, progress) => {
@@ -312,10 +310,13 @@ async function scrapePosts(app: App, db: Database) {
                     if (Rejected.isRejected(data)) {
                         progress.setText(`${app.UI.color.gray("获取" + post + "失败: " + data.toString())}`);
                         posts.push(data);
-                        await comDB.insertEmpty(post.toString());
+                        waitForCached.push(String(post));
                     } else {
                         posts.push(data);
-                        await comDB.insert(data);
+                        await comDB.insert({
+                            ...data,
+                            is_cached: 0,
+                        });
                     }
                     progress.setText(`${app.UI.color.gray("帖子" + post + "已获取")}`);
 
@@ -332,9 +333,67 @@ async function scrapePosts(app: App, db: Database) {
                 });
         });
     }, "正在初始化…", Array.isArray(target) ? target.length : target.end - target.start + 1);
+
+    let pool2 = new TaskPool(1, 1000);
+    let progr2 = await fall.waitForProgress<(CommunityAPI.CachedPost | Rejected)[]>(async (resolve, reject, progress) => {
+        return await new Promise<(CommunityAPI.CachedPost | Rejected)[]>((r, j) => {
+            let posts: (CommunityAPI.CachedPost | Rejected)[] = [], done = false, finished = 0;
+            while (!done) {
+                let postIds = waitForCached.splice(0, 30);
+                if (postIds.length === 0) {
+                    done = true;
+                    continue;
+                }
+                finished += postIds.length;
+                pool2.addTask(async () => {
+                    let _data = await client.api.getPostCaches(postIds);
+                    progress.incrementTask();
+                    if (Rejected.isRejected(_data)) {
+                        progr.push(_data);
+                        await Promise.all(
+                            postIds.map(id => comDB.insertEmpty(id))
+                        );
+                    } else {
+                        const { items: data } = _data;
+                        posts.push(...data);
+                        await Promise.all(
+                            data.map(v => (app.Logger.debug("cache" + v.id + JSON.stringify(v, null ,2)),comDB.insert({
+                                content: v.content,
+                                id: v.id,
+                                title: v.title,
+                                user: v.user,
+                                n_replies: v.n_replies,
+                                created_at: v.created_at,
+                                n_comments: v.n_comments,
+                                is_featured: v.is_featured,
+                                is_hotted: v.is_hotted,
+                                is_pinned: v.is_pinned,
+                                is_authorized: v.is_authorized,
+                                tutorial_flag: v.tutorial_flag,
+                                ask_help_flag: v.ask_help_flag,
+
+                                is_cached: 1,
+                            })))
+                        )
+                    }
+                });
+            }
+            pool2.start()
+                .then(() => {
+                    resolve("");
+                    r(posts);
+                })
+                .catch(() => {
+                    reject("");
+                    j(posts);
+                });
+        });
+    }, "正在从缓存还原已删除的帖子…", waitForCached.length % 30 === 0 ? waitForCached.length / 30 : Math.floor(waitForCached.length / 30) + 1);
+
+    let cached = progr2.filter(v => !Rejected.isRejected(v)) as CommunityAPI.CachedPost[];
     let success = progr.filter(v => !Rejected.isRejected(v)) as CommunityAPI.Post[];
     let failed = progr.filter(Rejected.isRejected) as Rejected[];
-    fall.end(app.UI.color.cyan(`成功获取${success.length}条帖子; 失败${failed.length}条帖子`));
+    fall.end(app.UI.color.cyan(`成功获取${success.length}条帖子; 失败${failed.length}条帖子; 从缓存还原${cached.length}条帖子`));
 }
 
 async function initDB(app: App, file: string) {

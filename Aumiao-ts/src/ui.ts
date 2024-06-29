@@ -22,7 +22,7 @@ const inq = (function () {
             if (!_inq) {
                 _inq = (await moduleLoader(["inquirer"]))[0];
                 if (!_tableInput) _tableInput = (await moduleLoader(["inquirer-table-input"]))[0];
-                _inq.default.registerPrompt("table-input", _tableInput);
+                _inq.default.registerPrompt("table-input", _tableInput.default);
             }
             return _inq.default;
         },

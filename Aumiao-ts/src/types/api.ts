@@ -53,14 +53,14 @@ export namespace UserAPI {
 
 export namespace CommunityAPI {
     export type User = {
-        id: string;
-        nickname: string;
-        avatar_url: string;
-        subject_id: number;
-        work_shop_name: string;
-        work_shop_level: number;
-        wuhan_medal: boolean; // unknown
-        has_signed: boolean;
+        id?: string;
+        nickname?: string;
+        avatar_url?: string;
+        subject_id?: number;
+        work_shop_name?: string;
+        work_shop_level?: number;
+        wuhan_medal?: boolean; // unknown
+        has_signed?: boolean;
     };
     export type Post = {
         id: string; // 帖子 ID
@@ -81,6 +81,24 @@ export namespace CommunityAPI {
         tutorial_flag: 0 | 1; // 是否为教程帖
         ask_help_flag: 0 | 1; // 是否为求助帖
     };
+    export type CachedPost = {
+        ask_help_flag: 0 | 1;
+        comment_user: User;
+        commented_at: number;
+        content: string;
+        created_at: number;
+        id: string;
+        is_authorized: boolean;
+        is_featured: boolean;
+        is_hotted: boolean;
+        is_pinned: boolean;
+        n_comments: number;
+        n_replies: number;
+        reply_user: User;
+        title: string;
+        tutorial_flag: 0 | 1;
+        user: User;
+    }
     export type Reply = {
         id: string;
         user: User;
