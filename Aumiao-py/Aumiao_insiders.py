@@ -157,17 +157,6 @@ class CodeMaoTool:
     def process_reject(
         self, data: List | Dict, reserve: List = None, exclude: List = None
     ) -> List | Dict:
-        """
-        Filters keys in a dictionary or list of dictionaries based on reserved or excluded keys.
-        Args:
-        data: List[Dict] or Dict - the input data to filter.
-        reserve: List[str] - keys to include in the output.
-        exclude: List[str] - keys to exclude from the output.
-        Returns:
-        List[Dict] or Dict - the filtered data.
-        Raises:
-        ValueError - if both reserve and exclude parameters are provided, or if the data type is unsupported.
-        """
         if reserve and exclude:
             raise ValueError(
                 "请仅提供 'reserve' 或 'exclude' 中的一个参数,不要同时使用."
@@ -185,14 +174,10 @@ class CodeMaoTool:
         elif isinstance(data, dict):
             return filter_keys(data)
         else:
-            raise ValueError("不支持的数据类型,仅接受列表或字典.")
+            raise ValueError("不支持的数据类型")
 
     # 通过点分隔的键路径从嵌套字典中获取值
     def get_by_path(self, data: Dict, path: str) -> Any:
-        """
-        :param data: 字典数据.
-        :param path: 键名的路径,用点分隔.
-        """
         keys = path.split(".")
         value = data
         for key in keys:
@@ -245,7 +230,7 @@ class CodeMaoTool:
             elif type == "dict":
                 file.write(json.dumps(text, ensure_ascii=False, indent=4))
             else:
-                print("不支持的写入方法")
+                raise ValueError("不支持的写入方法")
 
 
 class CodeMaoClient:
@@ -271,23 +256,23 @@ class CodeMaoClient:
             response.raise_for_status()
             return response
         except (HTTPError, ConnectionError, Timeout, RequestException) as err:
+            print(response.json())
             print(f"网络请求异常: {err}")
             return None
 
     def fetch_all_data(
-        self, url: str, params: Dict[str, any], total_key: str, data_key: str
+        self,
+        url: str,
+        params: Dict[str, any],
+        total_key: str,
+        data_key: str,
+        method: str = "offset",
+        args: Dict = {"limit": "limit", "offset": "offset"},
     ) -> List[Dict]:
-        """
-        通用的数据获取函数,用于处理带分页的API请求.
-        :param url: API的URL.
-        :param params: 请求参数.
-        :param total_key: JSON响应中表示总数的键名.
-        :param data_key: JSON响应中包含实际数据的键名..
-        """
         # 发送初始请求以获取总数
         initial_response = self.send_request(url=url, method="get", params=params)
         total_items = int(self.tool.get_by_path(initial_response.json(), total_key))
-        items_per_page = params["limit"]
+        items_per_page = params[args["limit"]]
         total_pages = (total_items // items_per_page) + (
             1 if total_items % items_per_page > 0 else 0
         )
@@ -295,7 +280,10 @@ class CodeMaoClient:
 
         # 遍历所有页面收集数据
         for page in range(total_pages):
-            params["offset"] = page * items_per_page
+            if method == "offset":
+                params[args["offset"]] = page * items_per_page
+            elif method == "page":
+                params[args["offset"]] = page + 1 if page != total_pages else page
             response = self.send_request(url=url, method="get", params=params)
             all_data.extend(self.tool.get_by_path(response.json(), data_key))
         return all_data
@@ -456,7 +444,7 @@ class CodeMaoClient:
             )
 
         else:
-            print(f"不支持的请求方法{method}")
+            raise ValueError("不支持的请求方法")
         return result
 
     # 获取工作室简介(简易,需登录工作室成员账号)
@@ -598,6 +586,54 @@ class CodeMaoClient:
         )
         return result
 
+    def clear_redpoint(self) -> bool:
+        item = 0
+        query_types = ["LIKE_FORK", "COMMENT_REPLY", "SYSTEM"]
+        while True:
+            # 检查是否所有消息类型的红点数为0
+            record = self.client.send_request(
+                url="/web/message-record/count",
+                method="get",
+            )
+            print(record)
+            counts = [record.json()[i]["count"] for i in range(3)]
+            if all(count == 0 for count in counts):
+                return True  # 所有消息类型处理完毕
+
+            # 如果还有未处理的消息,按类型查询并清理
+            params = {
+                "query_type": "ANYTHING",
+                "limit": 200,
+                "offset": item,
+            }
+            responses = {}
+            for query_type in query_types:
+                params["query_type"] = query_type
+                response = self.client.send_request(
+                    url="/web/message-record",
+                    method="get",
+                    params=params,
+                )
+                responses[query_type] = response.status_code
+            if any(status != 200 for status in responses.values()):
+                return False
+            item += 200
+
+    def get_posts_detials(self, ids: int | List):
+        if isinstance(ids, int):
+            params = {"ids": ids}
+        elif isinstance(ids, List):
+            params = {"ids": ",".join(map(str, ids))}
+        response = self.send_request(
+            url="/web/forums/posts/all", method="get", params=params
+        )
+        data = self.tool.process_reject(
+            data=response.json(),
+            reserve=["id", "title", "content", "created_at", "user"],
+        )
+
+        return data
+
     # 登录函数, 处理登录逻辑并保存登录状态
     def login(
         self,
@@ -684,53 +720,15 @@ class CodeMaoUnion:
                         return False
         return True
 
-    def clear_redpoint(self) -> bool:
-        item = 0
-        query_types = ["LIKE_FORK", "COMMENT_REPLY", "SYSTEM"]
-        while True:
-            # 检查是否所有消息类型的红点数为0
-            record = self.client.send_request(
-                url="/web/message-record/count",
-                method="get",
-            )
-            print(record)
-            counts = [record.json()[i]["count"] for i in range(3)]
-            if all(count == 0 for count in counts):
-                return True  # 所有消息类型处理完毕
-
-            # 如果还有未处理的消息,按类型查询并清理
-            params = {
-                "query_type": "ANYTHING",
-                "limit": 200,
-                "offset": item,
-            }
-            responses = {}
-            for query_type in query_types:
-                params["query_type"] = query_type
-                response = self.client.send_request(
-                    url="/web/message-record",
-                    method="get",
-                    params=params,
-                )
-                responses[query_type] = response.status_code
-            if any(status != 200 for status in responses.values()):
-                return False
-            item += 200
-
     # 给某人作品全点赞
     def like_all_work(self, user_id: str):
         works_list = self.client.get_user_works(user_id)
         for item in works_list:
-            response = self.client.send_request(
-                url="/nemo/v2/works/{}/like".format(item["id"]),
-                method="post",
-                data=json.dumps({}),
-            )
-            if response.status_code != 200:
+            if not self.client.like_work(work_id=item["id"]):
                 return False
         return True
 
 
 if __name__ == "__main__":
     client = CodeMaoClient()
-    print(client.get_comments_detail(work_id=215246857, method="comments"))
+    print(client.get_posts_detials(ids=682227))
