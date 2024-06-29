@@ -364,17 +364,20 @@ class LoadingTask {
         this._interval = setInterval(() => this.tick(), 100);
         return this;
     }
-    end(str?: string) {
-        if (this._interval) clearInterval(this._interval);
+    clearLine(str?: string) {
         const clearLine = '\r' + ' '.repeat(process.stdout.columns);
         if (str) process.stdout.write(`${clearLine}\r${this.fallTask.getPrefix()} ${str}`);
         else process.stdout.write(`${clearLine}\r`);
+    }
+    end(str?: string) {
+        if (this._interval) clearInterval(this._interval);
+        this.clearLine(str);
     }
     tick() {
         if (this._tick === undefined) this._tick = 0;
         else this._tick++;
         let output = [this.fallTask.getPrefix(), this.getAnimation(this._tick), this.text].join(" ");
-        process.stdout.write(`\r${output}`);
+        process.stdout.write(`\r${" ".repeat(process.stdout.columns - 2)}${output}`);
         return this;
     }
     setText(str: string) {
@@ -384,6 +387,66 @@ class LoadingTask {
     getAnimation(tick: number) {
         const frames = LoadingTask.Frames[this.frame];
         return frames[tick % frames.length];
+    }
+}
+
+class ProgressTask extends LoadingTask {
+    static MaxLength = 20;
+    static ProgressBarFrames = {
+        0: {
+            active: "█",
+            inactive: " "
+        }
+    }
+
+    maxTask: number;
+    currentTask: number;
+    pframe: keyof typeof ProgressTask.ProgressBarFrames;
+    constructor(
+        protected app: App, 
+        protected fallTask: FallTask, 
+        frame: keyof typeof LoadingTask.Frames = 0, 
+        pframe: keyof typeof ProgressTask.ProgressBarFrames = 0
+    ) {
+        super(app, fallTask, frame);
+
+        this.maxTask = this.currentTask = 0;
+        this.pframe = pframe;
+    }
+    setMaxTask(n: number) {
+        this.maxTask = n;
+        return this;
+    }
+    setCurrentTask(n: number) {
+        this.currentTask = n;
+        return this;
+    }
+    incrementTask() {
+        this.currentTask++;
+        return this;
+    }
+    tick() {
+        if (this._tick === undefined) this._tick = 0;
+        else this._tick++;
+        // let output = [this.fallTask.getPrefix(), this.getAnimation(this._tick), , this.text].join(" ");
+        let output = `${this.fallTask.getPrefix()} ${this.getAnimation(this._tick)} ${this.getProgressBar()} (${this.currentTask}/${this.maxTask}) ${this.text}`
+        process.stdout.write(`\r${output}`);
+        return this;
+    }
+    getProgressBar() {
+        let prefixLength = this.fallTask.getPrefix().length + 2;
+        let maxLength = (process.stdout.columns - prefixLength) > ProgressTask.MaxLength ? ProgressTask.MaxLength : process.stdout.columns;
+        let progress = Math.floor((this.currentTask / this.maxTask) * maxLength);
+        let bar = (this.getPFrame(true)).repeat(progress) + (this.getPFrame(false)).repeat(maxLength - progress);
+        return bar;
+    }
+    getPFrame(active: boolean) {
+        return ProgressTask.ProgressBarFrames[this.pframe][active ? "active" : "inactive"];
+    }
+    log(message: string) {
+        this.clearLine(message);
+        this.fallTask.step("");
+        return this;
     }
 }
 
@@ -427,6 +490,21 @@ export class FallTask {
             (message: string) => loadingTask.end(this.app.UI.color.gray(message ? message + "\n" : "")),
             (message: string) => (loadingTask.end(), this.error(message)),
             (text: string) => loadingTask.setText(this.app.UI.color.gray(text))
+        );
+    }
+    waitForProgress<T>(
+        handler: (resolve: (message: string) => void, reject: (message: string) => void, progress: ProgressTask) => Promise<T>,
+        str: string,
+        maxTask: number,
+        frame: keyof typeof LoadingTask.Frames = 0,
+        pframe: keyof typeof ProgressTask.ProgressBarFrames = 0
+    ) {
+        const progressTask = new ProgressTask(this.app, this, frame, pframe);
+        progressTask.start(this.app.UI.color.gray(str)).setMaxTask(maxTask);
+        return handler(
+            (message: string) => progressTask.end(this.app.UI.color.gray(message ? message + "\n" : "")),
+            (message: string) => (progressTask.end(), this.error(message)),
+            progressTask
         );
     }
     end(str: string) {
