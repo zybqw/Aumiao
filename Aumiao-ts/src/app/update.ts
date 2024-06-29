@@ -10,15 +10,13 @@ async function deleteDirectories(directories: string[]) {
 }
 
 export default async function main(app: App) {
-    app.Logger.tagless(app.App.StaticConfig.ART_TEXT);
-
     let fall = new FallTask(app);
     fall.start("当前版本：" + app.version);
     let task = await fall.waitForLoading(async (resolve, reject, setText) => {
         try {
             if (app.options[Opt.force]) {
                 setText("正在清理缓存…");
-                await deleteDirectories(['./node_modules/', './dist/', '../.git/']);
+                await deleteDirectories(['./node_modules/', './dist/']);
             }
             await execBash("git checkout main && git checkout . && git reset --hard && git pull origin main");
             setText("坐和放宽，我们正在重新安装…");

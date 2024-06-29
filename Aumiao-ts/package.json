@@ -13,8 +13,11 @@
   "license": "MIT",
   "types": "./src/types/index.d.ts",
   "dependencies": {
+    "@sequelize/sqlite3": "^7.0.0-alpha.41",
+    "@types/sequelize": "^4.28.20",
     "chalk": "^5.3.0",
     "commander": "^12.1.0",
+    "csv-writer": "^1.6.0",
     "dotenv": "^16.4.5",
     "inquirer": "^9.2.23"
   },

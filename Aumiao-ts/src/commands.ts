@@ -22,20 +22,41 @@ const Options = {
         flags: "-F, --force",
         description: "强制执行",
         defaultValue: false
+    },
+    "id": {
+        flags: "-i, --id <id>",
+        description: "用户ID",
     }
 }
-const Opt: Record<keyof typeof Options, any> = Object.fromEntries(Object.entries(Options).map(([key]) => [key, key])) as Record<keyof typeof Options, any>;
+const Opt: Record<keyof typeof Options, any> = 
+    Object.fromEntries(Object.entries(Options).map(([key]) => [key, key])) as Record<keyof typeof Options, any>;
 
-const Commands: CommandDefinition[] = [
+const Commands: (CommandDefinition & {
+    file: string;
+})[] = [
     {
         name: "login",
         description: "登录社区（单账户）",
         options: [Options.allowStore, Options.file, Options.env],
+        file: "login.js"
     },
     {
         name: "update",
         description: "更新整个Aumiao项目",
         options: [Options.force],
+        file: "update.js"
+    },
+    {
+        name: "info",
+        description: "显示其他用户的信息",
+        options: [Options.id],
+        file: "info.js"
+    },
+    {
+        name: "posts",
+        description: "爬取帖子",
+        options: [Options.file],
+        file: "posts.js"
     }
 ]
 

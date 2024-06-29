@@ -23,6 +23,7 @@ export type AppConfig = {
 export type EnvConfig = {
     CODEMAO_PASSWORD: string;
     CODEMAO_USERNAME: string;
+    CODEMAO_DB_FILE: string;
 }
 
 export class App {
@@ -36,6 +37,7 @@ export class App {
     static DefaultEnvConfig: EnvConfig = {
         CODEMAO_PASSWORD: "",
         CODEMAO_USERNAME: "",
+        CODEMAO_DB_FILE: "",
     };
     static StaticConfig = {
         MAX_TRY: 128,
@@ -139,6 +141,7 @@ export class App {
 
     protected async runCommand(command: commander.Command, config: CommandDefinition) {
         try {
+            this.Logger.tagless(this.App.StaticConfig.ART_TEXT);
             await route(config.name, this);
         } catch (err) {
             this.Logger.error("Crashed while executing the command: " + config.name || command.name());
