@@ -3,6 +3,7 @@ import { App } from "./app.js";
 import * as path from "path";
 import { pathToFileURL } from 'url';
 import fs from "fs/promises";
+import { createObjectCsvWriter } from "csv-writer";
 
 type LogLevel = "INFO" | "ERROR" | "DEBUG" | "WARN" | "LOG" | "VERBOSE" | "UNKNOWN";
 type LogLevelConfig = {
@@ -342,6 +343,14 @@ export async function isFileExist(path: string) {
 
 export function sliceString(str: string, n: number): string[] {
     return Array.from({ length: Math.ceil(str.length / n) }, (_, i) => str.slice(i * n, (i + 1) * n));
+}
+
+export function writeJSONToCSV(obj: Record<string, any>[], headers: {id: string, title: string}[], file: string) {
+    let writer = createObjectCsvWriter({
+        path: file,
+        header: headers
+    });
+    return writer.writeRecords(obj);
 }
 
 class LoadingTask {

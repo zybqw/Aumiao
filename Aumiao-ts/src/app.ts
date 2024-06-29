@@ -23,6 +23,7 @@ export type AppConfig = {
 export type EnvConfig = {
     CODEMAO_PASSWORD: string;
     CODEMAO_USERNAME: string;
+    CODEMAO_DB_FILE: string;
 }
 
 export class App {
@@ -36,6 +37,7 @@ export class App {
     static DefaultEnvConfig: EnvConfig = {
         CODEMAO_PASSWORD: "",
         CODEMAO_USERNAME: "",
+        CODEMAO_DB_FILE: "",
     };
     static StaticConfig = {
         MAX_TRY: 128,

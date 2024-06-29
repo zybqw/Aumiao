@@ -4,10 +4,10 @@ import { CommunityScraper } from "../client/scrape/community.js";
 import { Community } from "../client/store/sqlite/community.js";
 import { Database } from "../client/store/sqlite/db.js";
 import { CommunityAPI } from "../types/api.js";
-import { FallTask, Rejected, TaskPool } from "../utils.js";
+import { FallTask, Rejected, TaskPool, resolve, writeJSONToCSV } from "../utils.js";
 
 export default async function main(app: App) {
-    const dbFile = await app.UI.input("请输入数据库位置(输入以.sqlite为结尾的文件路径将创建一个数据库)");
+    const dbFile = app.envConfig.CODEMAO_DB_FILE || await app.UI.input("请输入数据库位置(输入以.sqlite为结尾的文件路径将创建一个数据库)");
     app.Logger.info(`数据库位置: ${dbFile}`);
 
     const db = await initDB(app, dbFile);
@@ -19,15 +19,55 @@ export default async function main(app: App) {
 
     const selected = await app.UI.selectByObject("请选择操作", {
         "爬取帖子": () => scrapePosts(app, db),
+        "导出帖子": () => exportPosts(app, db),
     });
 
     try {
         await selected();
     } catch (error: any) {
         app.Logger.error(`操作失败: ${error.toString()}`);
-    } finally {
         db.close();
+        return;
     }
+    db.close();
+}
+
+async function exportPosts(app: App, db: Database) {
+    const comDB = new Community(app, db);
+    let fall = new FallTask(app);
+
+    let count = await comDB.getTotalNumber(), path = app.options["file"] || resolve(app.config.tempDir, `exports_posts-${Date.now()}.csv`);
+    if (count <= 0) {
+        app.UI.color.yellow("没有帖子可以导出");
+        return;
+    }
+    if (!await app.UI.confirm(
+        `你确定要导出所有的帖子吗？该操作将会影响 ${app.UI.color.red(count.toString())} 条帖子！`
+    )) return;
+
+    fall.start(`导出 ${app.UI.color.yellow(count.toString())} 条帖子`);
+    await fall.waitForLoading(async (resolve, reject) => {
+        let posts = await comDB.getAllPosts();
+        if (Rejected.isRejected(posts)) {
+            reject(posts.toString());
+            return;
+        }
+        let headers = Object.keys(posts[0].get()).map(v=>({
+            title: v,
+            id: v
+        })), data = posts.map(v=> {
+            let r = v.get();
+            return Object.fromEntries(Object.entries(r).map(([k, v]: [any, any]) => [k, 
+                typeof v === "object" && v !== null ? JSON.stringify(v) : v
+            ]));
+        });
+        await writeJSONToCSV(data, headers, path);
+        resolve("");
+        return;
+    }, "正在导出…");
+
+    fall.end(`导出完成: ${app.UI.color.gray(path)}`);
+    return;
 }
 
 async function scrapePosts(app: App, db: Database) {
