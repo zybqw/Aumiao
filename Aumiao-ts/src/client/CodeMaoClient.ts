@@ -79,7 +79,12 @@ export class CodeMaoClient {
             }
         });
         if (!res.ok) {
-            return new Rejected(`Request failed with status ${res.status}: ${res.statusText}`, res.status);
+            try {
+                let msg = await res.json();
+                return new Rejected(`Request failed with status ${res.status}: ${msg?.error_message || JSON.stringify(msg)}` , res.status);
+            } catch {
+                return new Rejected(`Request failed with status ${res.status}: ${res.statusText}`, res.status);
+            }
         }
         return await res.json() as T;
     }
@@ -141,6 +146,9 @@ class API {
                 },
                 hots: {
                     get: "/web/forums/posts/hots/all"
+                },
+                all: {
+                    get: "/web/forums/posts/all?ids="
                 }
             }
         }
@@ -216,9 +224,24 @@ class API {
             }
         )
     }
+    /**
+     * 获得前三百个热门帖子
+     */
     public async getHotsPosts(): Promise<string[] | Rejected> {
         return await this.client.request<string[]>(
             this.getUrl(API.Endpoints.forum.post.hots.get),
+            {
+                method: "GET"
+            }
+        )
+    }
+    /**
+     * 获取帖子缓存，同时上限为30，不一定所有的帖子都会被返回
+     * @param postIds 
+     */
+    public async getPostCaches(postIds: string[]) {
+        return await this.client.request<CommunityAPI.Post[]>(
+            this.getUrl(API.Endpoints.forum.post.all.get, postIds.join(",")),
             {
                 method: "GET"
             }

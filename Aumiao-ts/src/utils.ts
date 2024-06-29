@@ -474,15 +474,16 @@ export class FallTask {
         this.app.Logger.tagless(`${this.app.UI.color.gray("╭─")} ${str}`);
         return this;
     }
-    step(str: string, steps = 0) {
+    step(str: string, steps = 0, space = 0) {
         for (let i = 0; i < steps; i++) {
             this.app.Logger.tagless(`${this.app.UI.color.gray("│ ")}`);
         }
         let o = str.split("\n")
-            .map((line, i) => line.length > process.stdout.columns - (this.getPrefix().length + 2)
+            .map((line) => line.length > process.stdout.columns - (this.getPrefix().length + 2)
                 ? sliceString(line, process.stdout.columns - (this.getPrefix().length + 2))
                 : line
             )
+            .map((line) => " ".repeat(space) + line);
         o.forEach((line) => {
             this.app.Logger.tagless(`${this.app.UI.color.gray("│ ")} ${line}`);
         });
@@ -567,4 +568,8 @@ export async function execBash(command: string) {
             else resolve(stdout);
         });
     });
+}
+
+export function removeHTMLTags(str: string) {
+    return str.replace(/<[^>]*>/g, '');
 }

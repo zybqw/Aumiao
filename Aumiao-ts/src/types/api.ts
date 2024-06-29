@@ -111,7 +111,8 @@ export namespace CommunityAPI {
         items: number[];
     };
     export type PostDetails = Post & {
-        replies: Replies;
+        replies: Reply[];
+        is_cached: boolean;
     }
 }
 
