@@ -38,7 +38,7 @@ moduleLoader([pathToFileURL(path.resolve(path.dirname(fileURLToPath(import.meta.
         }).registerProgram({
             name: 'aumiao-js',
             description: 'Aumiao-JS',
-            version: '0.1.0'
+            version: '0.2.0'
         }).registerCommands(
             Commands
         ).start();
