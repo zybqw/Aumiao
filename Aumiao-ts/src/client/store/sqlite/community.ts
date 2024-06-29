@@ -43,7 +43,7 @@ export class Community {
             replies: {
                 type: DataTypes.JSON,
                 get() {
-                    return this.getDataValue('replies').items as CommunityAPI.Reply[];
+                    return !this.getDataValue('replies') ? [] : this.getDataValue('replies').items as CommunityAPI.Reply[];
                 },
                 set(value: CommunityAPI.Reply[]) {
                     this.setDataValue('replies', { items: value });
@@ -52,7 +52,7 @@ export class Community {
             flags: {
                 type: DataTypes.JSON,
                 get() {
-                    return this.getDataValue('flags').items as number[];
+                    return !this.getDataValue('flags') ? [] : this.getDataValue('flags').items as number[];
                 },
                 set(value: number[]) {
                     this.setDataValue('flags', { items: value });
@@ -102,5 +102,11 @@ export class Community {
         return this.model.findOne({
             where: { id }
         });
+    }
+    async getTotalNumber() {
+        return this.model.count();
+    }
+    async getAllPosts() {
+        return this.model.findAll();
     }
 }

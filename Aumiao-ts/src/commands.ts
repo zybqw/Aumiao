@@ -55,7 +55,7 @@ const Commands: (CommandDefinition & {
     {
         name: "posts",
         description: "爬取帖子",
-        options: [],
+        options: [Options.file],
         file: "posts.js"
     }
 ]
