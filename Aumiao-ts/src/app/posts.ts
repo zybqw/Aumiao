@@ -1,0 +1,143 @@
+import { App } from "../app.js";
+import { CodeMaoClient } from "../client/CodeMaoClient.js";
+import { CommunityScraper } from "../client/scrape/community.js";
+import { Community } from "../client/store/sqlite/community.js";
+import { Database } from "../client/store/sqlite/db.js";
+import { CommunityAPI } from "../types/api.js";
+import { FallTask, Rejected, TaskPool } from "../utils.js";
+
+export default async function main(app: App) {
+    const dbFile = await app.UI.input("请输入数据库位置(输入以.sqlite为结尾的文件路径将创建一个数据库)");
+    app.Logger.info(`数据库位置: ${dbFile}`);
+
+    const db = await initDB(app, dbFile);
+    if (Rejected.isRejected(db)) {
+        app.Logger.error(`数据库初始化失败: ${db.toString()}`);
+        return;
+    }
+    app.Logger.info("数据库初始化成功");
+
+    const selected = await app.UI.selectByObject("请选择操作", {
+        "爬取帖子": () => scrapePosts(app, db),
+    });
+
+    try {
+        await selected();
+    } catch (error: any) {
+        app.Logger.error(`操作失败: ${error.toString()}`);
+    } finally {
+        db.close();
+    }
+}
+
+async function scrapePosts(app: App, db: Database) {
+    const client = new CodeMaoClient({ app });
+    const comDB = new Community(app, db);
+    const scraper = new CommunityScraper(app, client);
+    let fall = new FallTask(app);
+
+    await comDB.sync();
+
+    const target = await (await app.UI.selectByObject("请选择爬取目标", {
+        "特定ID帖子": async () => [await fall.input("请输入帖子ID")],
+        "帖子ID范围": async () => {
+            const start = parseInt(await fall.input("请输入起始ID", {
+                validate: (v) => !isNaN(parseInt(v)),
+            }));
+            const end = parseInt(await fall.input("请输入结束ID", {
+                validate: (v) => !isNaN(parseInt(v)),
+            }));
+            if (end < start) {
+                throw new Error("结束ID不能小于起始ID");
+            }
+            return { start, end };
+        },
+        // "获取前300条帖子": async () => {
+        //     let posts = await client.api.getHotsPosts();
+        //     if (Rejected.isRejected(posts)) {
+        //         throw new Error(posts.toString());
+        //     }
+        //     return posts;
+        // }
+    }))() as (string | number)[] | {
+        start: number;
+        end: number;
+    };
+
+    app.Logger.debug(`开始爬取帖子: ${JSON.stringify(target)}`);
+    fall.start(`开始爬取帖子: ${
+        Array.isArray(target) ?(
+            target.length > 1 ? `${target.length}条帖子` : `帖子${target[0]}`
+        ) : `${target.start} ~ ${target.end}`
+    }`);
+
+    let i = Array.isArray(target) ? 0 : target.start;
+    let nextPost = Array.isArray(target) ?
+        (function* () {
+            while (i < target.length) {
+                yield target[i++];
+            }
+        }) :
+        (function* () {
+            while (i <= target.end) {
+                yield i++;
+            }
+        });
+
+    let pool = new TaskPool(5, 1000);
+
+    app.Logger.debug(`开启池子`);
+    let progr = await fall.waitForProgress<(CommunityAPI.Post | Rejected)[]>(async (resolve, reject, progress) => {
+
+        app.Logger.debug(`开始爬取帖子`);
+        return await new Promise<(CommunityAPI.Post | Rejected)[]>((r, j) => {
+            let posts: (CommunityAPI.Post | Rejected)[] = [];
+            for (let post of nextPost()) {
+                pool.addTask(async () => {
+                    if (await comDB.isIdExists(post.toString())) {
+                        progress.incrementTask();
+                        progress.setText(`${app.UI.color.gray("帖子" + post + "已存在")}`);
+                        return;
+                    }
+
+                    let data = await scraper.getPost(post.toString());
+                    progress.incrementTask();
+                    if (Rejected.isRejected(data)) {
+                        // progress.log(`${app.UI.color.red("获取" + post + "失败: " + data.toString())}`);
+                        progress.setText(`${app.UI.color.gray("获取" + post + "失败: " + data.toString())}`);
+                        posts.push(data);
+                        await comDB.insertEmpty(post.toString());
+                    } else {
+                        posts.push(data);
+                        await comDB.insert(data);
+                    }
+                    progress.setText(`${app.UI.color.gray("帖子" + post + "已获取")}`);
+
+                });
+            }
+            pool.start()
+                .then(() => {
+                    resolve("");
+                    r(posts);
+                })
+                .catch(() => {
+                    reject("");
+                    j(posts);
+                });
+        });
+    }, "正在初始化…", Array.isArray(target) ? target.length : target.end - target.start + 1);
+    let success = progr.filter(v => !Rejected.isRejected(v)) as CommunityAPI.Post[];
+    let failed = progr.filter(Rejected.isRejected) as Rejected[];
+    fall.end(app.UI.color.cyan(`成功获取${success.length}条帖子; 失败${failed.length}条帖子`));
+
+}
+
+async function initDB(app: App, file: string) {
+    let db = new Database({
+        file,
+        app,
+    });
+    let auth = await db.authenticate();
+    if (Rejected.isRejected(auth)) return auth;
+    return db;
+}
