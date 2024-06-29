@@ -19,7 +19,9 @@
     "commander": "^12.1.0",
     "csv-writer": "^1.6.0",
     "dotenv": "^16.4.5",
-    "inquirer": "^9.2.23"
+    "inquirer": "^9.2.23",
+    "inquirer-table-input": "^0.0.3",
+    "sequelize": "^6.37.3"
   },
   "devDependencies": {
     "@types/inquirer": "^9.0.7"

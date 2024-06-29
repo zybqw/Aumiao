@@ -2,6 +2,8 @@ import { ModelStatic, DataTypes } from '@sequelize/core';
 import { App } from '../../../app.js';
 import { Database } from './db.js';
 import { CommunityAPI } from '../../../types/api.js';
+import { FindOptions, Model, Op, QueryTypes, SyncOptions } from 'sequelize';
+import { Rejected } from '../../../utils.js';
 
 type StoredFlags = Pick<
     CommunityAPI.Post,
@@ -12,6 +14,7 @@ type StoredFlags = Pick<
     | 'tutorial_flag'
     | 'ask_help_flag'
 >;
+
 export class Community {
     static Flags: {
         [K in keyof StoredFlags]: number
@@ -23,7 +26,6 @@ export class Community {
             tutorial_flag: 4,
             ask_help_flag: 5
         }
-
     model: ModelStatic;
     constructor(protected app: App, protected database: Database) {
         this.model = database.sequelize.define('community', {
@@ -40,6 +42,16 @@ export class Community {
             n_views: DataTypes.INTEGER,
             n_replies: DataTypes.INTEGER,
             n_comments: DataTypes.INTEGER,
+            is_cached: DataTypes.BOOLEAN,
+            user: {
+                type: DataTypes.JSON,
+                get() {
+                    return this.getDataValue('user') as CommunityAPI.User;
+                },
+                set(value: CommunityAPI.User) {
+                    this.setDataValue('user', value);
+                }
+            },
             replies: {
                 type: DataTypes.JSON,
                 get() {
@@ -60,8 +72,8 @@ export class Community {
             }
         });
     }
-    sync() {
-        return this.model.sync();
+    sync(options?: SyncOptions) {
+        return this.model.sync(options as any);
     }
     insert(data: CommunityAPI.Post) {
         const {
@@ -98,15 +110,65 @@ export class Community {
             attributes: ['id']
         }));
     }
-    async getPostById(id: string) {
-        return this.model.findOne({
-            where: { id }
-        });
+    async getPostById(id: string, options?: FindOptions): Promise<CommunityAPI.PostDetails | Rejected> {
+        try {
+            return (await this.model.findOne({
+                where: { id },
+                ...(options || {}) as any
+            }))?.get({
+                plain: true
+            });
+        } catch (e: any) {
+            return new Rejected(e);
+        }
     }
     async getTotalNumber() {
         return this.model.count();
     }
     async getAllPosts() {
         return this.model.findAll();
+    }
+
+    async matchByTitle(title: string, options?: FindOptions) {
+        return this.model.findAll({
+            where: {
+                title: {
+                    [Op.like]: `%${this.replaceQuery(title)}%`
+                }
+            },
+            ...(options || {}) as any
+        });
+    }
+    async matchByContent(content: string, options?: FindOptions) {
+        return this.model.findAll({
+            where: {
+                content: {
+                    [Op.like]: `%${this.replaceQuery(content)}%`
+                }
+            },
+            ...(options || {}) as any
+        });
+    }
+    async deletePostById(id: string) {
+        return this.model.destroy({
+            where: { id }
+        });
+    }
+    replaceQuery(query: string) {
+        return query.replace(
+            /[\[\]{}()*+?.,\\^$|#\s]/g,
+            '\\$&'
+        );
+    }
+    async exec(query: string) {
+        const [results] = await this.database.sequelize.query(query, {
+            type: QueryTypes.SELECT
+        });
+        return results;
+    }
+    async updateById(id: string, data: Partial<CommunityAPI.Post>) {
+        return this.model.update(data, {
+            where: { id }
+        });
     }
 }

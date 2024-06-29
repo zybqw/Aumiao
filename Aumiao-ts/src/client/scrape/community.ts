@@ -3,9 +3,6 @@ import { CommunityAPI } from "../../types/api.js";
 import { Rejected } from "../../utils.js";
 import { CodeMaoClient } from "../CodeMaoClient.js";
 
-class CommunityScraperTask {
-    constructor(protected app: App, protected client: CodeMaoClient) { }
-}
 
 export class CommunityScraper {
     constructor(protected app: App, protected client: CodeMaoClient) { }

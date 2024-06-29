@@ -109,6 +109,10 @@ export namespace CommunityAPI {
     };
     export type Hots = {
         items: number[];
+    };
+    export type PostDetails = Post & {
+        replies: Reply[];
+        is_cached: boolean;
     }
 }
 
