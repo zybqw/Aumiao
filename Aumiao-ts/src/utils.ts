@@ -375,7 +375,7 @@ class LoadingTask {
     }
     clearLine(str?: string) {
         const clearLine = '\r' + ' '.repeat(process.stdout.columns);
-        if (str) process.stdout.write(`${clearLine}\r${this.fallTask.getPrefix()} ${str}`);
+        if (str && str.length) process.stdout.write(`${clearLine}\r${this.fallTask.getPrefix()} ${str}`);
         else process.stdout.write(`${clearLine}\r`);
     }
     end(str?: string) {
@@ -385,8 +385,8 @@ class LoadingTask {
     tick() {
         if (this._tick === undefined) this._tick = 0;
         else this._tick++;
-        let output = [this.fallTask.getPrefix(), this.getAnimation(this._tick), this.text].join(" ");
-        process.stdout.write(`\r${" ".repeat(process.stdout.columns - 2)}${output}`);
+        let output = [this.getAnimation(this._tick), this.text].join(" ");
+        this.clearLine(output);
         return this;
     }
     setText(str: string) {
