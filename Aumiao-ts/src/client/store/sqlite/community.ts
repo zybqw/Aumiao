@@ -2,6 +2,8 @@ import { ModelStatic, DataTypes } from '@sequelize/core';
 import { App } from '../../../app.js';
 import { Database } from './db.js';
 import { CommunityAPI } from '../../../types/api.js';
+import { Model, Op } from 'sequelize';
+import { Rejected } from '../../../utils.js';
 
 type StoredFlags = Pick<
     CommunityAPI.Post,
@@ -12,6 +14,7 @@ type StoredFlags = Pick<
     | 'tutorial_flag'
     | 'ask_help_flag'
 >;
+
 export class Community {
     static Flags: {
         [K in keyof StoredFlags]: number
@@ -98,15 +101,46 @@ export class Community {
             attributes: ['id']
         }));
     }
-    async getPostById(id: string) {
-        return this.model.findOne({
-            where: { id }
-        });
+    async getPostById(id: string): Promise<CommunityAPI.PostDetails | Rejected> {
+        try {
+            return (await this.model.findOne({
+                where: { id }
+            }))?.get({
+                plain: true
+            });
+        } catch (e: any) {
+            return new Rejected(e);
+        }
     }
     async getTotalNumber() {
         return this.model.count();
     }
     async getAllPosts() {
         return this.model.findAll();
+    }
+
+    async matchByTitle(title: string) {
+        return this.model.findAll({
+            where: {
+                title: {
+                    [Op.like]: `%${this.replaceQuery(title)}%`
+                }
+            }
+        });
+    }
+    async matchByContent(content: string) {
+        return this.model.findAll({
+            where: {
+                content: {
+                    [Op.like]: `%${this.replaceQuery(content)}%`
+                }
+            }
+        });
+    }
+    replaceQuery(query: string) {
+        return query.replace(
+            /[\[\]{}()*+?.,\\^$|#\s]/g,
+            '\\$&'
+        );
     }
 }
