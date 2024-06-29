@@ -571,5 +571,5 @@ export async function execBash(command: string) {
 }
 
 export function removeHTMLTags(str: string) {
-    return str.replace(/<[^>]*>/g, '');
+    return str.replace(/<script.*?>.*?<\/script\s*>/gis, '').replace(/<[^>]*>/g, '');
 }
