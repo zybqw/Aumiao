@@ -109,6 +109,9 @@ export namespace CommunityAPI {
     };
     export type Hots = {
         items: number[];
+    };
+    export type PostDetails = Post & {
+        replies: Replies;
     }
 }
 

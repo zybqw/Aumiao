@@ -19,6 +19,7 @@ export default async function main(app: App) {
 
     const selected = await app.UI.selectByObject("请选择操作", {
         "爬取帖子": () => scrapePosts(app, db),
+        "查找帖子": () => findPost(app, db),
         "导出帖子": () => exportPosts(app, db),
     });
 
@@ -32,9 +33,62 @@ export default async function main(app: App) {
     db.close();
 }
 
+async function findPost(app: App, db: Database) {
+    const comDB = new Community(app, db);
+    
+    await comDB.sync();
+
+    const target = await (await app.UI.selectByObject("请选择查找方式", {
+        "匹配标题": async () => comDB.matchByTitle(await app.UI.input("标题: ")),
+        "匹配正文": async () => comDB.matchByContent(await app.UI.input("正文: ")),
+    }))();
+
+    if (Rejected.isRejected(target)) {
+        app.Logger.error(`查找失败: ${target.toString()}`);
+        return;
+    }
+    if (target.length <= 0) {
+        app.Logger.info("没有找到任何帖子");
+        return;
+    }
+    await showPost(app, db, target[0].id);
+}
+
+async function showPost(app: App, db: Database, id: string) {
+    const comDB = new Community(app, db);
+    let fall = new FallTask(app);
+
+    await comDB.sync();
+
+    fall.start(`获取ID为 ${app.UI.color.yellow(id)} 的帖子`);
+
+    let rawPost = await fall.waitForLoading<CommunityAPI.PostDetails | null>(async (resolve, reject) => {
+        let post = await comDB.getPostById(id);
+        if (Rejected.isRejected(post)) {
+            reject(post.toString());
+            return null;
+        }
+        resolve("");
+        return post;
+    }, "正在获取…");
+
+    if (!rawPost) {
+        fall.end(app.UI.color.red("获取失败"));
+        return;
+    }
+    fall.step(`帖子信息:
+ID: ${rawPost.id}
+标题: ${rawPost.title}
+内容: ${rawPost.content}
+作者: ${rawPost.user.nickname}
+回复数量: ${rawPost.n_replies}`);
+}
+
 async function exportPosts(app: App, db: Database) {
     const comDB = new Community(app, db);
     let fall = new FallTask(app);
+
+    await comDB.sync();
 
     let count = await comDB.getTotalNumber(), path = app.options["file"] || resolve(app.config.tempDir, `exports_posts-${Date.now()}.csv`);
     if (count <= 0) {
