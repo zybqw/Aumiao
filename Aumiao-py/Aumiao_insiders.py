@@ -49,12 +49,18 @@ session = requests.session()
 
 
 class CodeMaoData:
-    BASE_URL = "https://api.codemao.cn"
-    CONFIG_FILE_PATH: str = os.path.join(os.getcwd(), "config.json")
-    HEADERS = {
-        "Content-Type": "application/json",
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 Edg/124.0.0.0",
-    }
+    CONFIG_FILE_PATH: str = os.path.join(os.getcwd(), "CodeMaoData.json")
+
+    def __init__(self):
+        data = CodeMaoTool().file_load(self.CONFIG_FILE_PATH)
+        self.BASE_URL = data["BASE_URL"]
+        self.SLOGAN = data["SLOGAN"]
+        self.HEADERS.update(data["HEADERS"])
+        self.Data.update(data["Data"])
+
+    SLOGAN = ""
+    BASE_URL = ""
+    HEADERS = {}
     Account = {
         "identity": " ",
         "password": " ",
@@ -64,84 +70,6 @@ class CodeMaoData:
         "author_level": " ",
         "description": " ",
     }
-
-    # 预设数据, 用于存储代理、评论内容、表情等
-    Pre_Data = {
-        "blackroom": ["114514", "1919810", "2233"],
-        "comments": [
-            "666",
-            "加油！:O",
-            "针不戳:D",
-            "前排:P",
-            "沙发*/ω＼*",
-            "不错不错",
-        ],
-        "emojis": [
-            "编程猫_666",
-            "编程猫_爱心",
-            "编程猫_棒",
-            "编程猫_爱心",
-            "编程猫_抱大腿",
-            "编程猫_打call",
-            "编程猫_点手机",
-            "编程猫_好厉害",
-            "编程猫_加油",
-            "编程猫_我来啦",
-            "魔术喵_魔术",
-            "魔术喵_点赞",
-            "魔术喵_开心",
-            "魔术喵_魔术",
-            "魔术喵_点赞",
-            "魔术喵_收藏",
-            "星能猫_耶",
-            "星能猫_好吃",
-            "雷电猴_围观",
-            "雷电猴_哇塞",
-            "雷电猴_哈哈哈",
-            "雷电猴_嘻嘻嘻",
-        ],
-        "answers": [
-            "这是{}的自动回复,不知道你在说啥(",
-            "{}的自动回复来喽",
-            "嗨嗨嗨!这事{}の自动回复鸭!",
-            "{}很忙oh,机器人来凑热闹(*＾＾*)",
-            "对不起,{}它又搞忘了时间,一定是在忙呢",
-            "机器人要开始搅局了,{}说忙完就过来！",
-        ],
-        "ad": [
-            "scp",
-            "互赞",
-            "赞我",
-            "点个",
-            "转发",
-            "关注",
-            "招人",
-            "广告",
-            "交友",
-            "cpdd",
-            "处cp",
-            "找闺",
-            "自动",
-            "扫厕所",
-            "冲高手",
-            "冲大佬",
-            "冲传说",
-            "戴雨默",
-            "光头强",
-            "基金会",
-            "再创作",
-            "找徒弟",
-            "协作项目",
-            "家族招人",
-            "不喜可删",
-            "有赞必回",
-            "看看我的",
-            "粘贴到别人作品",
-            "codemao.cn",
-        ],
-        # ... (其他预设内容, 如评论、表情等)
-    }
-
     # 实际使用的数据类
     Data = {
         "blackroom": [" "],
@@ -167,7 +95,6 @@ class CodeMaoTool:
                 return {key: value for key, value in item.items() if key in reserve}
             elif exclude is not None:
                 return {key: value for key, value in item.items() if key not in exclude}
-            return item
 
         if isinstance(data, list):
             return [filter_keys(item) for item in data]
@@ -197,16 +124,10 @@ class CodeMaoTool:
         return StyleTime
 
     # 从配置文件加载账户信息的函数
-    def account_load(self) -> bool:
-        try:
-            with open(self.path, "r", encoding="utf-8") as file:
-                data = json.loads(file.read())
-            data.Account.update(data["Account"])
-            data.Data.update(data["Data"])
-            return True
-        except ValueError as err:
-            print("文件错误", err)
-            return False
+    def file_load(self, path):
+        with open(path, "r", encoding="utf-8") as file:
+            data = json.load(file)
+            return data
 
     # 检查文件
     def check_file(self, path: str) -> bool:
@@ -591,7 +512,7 @@ class CodeMaoClient:
         query_types = ["LIKE_FORK", "COMMENT_REPLY", "SYSTEM"]
         while True:
             # 检查是否所有消息类型的红点数为0
-            record = self.client.send_request(
+            record = self.send_request(
                 url="/web/message-record/count",
                 method="get",
             )
@@ -731,4 +652,4 @@ class CodeMaoUnion:
 
 if __name__ == "__main__":
     client = CodeMaoClient()
-    print(client.get_posts_detials(ids=682227))
+    print(client.get_user_data(12770114))
