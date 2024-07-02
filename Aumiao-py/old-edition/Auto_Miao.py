@@ -875,7 +875,6 @@ def main() -> None:
                 if "A" in steps:
                     if not item["work_id"] in like_log:
                         like_work(item["work_id"])
-                        time.sleep(random.randint(10, 20))
                         like_log.append(item["work_id"])
                     else:
                         print("已经点赞过了哟~")
