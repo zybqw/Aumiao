@@ -12,10 +12,10 @@ from typing import Any, Dict, List, Optional, Union
 try:
     import requests
     from requests.exceptions import (
-        HTTPError,
         ConnectionError,
-        Timeout,
+        HTTPError,
         RequestException,
+        Timeout,
     )
 except ModuleNotFoundError:
     # 提示用户未安装requests库,并询问安装位置
@@ -36,10 +36,10 @@ except ModuleNotFoundError:
     try:
         import requests
         from requests.exceptions import (
-            HTTPError,
             ConnectionError,
-            Timeout,
+            HTTPError,
             RequestException,
+            Timeout,
         )
     except ModuleNotFoundError:
         # 如果安装失败,则退出程序
