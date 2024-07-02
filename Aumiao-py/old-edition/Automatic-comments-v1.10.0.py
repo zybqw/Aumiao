@@ -5,13 +5,13 @@ from time import sleep
 from typing import Any, Dict, List, Optional, Tuple
 
 try:
-    from requests import exceptions, get, post, delete, utils, session
+    from requests import exceptions, session
 except ModuleNotFoundError:
     from os import system
 
     print("检测到您未下载requests库, 正在为您安装")
     system("pip install requests -i https://pypi.tuna.tsinghua.edu.cn/simple")
-    from requests import exceptions, get, post, delete, utils, session
+    from requests import exceptions, session
 
 # 导入所需的库和模块
 # from bs4 import BeautifulSoup
@@ -25,7 +25,9 @@ user_id为一串数字, 但api返回时返回类型为字符串, 故在爬虫中
 """
 
 print("欢迎使用编程猫社区爬虫")
-print("如果您是第一次使用, 请访问 https://zybqw.github.io/article/CodeMao-AutoCommenter/")
+print(
+    "如果您是第一次使用, 请访问 https://zybqw.github.io/article/CodeMao-AutoCommenter/"
+)
 print("如果您有什么问题可以发送邮件至 zybqw@qq.com 或添加我的QQ号: 3611198191 ")
 print("本项目仅供学习技术交流, 若对编程猫社区或您造成损失, 本人概不负责")
 
@@ -151,10 +153,6 @@ def send_request(
             response.raise_for_status()
     except exceptions.HTTPError as err:
         print("HTTP错误:", err)
-    except exceptions.ProxyError as err:
-        print("代理错误:", err)
-        print("移除代理:", proxy)
-        Data_instance.proxies_list.remove(proxy)
     except exceptions.ConnectionError as err:
         print("连接错误:", err)
         exit()
@@ -207,21 +205,19 @@ def login() -> Optional[str]:
         return tuples
 
     # 为账户信息提供交互式输入的函数
-    def input_account() -> (
-        Tuple[
-            str,
-            str,
-            str,
-            str,
-            str,
-            List[Dict[str, str]],
-            List[str],
-            List[str],
-            List[str],
-            List[str],
-            List[str],
-        ]
-    ):
+    def input_account() -> Tuple[
+        str,
+        str,
+        str,
+        str,
+        str,
+        List[Dict[str, str]],
+        List[str],
+        List[str],
+        List[str],
+        List[str],
+        List[str],
+    ]:
         # 为账号密码和文件保存位置输入提供交互界面
         get_username = input("输入账号叭    ")
         get_password = input("输入密码叭    ")
@@ -253,7 +249,11 @@ def login() -> Optional[str]:
                     f = open(Account["filepath"], "a")
                     f.close()
                 except PermissionError:
-                    print("你还没有没有足够的权限读取或写入{}这个文件捏".format(Account["filepath"]))
+                    print(
+                        "你还没有没有足够的权限读取或写入{}这个文件捏".format(
+                            Account["filepath"]
+                        )
+                    )
                     continue
                 Data_instance.answers = [
                     text.format(Account["nickname"]) for text in Data_instance.answers
@@ -321,7 +321,12 @@ def login() -> Optional[str]:
         if not has_config_file():
             check_file()
             save_account(path=CONFIG_FILE_PATH)
-            if input("要清除账户信箱小红点嘛?(如果初次使用, 请勾选Y) 是(Y)否(Any key)    ") == "Y":
+            if (
+                input(
+                    "要清除账户信箱小红点嘛?(如果初次使用, 请勾选Y) 是(Y)否(Any key)    "
+                )
+                == "Y"
+            ):
                 clear_red_point()
             return True
         elif not path.exists(Account["filepath"]):
@@ -758,7 +763,9 @@ def main() -> None:
     if input("要对生成文件里的内容进行优化嘛？是(Y)否(Any key)    ") == "Y":
         sort_numbers_in_file(Account["filepath"])
     while True:
-        steps = input("来选择工作方式捏,点赞(L)&回复(R)评论(C)&信箱全部已读(S) tips:可多选    ")
+        steps = input(
+            "来选择工作方式捏,点赞(L)&回复(R)评论(C)&信箱全部已读(S) tips:可多选    "
+        )
         if "L" in steps or "R" in steps or "C" in steps or "S" in steps:
             break
         else:
