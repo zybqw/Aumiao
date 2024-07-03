@@ -22,8 +22,8 @@ class CodeMaoClient:
         data: Any = None,
         headers: Dict = None,
     ) -> Optional[Any]:
-        headers = headers or self.data.HEADERS
-        url = f"{self.data.BASE_URL}{url}"
+        headers = headers or self.data.PROGRAM_DATA["HEADERS"]
+        url = f"{self.data.PROGRAM_DATA["BASE_URL"]}{url}"
         try:
             response = session.request(
                 method=method, url=url, headers=headers, params=params, data=data
