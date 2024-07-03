@@ -1,9 +1,10 @@
 from typing import Any, Dict, List, Optional
 
 import requests
+from requests.exceptions import ConnectionError, HTTPError, RequestException, Timeout
+
 import src.app.data as Data
 import src.app.tool as Tool
-from requests.exceptions import ConnectionError, HTTPError, RequestException, Timeout
 
 session = requests.session()
 
@@ -12,6 +13,8 @@ class CodeMaoClient:
     def __init__(self) -> None:
         self.data = Data.CodeMaoData()
         self.tool = Tool.CodeMaoProcess()
+        self.HEADERS = self.data.PROGRAM_DATA["HEADERS"]
+        self.BASE_URL = self.data.PROGRAM_DATA["BASE_URL"]
         global session
 
     def send_request(
@@ -22,8 +25,8 @@ class CodeMaoClient:
         data: Any = None,
         headers: Dict = None,
     ) -> Optional[Any]:
-        headers = headers or self.data.PROGRAM_DATA["HEADERS"]
-        url = f"{self.data.PROGRAM_DATA["BASE_URL"]}{url}"
+        headers = headers or self.HEADERS
+        url = f"{self.BASE_URL}{url}"
         try:
             response = session.request(
                 method=method, url=url, headers=headers, params=params, data=data
@@ -45,7 +48,7 @@ class CodeMaoClient:
         args: Dict = {"limit": "limit", "offset": "offset"},
     ) -> List[Dict]:
         initial_response = self.send_request(url=url, method="get", params=params)
-        total_items = int(self.tool.get_by_path(initial_response.json(), total_key))
+        total_items = int(self.tool.process_path(initial_response.json(), total_key))
         items_per_page = params[args["limit"]]
         total_pages = (total_items // items_per_page) + (
             1 if total_items % items_per_page > 0 else 0
@@ -58,5 +61,10 @@ class CodeMaoClient:
             elif method == "page":
                 params[args["offset"]] = page + 1 if page != total_pages else page
             response = self.send_request(url=url, method="get", params=params)
-            all_data.extend(self.tool.get_by_path(response.json(), data_key))
+            all_data.extend(self.tool.process_path(response.json(), data_key))
         return all_data
+
+    def update_cookie(self, cookie: str):
+        _cookie = requests.utils.dict_from_cookiejar(cookie)
+        session.cookies.update(_cookie)
+        return True
