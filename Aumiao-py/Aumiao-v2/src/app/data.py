@@ -2,7 +2,7 @@ import os
 
 import src.app.file as File
 
-CONFIG_FILE_PATH: str = os.path.join(os.getcwd(), "data.json")
+CONFIG_FILE_PATH: str = os.path.join(os.getcwd(), "data/" "data.json")
 
 
 class CodeMaoData:
@@ -12,6 +12,7 @@ class CodeMaoData:
 
         self.PROGRAM_DATA.update(data["PROGRAM_DATA"])
         self.USER_DATA.update(data["USER_DATA"])
+        self.ACCOUNT_DATA.update(data["ACCOUNT_DATA"])
 
     PROGRAM_DATA = {
         "HEADERS": {
@@ -34,4 +35,13 @@ class CodeMaoData:
         "anwsers": [],
         "replies": [],
         "ads": [],
+    }
+    ACCOUNT_DATA = {
+        "identity": "",
+        "password": "",
+        "id": "",
+        "nickname": "",
+        "descrption": "",
+        "creat_time": "",
+        "author_level": "",
     }
