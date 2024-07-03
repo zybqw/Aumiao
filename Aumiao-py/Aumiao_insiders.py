@@ -326,6 +326,7 @@ class CodeMaoClient:
         )
         return response.json()["data"]["nickname"]
 
+    # 获取作品
     def get_works(self, method: str, limit: int, offset: int = 0):
         params = {"limit": limit, "offset": offset}
         if method == "subject":
