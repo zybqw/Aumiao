@@ -2,8 +2,8 @@ import json
 from typing import Dict
 
 
-class File:
-    # 从配置文件加载账户信息的函数
+class CodeMaoFile:
+    # 从配置文件加载账户信息
     def file_load(self, path):
         with open(path, "r", encoding="utf-8") as file:
             data = json.load(file)
@@ -17,7 +17,7 @@ class File:
         except IOError:
             return False
 
-    # 将文本写入到指定文件的函数
+    # 将文本写入到指定文件
     def write(
         self,
         path: str,

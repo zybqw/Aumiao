@@ -2,7 +2,7 @@ import time
 from typing import Any, Dict, List
 
 
-class Process:
+class CodeMaoProcess:
     def process_reject(
         self, data: List | Dict, reserve: List = None, exclude: List = None
     ) -> List | Dict:
