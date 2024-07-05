@@ -1,6 +1,7 @@
+from typing import Dict, List
+
 import src.app.acquire as Acquire
 import src.app.tool as Tool
-from typing import List, Dict
 
 
 class User:
