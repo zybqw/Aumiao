@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional
 import requests
 from requests.exceptions import ConnectionError, HTTPError, RequestException, Timeout
 
+from ..decorator import retry
 from . import data as Data
 from . import tool as Tool
 
@@ -17,6 +18,7 @@ class CodeMaoClient:
         self.BASE_URL = self.data.PROGRAM_DATA["BASE_URL"]
         global session
 
+    @retry(retry=3, delay=5)
     def send_request(
         self,
         url: str,
