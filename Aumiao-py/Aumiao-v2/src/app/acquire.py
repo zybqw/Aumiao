@@ -3,8 +3,8 @@ from typing import Any, Dict, List, Optional
 import requests
 from requests.exceptions import ConnectionError, HTTPError, RequestException, Timeout
 
-import src.app.data as Data
-import src.app.tool as Tool
+from . import data as Data
+from . import tool as Tool
 
 session = requests.session()
 
@@ -54,7 +54,6 @@ class CodeMaoClient:
             1 if total_items % items_per_page > 0 else 0
         )
         all_data = []
-
         for page in range(total_pages):
             if method == "offset":
                 params[args["offset"]] = page * items_per_page
