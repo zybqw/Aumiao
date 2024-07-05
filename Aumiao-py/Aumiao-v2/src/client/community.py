@@ -18,29 +18,34 @@ class Community:
         )
         return response.json()["data"]["nickname"]
 
-    # 获取新回复
-    def get_new_replies(self) -> List[Dict[str, Any]]:
-        _dict = []
+    # 获取新回复(传入参数就获取前*个回复,若没传入就获取新回复数量, 再获取新回复数量个回复)
+    def get_replies(self, limit: int = 0) -> List[Dict[str, Any]]:
+        _list = []
+        record = self.acquire.send_request(
+            url="/web/message-record/count",
+            method="get",
+        )
+        reply_num = record.json()[0]["count"]
+        if reply_num == limit == 0:
+            return [{}]
+        result_num = reply_num if limit == 0 else limit
         while True:
-            record = self.acquire.send_request(
-                url="/web/message-record/count",
-                method="get",
-            )
-            reply_num = record.text.json()[0]["count"]
-            if reply_num == 0:
-                break
-            list_num = sorted([5, reply_num, 200])[1]
+            list_num = sorted([5, result_num, 200])[1]
             params = {
                 "query_type": "COMMENT_REPLY",
                 "limit": list_num,
             }
+            # 获取前*个回复
             response = self.acquire.send_request(
                 url="/web/message-record",
                 method="get",
                 params=params,
             )
-            _dict.extend(response.json()["items"][:reply_num])
-        return _dict
+            _list.extend(response.json()["items"][:result_num])
+            result_num -= list_num
+            if result_num <= 0:
+                break
+        return _list
 
     # 清除邮箱红点
     def clear_redpoint(self) -> bool:
