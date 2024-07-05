@@ -1,6 +1,6 @@
 import os
 
-import src.app.file as File
+from . import file as File
 
 CONFIG_FILE_PATH: str = os.path.join(os.getcwd(), "data/" "data.json")
 
