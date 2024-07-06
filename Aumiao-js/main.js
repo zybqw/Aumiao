@@ -10,4 +10,6 @@ function run(f) {
     return f()
 }
 
-
+try {
+    require("./test")()
+} finally {}
