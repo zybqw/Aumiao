@@ -9,5 +9,3 @@ const { CodemaoApi } = require("./api")
 function run(f) {
     return f()
 }
-
-

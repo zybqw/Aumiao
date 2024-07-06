@@ -53,6 +53,18 @@ const CodemaoApi = class {
                 r(null)
             }))
         }
+
+    /*
+     =======================
+              子类
+     ========================
+     */
+
+    /**
+     * 用户逻辑
+     */
+    static User = class {
+
     }
     /**
      * 作品逻辑
@@ -95,6 +107,13 @@ const CodemaoApi = class {
                 if (res.statusCode >= 200 && res.statusCode < 300)
                     return r(stringToJson(body))
                 r(null)
+            }))
+        }
+        static like(workId, unlike) {
+            return promise((r) => request[unlike ? "delete" : "post"](`${CodemaoApi.baseUrl}/nemo/v2/works/${workId}/like`, {headers: CodemaoApi.headers}, (err, res, body) => {
+                if (res.statusCode >= 200 && res.statusCode < 300)
+                    return r(true, body)
+                r(false)
             }))
         }
     }
