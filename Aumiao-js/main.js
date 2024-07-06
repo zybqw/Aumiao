@@ -6,4 +6,11 @@
 
 const { CodemaoApi } = require("./api")
 
+function run(f) {
+    return f()
+}
+
+
 // TODO...
+
+run(async () => console.log(await CodemaoApi.Work.like(227158550)))
