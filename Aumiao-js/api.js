@@ -10,6 +10,11 @@ function promise(cb) {
     return new Promise(cb)
 }
 
+function stringToJson(s) {
+    if (s instanceof Object)
+        return s
+    return JSON.parse(s)
+}
 
 const CodemaoApi = class {
     /*
@@ -37,17 +42,59 @@ const CodemaoApi = class {
      * 用户逻辑
      */
     static User = class {
-
+        /**
+         * Get my details
+         * @returns { Promise<Object> } json
+         */
+        static getMyDetails() {
+            return promise((r) => request.get(`${CodemaoApi.baseUrl}/web/users/details`, {headers: CodemaoApi.headers}, (err, res, body) => {
+                if (res.statusCode >= 200 && res.statusCode < 300)
+                    return r(stringToJson(body))
+                r(null)
+            }))
+        }
     }
     /**
      * 作品逻辑
      */
     static Work = class {
-        static like(workId, unlike) {
-            return promise((r) => request[unlike ? "delete" : "post"](`${CodemaoApi.baseUrl}/nemo/v2/works/${workId}/like`, {headers: CodemaoApi.headers}, (err, res, body) => {
+        /**
+         * Like a work
+         * @param { Number } workId 
+         * @param { Boolean } unLike
+         * @returns { Promise<Boolean> } successOrFailure
+         */
+        static like(workId, unLike) {
+            return promise((r) => request[unLike ? "delete" : "post"](`${CodemaoApi.baseUrl}/nemo/v2/works/${workId}/like`, {headers: CodemaoApi.headers}, (err, res, body) => {
                 if (res.statusCode >= 200 && res.statusCode < 300)
-                    return r(true, body)
+                    return r(true)
                 r(false)
+            }))
+        }
+        /**
+         * Collect a work
+         * @param { Number } workId 
+         * @param { Boolean } unCollect 
+         * @returns { Promise<Boolean> } successOrFailure
+         */
+        static collect(workId, unCollect) {
+            return promise((r) => request[unCollect ? "delete" : "post"](`${CodemaoApi.baseUrl}/nemo/v2/works/${workId}/collection`, {headers: CodemaoApi.headers}, (err, res, body) => {
+                if (res.statusCode >= 200 && res.statusCode < 300)
+                    return r(true)
+                r(false)
+            }))
+        }
+        /**
+         * Get the newest works
+         * @param { Number } limit 
+         * @param { Number } offset 
+         * @returns { Promise<Object> } json
+         */
+        static getNewestWorks(limit, offset) {
+            return promise((r) => request.get(`${CodemaoApi.baseUrl}/creation-tools/v1/pc/discover/newest-work?work_origin_type=ORIGINAL_WORK&offset=${offset ? offset : 0}&limit=${limit ? limit : 20}`, {headers: CodemaoApi.headers}, (err, res, body) => {
+                if (res.statusCode >= 200 && res.statusCode < 300)
+                    return r(stringToJson(body))
+                r(null)
             }))
         }
     }

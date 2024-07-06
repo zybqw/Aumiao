@@ -11,6 +11,3 @@ function run(f) {
 }
 
 
-// TODO...
-
-run(async () => console.log(await CodemaoApi.Work.like(227158550)))
