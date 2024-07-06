@@ -32,6 +32,10 @@ const CodemaoApi = class {
         this.headers.cookie = cookie
     }
 
+    static setCookieToken(token) {
+        this.headers.cookie = `authorization=${token}`
+    }
+
     /*
      =======================
               子类
@@ -42,6 +46,23 @@ const CodemaoApi = class {
      * 用户逻辑
      */
     static User = class {
+        /**
+         * Login your account
+         * @param { String } account
+         * @param { String } password
+         * @returns { Promise<String> } token
+         */
+        static getToken(usr, psw) {
+            return promise((r) => request.post(`${CodemaoApi.baseUrl}/tiger/v3/web/accounts/login`, {json: {
+                identity: usr,
+                password: psw,
+                pid: "65edCTyg", // 写死的, 不会变动
+            }, headers: CodemaoApi.headers}, (err, res, body) => {
+                if (res.statusCode >= 200 && res.statusCode < 300)
+                    return r(stringToJson(body).auth.token)
+                r(null)
+            }))
+        }
         /**
          * Get my details
          * @returns { Promise<Object> } json
