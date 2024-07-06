@@ -10,11 +10,14 @@ function promise(cb) {
     return new Promise(cb)
 }
 
+<<<<<<< HEAD
 function stringToJson(s) {
     if (s instanceof Object)
         return s
     return JSON.parse(s)
 }
+=======
+>>>>>>> f75764f (feat: like and unlike a work)
 
 const CodemaoApi = class {
     /*
@@ -42,6 +45,7 @@ const CodemaoApi = class {
      * 用户逻辑
      */
     static User = class {
+<<<<<<< HEAD
         /**
          * Get my details
          * @returns { Promise<Object> } json
@@ -53,11 +57,15 @@ const CodemaoApi = class {
                 r(null)
             }))
         }
+=======
+
+>>>>>>> f75764f (feat: like and unlike a work)
     }
     /**
      * 作品逻辑
      */
     static Work = class {
+<<<<<<< HEAD
         /**
          * Like a work
          * @param { Number } workId 
@@ -97,6 +105,15 @@ const CodemaoApi = class {
                 r(null)
             }))
         }
+=======
+        static like(workId, unlike) {
+            return promise((r) => request[unlike ? "delete" : "post"](`${CodemaoApi.baseUrl}/nemo/v2/works/${workId}/like`, {headers: CodemaoApi.headers}, (err, res, body) => {
+                if (res.statusCode >= 200 && res.statusCode < 300)
+                    return r(true, body)
+                r(false)
+            }))
+        }
+>>>>>>> f75764f (feat: like and unlike a work)
     }
     /**
      * 作品_评论区逻辑
