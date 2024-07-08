@@ -8,13 +8,13 @@ class WorkUnion:
 
     def __init__(self) -> None:
         self.acquire = acquire.CodeMaoClient()
-        self.user = user.User()
+        self.user_recure = user.Secure()
         self.work = work.Work()
         self.data = data.CodeMaoData()
 
     # 清除作品广告的函数
     def clear_ad(self, keys) -> bool:
-        works_list = self.user.get_user_works(self.data.ACCOUNT_DATA["id"])
+        works_list = self.user_recure.get_user_works(self.data.ACCOUNT_DATA["id"])
         for item0 in works_list:
             comments = self.work.get_comments_detail(
                 work_id=item0["id"], method="comments"
@@ -44,11 +44,11 @@ class CommunityUnion:
 
     def __init__(self) -> None:
         self.work = work.Work()
-        self.user = user.User()
+        self.user_secure = user.Secure()
 
     # 给某人作品全点赞
     def like_all_work(self, user_id: str):
-        works_list = self.user.get_user_works(user_id)
+        works_list = self.user_secure.get_user_works(user_id)
         for item in works_list:
             if not self.work.like_work(work_id=item["id"]):
                 return False

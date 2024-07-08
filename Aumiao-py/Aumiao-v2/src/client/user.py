@@ -1,9 +1,10 @@
+import json
 from typing import Dict, List
 
 import src.app.acquire as Acquire
 
 
-class User:
+class Secure:
     def __init__(self) -> None:
         self.acquire = Acquire.CodeMaoClient()
 
@@ -21,17 +22,7 @@ class User:
             method="get",
             url="/web/users/details",
         )
-        result = self.tool.process_reject(
-            data=response.json(),
-            reserve=[
-                "id",
-                "nickname",
-                "description",
-                "create_time",
-                "author_level",
-            ],
-        )
-        return result
+        return response.json()
 
     # 获取账户信息(简略)
     def get_data_info(self) -> Dict:
@@ -98,3 +89,26 @@ class User:
             data_key="items",
         )
         return follows
+
+
+class Routine:
+
+    def __init__(self) -> None:
+        self.acquire = Acquire.CodeMaoClient()
+
+    # 设置登录用户名(实验性功能)
+    def set_username(self, username):
+        response = self.acquire.send_request(
+            url="/tiger/v3/web/accounts/username",
+            method="patch",
+            data=json.dumps({"username": username}),
+        )
+        return response.status_code
+
+    # 验证手机号
+    def verify_phonenum(self, phonenum: int):
+        params = {"phone_number": phonenum}
+        response = self.acquire.send_request(
+            url="/web/users/phone_number/is_consistent", method="get", params=params
+        )
+        return response.json()
