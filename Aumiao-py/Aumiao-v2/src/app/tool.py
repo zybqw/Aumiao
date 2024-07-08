@@ -31,8 +31,8 @@ class CodeMaoProcess:
         return result
 
     # 时间戳转换为时间
-    def process_timestamp(self, times: int) -> str:
-        timeArray = time.localtime(times)
+    def process_timestamp(self, timestamp: int) -> str:
+        timeArray = time.localtime(timestamp)
         StyleTime = time.strftime("%Y-%m-%d %H:%M:%S", timeArray)
         return StyleTime
 
@@ -43,3 +43,9 @@ class CodeMaoProcess:
         for key in keys:
             value = value.get(key, {})
         return value
+
+
+class CodeMaoRoutine:
+    def get_timestamp(self):
+        timestamp = time.time()
+        return timestamp

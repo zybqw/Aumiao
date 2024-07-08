@@ -1,3 +1,4 @@
+import json
 from typing import Dict, List
 
 import src.app.acquire as acquire
@@ -33,3 +34,46 @@ class Work:
         else:
             raise ValueError("不支持的请求方法")
         return result
+
+    # 关注的函数
+    def follow_work(self, user_id: int) -> bool:
+        response = self.acquire.send_request(
+            url=f"/nemo/v2/user/{user_id}/follow",
+            method="post",
+            data=json.dumps({}),
+        )
+
+        return response.status_code == 204
+
+    # 收藏的函数
+    def collection_work(self, work_id: int) -> bool:
+        response = self.acquire.send_request(
+            url=f"/nemo/v2/works/{work_id}/collection",
+            method="post",
+            data=json.dumps({}),
+        )
+        return response.status_code == 200
+
+    # 对某个作品进行点赞的函数
+    def like_work(self, work_id: int) -> bool:
+        # 对某个作品进行点赞
+        response = self.acquire.send_request(
+            url=f"/nemo/v2/works/{work_id}/like",
+            method="post",
+            data=json.dumps({}),
+        )
+        return response.status_code == 200
+
+    # 对某个作品进行评论的函数
+    def comment_work(self, comment, emoji, work_id: int) -> bool:
+        response = self.acquire.send_request(
+            url=f"/creation-tools/v1/works/{work_id}/comment",
+            method="post",
+            data=json.dumps(
+                {
+                    "content": comment,
+                    "emoji_content": emoji,
+                }
+            ),
+        )
+        return response.status_code == 201

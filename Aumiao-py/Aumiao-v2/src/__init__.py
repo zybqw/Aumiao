@@ -11,10 +11,12 @@ team_members = "Aurzex, MoonLeaaaf, Nomen, MiTao"
 app_acquire = acquire.CodeMaoClient()
 app_data = data.CodeMaoData()
 app_file = file.CodeMaoFile()
-app_tool = tool.CodeMaoProcess()
+app_tool_process = tool.CodeMaoProcess()
+app_tool_routine = tool.CodeMaoRoutine()
 
 # 实例化client模块中的类
-client_community = community.Community()
+client_community_secure = community.Secure()
+client_community_login = community.Login()
 client_post = post.Post()
 client_shop = shop.Shop()
 client_union_community = union.CommunityUnion()

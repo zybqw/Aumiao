@@ -1,6 +1,5 @@
 import src.app.acquire as acquire
 import src.app.data as data
-import src.client.community as community
 import src.client.user as user
 import src.client.work as work
 
@@ -44,13 +43,13 @@ class WorkUnion:
 class CommunityUnion:
 
     def __init__(self) -> None:
-        self.community = community.Community()
+        self.work = work.Work()
         self.user = user.User()
 
     # 给某人作品全点赞
     def like_all_work(self, user_id: str):
         works_list = self.user.get_user_works(user_id)
         for item in works_list:
-            if not self.community.like_work(work_id=item["id"]):
+            if not self.work.like_work(work_id=item["id"]):
                 return False
         return True
