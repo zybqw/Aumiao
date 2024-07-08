@@ -18,7 +18,7 @@ class CodeMaoClient:
         self.BASE_URL = self.data.PROGRAM_DATA["BASE_URL"]
         global session
 
-    @retry(retry=3, delay=5)
+    @retry(retries=3, delay=10)
     def send_request(
         self,
         url: str,
@@ -27,8 +27,9 @@ class CodeMaoClient:
         data: Any = None,
         headers: Dict = None,
     ) -> Optional[Any]:
+
         headers = headers or self.HEADERS
-        url = f"{self.BASE_URL}{url}"
+        url = url if "http" in url else f"{self.BASE_URL}{url}"
         try:
             response = session.request(
                 method=method, url=url, headers=headers, params=params, data=data

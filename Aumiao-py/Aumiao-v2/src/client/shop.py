@@ -2,13 +2,11 @@ import json
 from typing import Dict
 
 import src.app.acquire as acquire
-import src.app.tool as tool
 
 
 class Shop:
     def __init__(self) -> None:
         self.acquire = acquire.CodeMaoClient()
-        self.tool = tool.CodeMaoProcess()
 
     # 获取工作室简介(简易,需登录工作室成员账号)
     def get_shops_simple(self):
@@ -19,21 +17,8 @@ class Shop:
     # 获取工作室简介
     def get_shop_detials(self, id: str) -> Dict:
         response = self.acquire.send_request(url=f"/web/shops/{id}", method="get")
-        result = self.tool.process_reject(
-            data=response.json(),
-            reserve=[
-                "id",
-                "shop_id",
-                "name",
-                "total_score",
-                "preview_url",
-                "description",
-                "n_works",
-                "n_views",
-                "level",
-            ],
-        )
-        return result
+
+        return response.json()
 
     # 更新工作室简介
     def update_shop_detials(
@@ -76,8 +61,4 @@ class Shop:
             total_key="total",
             data_key="items",
         )
-        result = self.tool.process_reject(
-            data=shops,
-            reserve=["id", "name", "description", "total_works"],
-        )
-        return result
+        return shops
