@@ -39,7 +39,7 @@ class Shop:
         return response.status_code == 200
 
     # 获取工作室列表的函数
-    def get_work_shops(
+    def get_shops(
         self,
         level: int = 4,
         limit: int = 14,
@@ -62,3 +62,14 @@ class Shop:
             data_key="items",
         )
         return shops
+
+    # 获取工作室成员
+    def get_shops_members(self, id: int, limit: int = 40, offset: int = 0):
+        params = {"limit": limit, "offset": offset}
+        menbers = self.acquire.fetch_all_data(
+            url=f"https://api.codemao.cn/web/shops/{id}/users",
+            params=params,
+            total_key="total",
+            data_key="items",
+        )
+        return menbers

@@ -206,3 +206,8 @@ class Secure:
         )  # 为防止封号,limit建议调大
         _dict = response.json()["items"]
         return _dict
+
+    # 获取时间戳
+    def get_timestamp(self):
+        response = self.acquire.send_request(url="/coconut/clouddb/currentTime")
+        return response.json()
