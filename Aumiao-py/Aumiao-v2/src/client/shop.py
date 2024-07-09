@@ -4,7 +4,7 @@ from typing import Dict
 import src.app.acquire as acquire
 
 
-class Shop:
+class Obtain:
     def __init__(self) -> None:
         self.acquire = acquire.CodeMaoClient()
 
@@ -19,24 +19,6 @@ class Shop:
         response = self.acquire.send_request(url=f"/web/shops/{id}", method="get")
 
         return response.json()
-
-    # 更新工作室简介
-    def update_shop_detials(
-        self, description: str, id: str, name: str, preview_url: str
-    ) -> bool:
-        response = self.acquire.send_request(
-            url="/web/work_shops/update",
-            method="post",
-            data=json.dumps(
-                {
-                    "description": description,
-                    "id": id,
-                    "name": name,
-                    "preview_url": preview_url,
-                }
-            ),
-        )
-        return response.status_code == 200
 
     # 获取工作室列表的函数
     def get_shops(
@@ -73,3 +55,27 @@ class Shop:
             data_key="items",
         )
         return menbers
+
+
+class Motion:
+
+    def __init__(self) -> None:
+        self.acquire = acquire.CodeMaoClient()
+
+    # 更新工作室简介
+    def update_shop_detials(
+        self, description: str, id: str, name: str, preview_url: str
+    ) -> bool:
+        response = self.acquire.send_request(
+            url="/web/work_shops/update",
+            method="post",
+            data=json.dumps(
+                {
+                    "description": description,
+                    "id": id,
+                    "name": name,
+                    "preview_url": preview_url,
+                }
+            ),
+        )
+        return response.status_code == 200

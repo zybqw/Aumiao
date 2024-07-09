@@ -1,3 +1,5 @@
+from typing import Dict, List
+
 import src.app.acquire as acquire
 import src.app.data as data
 import src.client.user as user
@@ -8,15 +10,16 @@ class WorkUnion:
 
     def __init__(self) -> None:
         self.acquire = acquire.CodeMaoClient()
-        self.user_recure = user.Secure()
-        self.work = work.Work()
+        self.user_obtain = user.Obtain()
+        self.work_obtain = work.Obtain()
         self.data = data.CodeMaoData()
 
     # 清除作品广告的函数
     def clear_ad(self, keys) -> bool:
-        works_list = self.user_recure.get_user_works(self.data.ACCOUNT_DATA["id"])
+        works_list = self.user_obtain.get_user_works(self.data.ACCOUNT_DATA["id"])
         for item0 in works_list:
-            comments = self.work.get_comments_detail(
+
+            comments = self.work_obtain.get_comments_detail(
                 work_id=item0["id"], method="comments"
             )
             work_id = item0["id"]
@@ -39,17 +42,36 @@ class WorkUnion:
                         return False
         return True
 
+    # 获取评论区特定信息
+    def get_comments_detail(
+        self,
+        work_id: int,
+        method: str = "user_id",
+    ) -> List[str] | List[Dict[str, int | bool]]:
+        comments = self.work_obtain.get_work_comments(work_id=work_id)
+        if method == "user_id":
+            result = [item["user"]["id"] for item in comments]
+        elif method == "comments":
+            result = self.tool.process_reject(
+                data=comments,
+                reserve=["id", "content", "is_top"],
+            )
+
+        else:
+            raise ValueError("不支持的请求方法")
+        return result
+
 
 class CommunityUnion:
 
     def __init__(self) -> None:
-        self.work = work.Work()
-        self.user_secure = user.Secure()
+        self.work_metion = work.Motion()
+        self.user_obtain = user.Obtain()
 
     # 给某人作品全点赞
     def like_all_work(self, user_id: str):
-        works_list = self.user_secure.get_user_works(user_id)
+        works_list = self.user_obtain.get_user_works(user_id)
         for item in works_list:
-            if not self.work.like_work(work_id=item["id"]):
+            if not self.work_metion.like_work(work_id=item["id"]):
                 return False
         return True

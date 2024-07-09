@@ -3,7 +3,7 @@ from typing import List
 import src.app.acquire as acquire
 
 
-class Post:
+class Obtain:
     def __init__(self) -> None:
         self.acquire = acquire.CodeMaoClient()
 
