@@ -1,39 +1,12 @@
 import json
-from typing import Dict, List
 
 import src.app.acquire as acquire
 import src.app.tool as tool
 
 
-class Work:
+class Motion:
     def __init__(self) -> None:
         self.acquire = acquire.CodeMaoClient()
-        self.tool = tool.CodeMaoProcess()
-
-    # 获取评论区特定信息
-    def get_comments_detail(
-        self,
-        work_id: int,
-        method: str = "user_id",
-    ) -> List[str] | List[Dict[str, int | bool]]:
-        params = {"limit": 15, "offset": 0}
-        comments = self.acquire.fetch_all_data(
-            url=f"/creation-tools/v1/works/{work_id}/comments",
-            params=params,
-            total_key="page_total",
-            data_key="items",
-        )
-        if method == "user_id":
-            result = [item["user"]["id"] for item in comments]
-        elif method == "comments":
-            result = self.tool.process_reject(
-                data=comments,
-                reserve=["id", "content", "is_top"],
-            )
-
-        else:
-            raise ValueError("不支持的请求方法")
-        return result
 
     # 关注的函数
     def follow_work(self, user_id: int) -> bool:
@@ -77,3 +50,44 @@ class Work:
             ),
         )
         return response.status_code == 201
+
+
+class Obtain:
+
+    def __init__(self) -> None:
+        self.acquire = acquire.CodeMaoClient()
+        self.tool = tool.CodeMaoProcess()
+
+    # 获取评论区评论
+    def get_work_comments(self, work_id: int):
+        params = {"limit": 15, "offset": 0}
+        comments = self.acquire.fetch_all_data(
+            url=f"/creation-tools/v1/works/{work_id}/comments",
+            params=params,
+            total_key="page_total",
+            data_key="items",
+        )
+        return comments
+
+    # 获取作品信息
+    def get_work_detial(self, id: int):
+        response = self.acquire.send_request(
+            url=f"https://api.codemao.cn/creation-tools/v1/works/{id}",
+            method="get",
+        )
+        return response.json()
+
+    # 获取其他作品推荐
+    def get_other_recommended(self, id: int):
+        response = self.acquire.send_request(
+            url=f"https://api.codemao.cn/nemo/v2/works/web/{id}/recommended",
+            method="get",
+        )
+        return response.json()
+
+    # 获取作品信息(info)
+    def get_work_info(self, id: int):
+        response = self.acquire.send_request(
+            url=f"https://api.codemao.cn/api/work/info/{id}", method="get"
+        )
+        return response.json()

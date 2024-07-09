@@ -118,7 +118,7 @@ class Login:
         return response.json()
 
 
-class Secure:
+class Obtain:
     def __init__(self) -> None:
         self.acquire = Acquire.CodeMaoClient()
 

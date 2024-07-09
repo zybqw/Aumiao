@@ -4,7 +4,7 @@ from typing import Dict, List
 import src.app.acquire as Acquire
 
 
-class Secure:
+class Obtain:
     def __init__(self) -> None:
         self.acquire = Acquire.CodeMaoClient()
 
@@ -91,7 +91,7 @@ class Secure:
         return follows
 
 
-class Routine:
+class Motion:
 
     def __init__(self) -> None:
         self.acquire = Acquire.CodeMaoClient()
