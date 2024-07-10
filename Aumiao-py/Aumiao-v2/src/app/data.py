@@ -2,13 +2,14 @@ import os
 
 from . import file as File
 
-CONFIG_FILE_PATH: str = os.path.join(os.getcwd(), "data/" "data.json")
+DATA_FILE_PATH: str = os.path.join(os.getcwd(), "data/" "data.json")
+CACHE_FILE_PATH: str = os.path.join(os.getcwd(), "data/" "cache.json")
 
 
 class CodeMaoData:
 
     def __init__(self):
-        data = File.CodeMaoFile().file_load(CONFIG_FILE_PATH)
+        data = File.CodeMaoFile().file_load(DATA_FILE_PATH)
 
         self.PROGRAM_DATA.update(data["PROGRAM_DATA"])
         self.USER_DATA.update(data["USER_DATA"])
