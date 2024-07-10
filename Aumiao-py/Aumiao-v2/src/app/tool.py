@@ -49,3 +49,11 @@ class CodeMaoRoutine:
     def get_timestamp(self):
         timestamp = time.time()
         return timestamp
+
+    def print_changes(self, before_data, after_data, keys):
+        for key in keys:
+            if key in before_data and key in after_data:
+                change = after_data[key] - before_data[key]
+                print(f"{key} 改变 {change} 个")
+            else:
+                print(f"{key} 没有找到")

@@ -2,6 +2,8 @@ from typing import Dict, List
 
 import src.app.acquire as acquire
 import src.app.data as data
+import src.app.file as file
+import src.app.tool as tool
 import src.client.user as user
 import src.client.work as work
 
@@ -75,3 +77,30 @@ class CommunityUnion:
             if not self.work_metion.like_work(work_id=item["id"]):
                 return False
         return True
+
+
+class UserUnion:
+    def __init__(self) -> None:
+        self.file = file.CodeMaoFile()
+        self.user_obtain = user.Obtain()
+        self.tool_routine = tool.CodeMaoRoutine()
+
+    def message_report(self, user_id: str):
+        response = self.user_obtain.get_user_honor(user_id=user_id)
+        user_data = {
+            "user_id": response["user_id"],
+            "nickname": response["nickname"],
+            "level": response["author_level"],
+            "fans": response["fans_total"],
+            "collected": response["collected_total"],
+            "liked": response["liked_total"],
+            "view": response["view_times"],
+        }
+        before_data = self.file.file_load(path=data.CACHE_FILE_PATH)
+        if before_data != {}:
+            self.tool_routine.print_changes(
+                before_data=before_data,
+                after_data=user_data,
+                keys=["fans", "collected", "liked", "view"],
+            )
+        self.file.write(path=data.CACHE_FILE_PATH, text=user_data, type="dict")
