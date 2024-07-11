@@ -19,7 +19,6 @@ class CodeMaoClient:
         self.BASE_URL = self.data.PROGRAM_DATA["BASE_URL"]
         global session
 
-    @retry(retries=3, delay=10)
     def send_request(
         self,
         url: str,
