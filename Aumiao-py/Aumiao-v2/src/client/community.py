@@ -41,7 +41,8 @@ class Login:
             )
         elif method == "cookie":
             try:
-                cookie_dict = dict([item.split("=", 1) for item in cookies.split("; ")])
+                dict([item.split("=", 1) for item in cookies.split("; ")])
+                # 检查是否合规,不能放到headers中
             except (KeyError, ValueError) as err:
                 print(f"表达式输入不合法 {err}")
                 return False
@@ -49,7 +50,7 @@ class Login:
                 url="/nemo/v2/works/174408420/like",
                 method="post",
                 data=json.dumps({}),
-                headers={**self.data.PROGRAM_DATA["HEADERS"], "cookie": cookie_dict},
+                headers={**self.data.PROGRAM_DATA["HEADERS"], "cookie": cookies},
             )
         if response.status_code == 200:
             self.acquire.update_cookie(response.cookies)  # 确保cookies被更新
@@ -209,5 +210,7 @@ class Obtain:
 
     # 获取时间戳
     def get_timestamp(self):
-        response = self.acquire.send_request(url="/coconut/clouddb/currentTime")
+        response = self.acquire.send_request(
+            url="/coconut/clouddb/currentTime", method="get"
+        )
         return response.json()
