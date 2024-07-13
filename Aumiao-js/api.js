@@ -22,6 +22,7 @@ const CodemaoApi = class {
               主类
      ========================
      */
+    static users = {}
     static baseUrl = "https://api.codemao.cn"
     static headers = {
         "Content-Type": "application/json",
@@ -33,7 +34,52 @@ const CodemaoApi = class {
     }
 
     static setCookieToken(token) {
-        this.headers.cookie = `authorization=${token}`
+        this.setCookie(`authorization=${token}`)
+    }
+
+    /**
+     * Switch to a user that it exists
+     * @param { any } id 
+     * @returns { CodemaoApi } this
+     */
+    static switchUser(id) {
+        this.setCookieToken(this.users[id])
+        return this
+    }
+    /**
+     * Add a user with token
+     * @param { any } id 
+     * @param { String } token
+     * @returns { CodemaoApi } this
+     */
+    static setupUser(id, token) {
+        this.users[id] = token
+        return this
+    }
+
+    static async featchAll(apiUrlWithoutOffsetAndLimit) {
+        function fetch(offset, limit) {
+            return promise((r) => request.get(`${apiUrlWithoutOffsetAndLimit}&offset=${offset}&limit=${limit}`, {headers: CodemaoApi.headers}, (err, res, body) => {
+                if (res.statusCode >= 200 && res.statusCode < 300)
+                    return r(stringToJson(body))
+                r(null)
+            }))
+        }
+        let offset = 0
+        let limit = 200
+        /** @type { Array } */
+        let items
+
+        let collect = []
+        do {
+            let data = await fetch(offset, limit)
+            items = data.items
+            offset += limit
+
+            items.forEach((v) => collect.push(v))
+        } while(items.length != 0)
+
+        return collect
     }
 
     /*
@@ -117,6 +163,14 @@ const CodemaoApi = class {
                     return r(stringToJson(body))
                 r(null)
             }))
+        }
+        /**
+         * Get all works, type==nemo
+         * @returns { Promise<Object> } json
+         */
+         static async getMyNemoCloudWorks() {
+             return await CodemaoApi.featchAll(`${CodemaoApi.baseUrl}/creation-tools/v1/works/list?published_status=all`)
+
         }
     }
     /**
