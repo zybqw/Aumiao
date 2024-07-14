@@ -62,13 +62,22 @@ class Login:
     # token登录(毛毡最新登录方式)
     def login_token(self, identity: str | int = None, password: Any = None):
         timestamp = Obtain().get_timestamp()["data"]
-        response = self.login_v3(identity=identity, timestamp=timestamp)
+        response = self.get_login_ticket(identity=identity, timestamp=timestamp)
         ticket = response["ticket"]
-        response = self.login_security(
+        response = self.get_login_security(
             identity=identity, password=password, ticket=ticket
         )
         token = response["auth"]["token"]
         # src.client_community_login.logout()
+        cookie_str = self.get_login_auth(token)
+        headers = {**self.data.PROGRAM_DATA["HEADERS"], "cookie": cookie_str}
+        response = self.acquire.send_request(
+            method="get", url="/web/users/details", headers=headers
+        )
+        self.check_login(response)
+
+    # 返回完整鉴权cookie
+    def get_login_auth(self, token):
         # response = src.app_acquire.send_request(url="https://shequ.codemao.cn/",method="get",)
         # aliyungf_tc = response.cookies.get_dict()["aliyungf_tc"]
         uuid_ca = uuid.uuid1()
@@ -81,11 +90,7 @@ class Login:
         _auth = response.cookies.get_dict()
         auth_cookie = {**token_ca, **_auth}
         cookie_str = self.tool_process.process_cookie(auth_cookie)
-        headers = {**self.data.PROGRAM_DATA["HEADERS"], "cookie": cookie_str}
-        response = self.acquire.send_request(
-            method="get", url="/web/users/details", headers=headers
-        )
-        self.check_login(response)
+        return cookie_str
 
     # 检查并保存登录状态
     def check_login(self, response):
@@ -106,7 +111,7 @@ class Login:
         return response.status_code == 204
 
     # 登录信息
-    def login_security(
+    def get_login_security(
         self,
         identity: str | int,
         password: Any,
@@ -132,7 +137,7 @@ class Login:
 
     #
     # 登录ticket获取
-    def login_v3(
+    def get_login_ticket(
         self,
         identity,
         timestamp: int,
