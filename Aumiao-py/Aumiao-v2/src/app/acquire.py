@@ -41,7 +41,7 @@ class CodeMaoClient:
         except (HTTPError, ConnectionError, Timeout, RequestException) as err:
             print(f"错误码: {response.status_code} 错误信息: {response.text}")
             print(f"网络请求异常: {err}")
-            return None
+            return response
 
     @retry(retries=3, delay=20)
     def fetch_all_data(

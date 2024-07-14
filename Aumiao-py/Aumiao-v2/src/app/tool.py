@@ -44,6 +44,11 @@ class CodeMaoProcess:
             value = value.get(key, {})
         return value
 
+    # 将cookie转换为headers中显示的形式
+    def process_cookie(self, cookie):
+        cookie_str = "; ".join([f"{key}={value}" for key, value in cookie.items()])
+        return cookie_str
+
 
 class CodeMaoRoutine:
     def get_timestamp(self):
