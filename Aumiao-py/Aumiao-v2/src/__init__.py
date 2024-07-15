@@ -1,5 +1,5 @@
 from .app import acquire, data, file, tool
-from .client import community, post, shop, union, user, work
+from .client import community, pickduck, post, shop, union, user, work
 
 # 定义版本、作者和团队信息
 version = "2.0.0"
@@ -27,3 +27,4 @@ client_user_obtain = user.Obtain()
 client_user_motion = user.Motion()
 client_work_motion = work.Motion()
 client_work_obtain = work.Obtain()
+client_pickduck = pickduck.PickDuck()

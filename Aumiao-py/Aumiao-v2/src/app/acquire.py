@@ -72,6 +72,11 @@ class CodeMaoClient:
         return all_data
 
     def update_cookie(self, cookie: str):
-        _cookie = requests.utils.dict_from_cookiejar(cookie)
-        session.cookies.update(_cookie)
+        if isinstance(cookie, requests.cookies.RequestsCookieJar):
+            cookie = requests.utils.dict_from_cookiejar(cookie)
+        elif isinstance(cookie, dict):
+            pass
+        else:
+            raise ValueError("不支持的数据类型")
+        session.cookies.update(cookie)
         return True

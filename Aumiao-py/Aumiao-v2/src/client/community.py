@@ -69,12 +69,15 @@ class Login:
         )
         token = response["auth"]["token"]
         # src.client_community_login.logout()
-        cookie_str = self.get_login_auth(token)
+        _auth = self.get_login_auth(token)
+        cookie_str = self.tool_process.process_cookie(_auth)
+        # 可以仅在cookie中填写authorization=token
         headers = {**self.data.PROGRAM_DATA["HEADERS"], "cookie": cookie_str}
         response = self.acquire.send_request(
             method="get", url="/web/users/details", headers=headers
         )
-        self.check_login(response)
+        self.check_login(response, _auth)
+        # 可以不用填第二个参数，从而取消存储ca—uid这个cookie键值
 
     # 返回完整鉴权cookie
     def get_login_auth(self, token):
@@ -89,13 +92,13 @@ class Login:
         )
         _auth = response.cookies.get_dict()
         auth_cookie = {**token_ca, **_auth}
-        cookie_str = self.tool_process.process_cookie(auth_cookie)
-        return cookie_str
+        return auth_cookie
 
     # 检查并保存登录状态
-    def check_login(self, response):
+    def check_login(self, response, cookie=None):
         if response.status_code == 200:
-            self.acquire.update_cookie(response.cookies)  # 确保cookies被更新
+            up_cookie = cookie if cookie else response.cookies
+            self.acquire.update_cookie(up_cookie)  # 确保cookies被更新
             return True
         elif response.status_code == 403:
             return "Wrong"
@@ -118,6 +121,7 @@ class Login:
         ticket: str,
         pid: str = "65edCTyg",
         agreement_ids: List = [-1],
+        cookies_ali: Dict = {"ca": "", "acw_tc": "", "aliyungf_tc": ""},
     ):
         data = json.dumps(
             {
@@ -127,11 +131,18 @@ class Login:
                 "agreement_ids": agreement_ids,
             }
         )
+        _ca = {
+            "__ca_uid_key__": str(cookies_ali["ca"]),
+            "acw_tc": cookies_ali["acw_tc"],
+            "aliyungf_tc": cookies_ali["aliyungf_tc"],
+        }
+        cookie_str = self.tool_process.process_cookie(_ca)
+        headers_auth = {**self.data.PROGRAM_DATA["HEADERS"], "cookie": cookie_str}
         response = self.acquire.send_request(
             url="/tiger/v3/web/accounts/login/security",
             method="post",
             data=data,
-            headers={**self.data.PROGRAM_DATA["HEADERS"], "x-captcha-ticket": ticket},
+            headers={**headers_auth, "x-captcha-ticket": ticket},
         )
         return response.json()
 
@@ -141,10 +152,14 @@ class Login:
         self,
         identity,
         timestamp: int,
+        cookies_ca=None,
         scence=None,
         pid: str = "65edCTyg",
         deviced=None,
     ):
+        _ca = {"__ca_uid_key__": str(cookies_ca)}
+        cookie_str = self.tool_process.process_cookie(_ca)
+        headers = {**self.data.PROGRAM_DATA["HEADERS"], "cookie": cookie_str}
         data = json.dumps(
             {
                 "identity": identity,
@@ -158,6 +173,7 @@ class Login:
             url="https://open-service.codemao.cn/captcha/rule/v3",
             method="post",
             data=data,
+            headers=headers,
         )
         return response.json()
 
