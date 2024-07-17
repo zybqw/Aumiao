@@ -264,8 +264,7 @@ class Obtain:
             method="get",
             params=params,
         )  # 为防止封号,limit建议调大
-        _dict = response.json()["items"]
-        return _dict
+        return response.json()
 
     # 获取时间戳
     def get_timestamp(self):
