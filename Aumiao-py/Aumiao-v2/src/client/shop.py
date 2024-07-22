@@ -2,13 +2,11 @@ import json
 from typing import Dict
 
 import src.app.acquire as acquire
-import src.app.tool as tool
 
 
-class Shop:
+class Obtain:
     def __init__(self) -> None:
         self.acquire = acquire.CodeMaoClient()
-        self.tool = tool.CodeMaoProcess()
 
     # 获取工作室简介(简易,需登录工作室成员账号)
     def get_shops_simple(self):
@@ -19,42 +17,11 @@ class Shop:
     # 获取工作室简介
     def get_shop_detials(self, id: str) -> Dict:
         response = self.acquire.send_request(url=f"/web/shops/{id}", method="get")
-        result = self.tool.process_reject(
-            data=response.json(),
-            reserve=[
-                "id",
-                "shop_id",
-                "name",
-                "total_score",
-                "preview_url",
-                "description",
-                "n_works",
-                "n_views",
-                "level",
-            ],
-        )
-        return result
 
-    # 更新工作室简介
-    def update_shop_detials(
-        self, description: str, id: str, name: str, preview_url: str
-    ) -> bool:
-        response = self.acquire.send_request(
-            url="/web/work_shops/update",
-            method="post",
-            data=json.dumps(
-                {
-                    "description": description,
-                    "id": id,
-                    "name": name,
-                    "preview_url": preview_url,
-                }
-            ),
-        )
-        return response.status_code == 200
+        return response.json()
 
     # 获取工作室列表的函数
-    def get_work_shops(
+    def get_shops(
         self,
         level: int = 4,
         limit: int = 14,
@@ -76,8 +43,39 @@ class Shop:
             total_key="total",
             data_key="items",
         )
-        result = self.tool.process_reject(
-            data=shops,
-            reserve=["id", "name", "description", "total_works"],
+        return shops
+
+    # 获取工作室成员
+    def get_shops_members(self, id: int, limit: int = 40, offset: int = 0):
+        params = {"limit": limit, "offset": offset}
+        menbers = self.acquire.fetch_all_data(
+            url=f"https://api.codemao.cn/web/shops/{id}/users",
+            params=params,
+            total_key="total",
+            data_key="items",
         )
-        return result
+        return menbers
+
+
+class Motion:
+
+    def __init__(self) -> None:
+        self.acquire = acquire.CodeMaoClient()
+
+    # 更新工作室简介
+    def update_shop_detials(
+        self, description: str, id: str, name: str, preview_url: str
+    ) -> bool:
+        response = self.acquire.send_request(
+            url="/web/work_shops/update",
+            method="post",
+            data=json.dumps(
+                {
+                    "description": description,
+                    "id": id,
+                    "name": name,
+                    "preview_url": preview_url,
+                }
+            ),
+        )
+        return response.status_code == 200

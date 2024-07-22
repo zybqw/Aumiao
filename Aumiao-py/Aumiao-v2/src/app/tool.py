@@ -31,8 +31,8 @@ class CodeMaoProcess:
         return result
 
     # 时间戳转换为时间
-    def process_timestamp(self, times: int) -> str:
-        timeArray = time.localtime(times)
+    def process_timestamp(self, timestamp: int) -> str:
+        timeArray = time.localtime(timestamp)
         StyleTime = time.strftime("%Y-%m-%d %H:%M:%S", timeArray)
         return StyleTime
 
@@ -43,3 +43,22 @@ class CodeMaoProcess:
         for key in keys:
             value = value.get(key, {})
         return value
+
+    # 将cookie转换为headers中显示的形式
+    def process_cookie(self, cookie):
+        cookie_str = "; ".join([f"{key}={value}" for key, value in cookie.items()])
+        return cookie_str
+
+
+class CodeMaoRoutine:
+    def get_timestamp(self):
+        timestamp = time.time()
+        return timestamp
+
+    def print_changes(self, before_data, after_data, keys):
+        for key in keys:
+            if key in before_data and key in after_data:
+                change = after_data[key] - before_data[key]
+                print(f"{key} 改变 {change} 个")
+            else:
+                print(f"{key} 没有找到")
