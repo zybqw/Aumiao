@@ -96,7 +96,7 @@ class UserUnion:
             "liked": response["liked_total"],
             "view": response["view_times"],
         }
-        before_data = self.file.file_load(path=data.CACHE_FILE_PATH)
+        before_data = self.file.file_load(path=data.CACHE_FILE_PATH, type="json")
         if before_data != {}:
             self.tool_routine.print_changes(
                 before_data=before_data,
