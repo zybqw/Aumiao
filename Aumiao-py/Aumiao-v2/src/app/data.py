@@ -7,8 +7,7 @@ CACHE_FILE_PATH: str = os.path.join(os.getcwd(), "data/" "cache.json")
 
 
 class CodeMaoData:
-
-    def load(self):
+    def __init__(self) -> None:
         data = File.CodeMaoFile().file_load(path=DATA_FILE_PATH, type="json")
 
         self.PROGRAM_DATA.update(data["PROGRAM_DATA"])  # type: ignore

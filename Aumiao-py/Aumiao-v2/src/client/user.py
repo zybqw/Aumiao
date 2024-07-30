@@ -32,6 +32,20 @@ class Obtain:
 
         return response.json()  # type: ignore
 
+    # 获取账户信息
+    def get_data_profile(self):
+        response = self.acquire.send_request(
+            method="get", url="/tiger/v3/web/accounts/profile"
+        )
+        return response.json()  # type: ignore
+
+    # 获取账户安全信息
+    def get_data_privacy(self):
+        response = self.acquire.send_request(
+            method="get", url="/tiger/v3/web/accounts/privacy"
+        )
+        return response.json()  # type: ignore
+
     # 获取用户荣誉
     def get_user_honor(self, user_id: str) -> dict:
         params = {"user_id": user_id}
