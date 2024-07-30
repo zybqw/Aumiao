@@ -1,5 +1,3 @@
-from typing import Dict, List
-
 import src.app.acquire as acquire
 import src.app.data as data
 import src.app.file as file
@@ -15,15 +13,14 @@ class WorkUnion:
         self.user_obtain = user.Obtain()
         self.work_obtain = work.Obtain()
         self.data = data.CodeMaoData()
+        self.tool_process = tool.CodeMaoProcess()
 
     # 清除作品广告的函数
     def clear_ad(self, keys) -> bool:
         works_list = self.user_obtain.get_user_works(self.data.ACCOUNT_DATA["id"])
         for item0 in works_list:
 
-            comments = self.work_obtain.get_comments_detail(
-                work_id=item0["id"], method="comments"
-            )
+            comments = self.work_obtain.get_work_detail(work_id=item0["id"])  # type: ignore
             work_id = item0["id"]
             for item1 in comments:
                 comment_id = item1["id"]
@@ -40,7 +37,7 @@ class WorkUnion:
                         method="delete",
                     )
                     print("*" * 50)
-                    if response.status_code != 204:
+                    if response.status_code != 204:  # type: ignore
                         return False
         return True
 
@@ -49,12 +46,12 @@ class WorkUnion:
         self,
         work_id: int,
         method: str = "user_id",
-    ) -> List[str] | List[Dict[str, int | bool]]:
+    ):
         comments = self.work_obtain.get_work_comments(work_id=work_id)
         if method == "user_id":
             result = [item["user"]["id"] for item in comments]
         elif method == "comments":
-            result = self.tool.process_reject(
+            result = self.tool_process.process_reject(
                 data=comments,
                 reserve=["id", "content", "is_top"],
             )
@@ -67,14 +64,14 @@ class WorkUnion:
 class CommunityUnion:
 
     def __init__(self) -> None:
-        self.work_metion = work.Motion()
+        self.work_motion = work.Motion()
         self.user_obtain = user.Obtain()
 
     # 给某人作品全点赞
     def like_all_work(self, user_id: str):
         works_list = self.user_obtain.get_user_works(user_id)
         for item in works_list:
-            if not self.work_metion.like_work(work_id=item["id"]):
+            if not self.work_motion.like_work(work_id=item["id"]):  # type: ignore
                 return False
         return True
 

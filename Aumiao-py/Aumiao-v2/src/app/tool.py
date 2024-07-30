@@ -1,21 +1,26 @@
 import time
-from typing import Any, Dict, List
 
 
 class CodeMaoProcess:
+
     def process_reject(
-        self, data: List | Dict, reserve: List = None, exclude: List = None
-    ) -> List | Dict:
+        self,
+        data: list | dict,
+        reserve: list | None = None,
+        exclude: list | None = None,
+    ) -> list[dict[str, str | int | bool]] | dict[str, str | int | bool] | None:
         if reserve and exclude:
             raise ValueError(
                 "请仅提供 'reserve' 或 'exclude' 中的一个参数,不要同时使用."
             )
 
-        def filter_keys(item):
+        def filter_keys(item) -> dict[str, str | int]:
             if reserve is not None:
                 return {key: value for key, value in item.items() if key in reserve}
             elif exclude is not None:
                 return {key: value for key, value in item.items() if key not in exclude}
+            else:
+                return {}
 
         if isinstance(data, list):
             return [filter_keys(item) for item in data]
@@ -37,7 +42,7 @@ class CodeMaoProcess:
         return StyleTime
 
     # 通过点分隔的键路径从嵌套字典中获取值
-    def process_path(self, data: Dict, path: str) -> Any:
+    def process_path(self, data: dict, path: str) -> dict:
         keys = path.split(".")
         value = data
         for key in keys:

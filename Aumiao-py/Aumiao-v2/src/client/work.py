@@ -16,7 +16,7 @@ class Motion:
             data=json.dumps({}),
         )
 
-        return response.status_code == 204
+        return response.status_code == 204  # type: ignore
 
     # 收藏的函数
     def collection_work(self, work_id: int, method: str = "post") -> bool:
@@ -25,7 +25,7 @@ class Motion:
             method=method,
             data=json.dumps({}),
         )
-        return response.status_code == 200
+        return response.status_code == 200  # type: ignore
 
     # 对某个作品进行点赞的函数
     def like_work(self, work_id: int, method: str = "post") -> bool:
@@ -35,7 +35,7 @@ class Motion:
             method=method,
             data=json.dumps({}),
         )
-        return response.status_code == 200
+        return response.status_code == 200  # type: ignore
 
     # 对某个作品进行评论的函数
     def comment_work(self, comment, emoji, work_id: int) -> bool:
@@ -49,7 +49,7 @@ class Motion:
                 }
             ),
         )
-        return response.status_code == 201
+        return response.status_code == 201  # type: ignore
 
 
 class Obtain:
@@ -70,12 +70,12 @@ class Obtain:
         return comments
 
     # 获取作品信息
-    def get_work_detial(self, work_id: int):
+    def get_work_detail(self, work_id: int):
         response = self.acquire.send_request(
             url=f"https://api.codemao.cn/creation-tools/v1/works/{work_id}",
             method="get",
         )
-        return response.json()
+        return response.json()  # type: ignore
 
     # 获取其他作品推荐
     def get_other_recommended(self, work_id: int):
@@ -83,11 +83,11 @@ class Obtain:
             url=f"https://api.codemao.cn/nemo/v2/works/web/{work_id}/recommended",
             method="get",
         )
-        return response.json()
+        return response.json()  # type: ignore
 
     # 获取作品信息(info)
     def get_work_info(self, work_id: int):
         response = self.acquire.send_request(
             url=f"https://api.codemao.cn/api/work/info/{work_id}", method="get"
         )
-        return response.json()
+        return response.json()  # type: ignore

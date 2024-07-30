@@ -8,12 +8,12 @@ CACHE_FILE_PATH: str = os.path.join(os.getcwd(), "data/" "cache.json")
 
 class CodeMaoData:
 
-    def __init__(self):
+    def load(self):
         data = File.CodeMaoFile().file_load(path=DATA_FILE_PATH, type="json")
 
-        self.PROGRAM_DATA.update(data["PROGRAM_DATA"])
-        self.USER_DATA.update(data["USER_DATA"])
-        self.ACCOUNT_DATA.update(data["ACCOUNT_DATA"])
+        self.PROGRAM_DATA.update(data["PROGRAM_DATA"])  # type: ignore
+        self.USER_DATA.update(data["USER_DATA"])  # type: ignore
+        self.ACCOUNT_DATA.update(data["ACCOUNT_DATA"])  # type: ignore
 
     PROGRAM_DATA = {
         "HEADERS": {
@@ -26,14 +26,14 @@ class CodeMaoData:
     }
 
     USER_DATA = {
-        "blackroom": {
+        "black_room": {
             "user": [],
             "work": [],
             "post": [],
         },
         "comments": [],
         "emojis": [],
-        "anwsers": [],
+        "answers": [],
         "replies": [],
         "ads": [],
     }
@@ -42,7 +42,7 @@ class CodeMaoData:
         "password": "",
         "id": "",
         "nickname": "",
-        "descrption": "",
-        "creat_time": "",
+        "description": "",
+        "create_time": "",
         "author_level": "",
     }

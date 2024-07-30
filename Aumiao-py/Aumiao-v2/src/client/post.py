@@ -1,5 +1,3 @@
-from typing import List
-
 import src.app.acquire as acquire
 
 
@@ -8,22 +6,22 @@ class Obtain:
         self.acquire = acquire.CodeMaoClient()
 
     # 获取多个帖子信息
-    def get_posts_detials(self, ids: int | List):
+    def get_posts_details(self, ids: int | list):
         if isinstance(ids, int):
             params = {"ids": ids}
-        elif isinstance(ids, List):
+        elif isinstance(ids, list):
             params = {"ids": ",".join(map(str, ids))}
         response = self.acquire.send_request(
             url="/web/forums/posts/all", method="get", params=params
         )
-        return response.json()
+        return response.json()  # type: ignore
 
     # 获取单个帖子信息
-    def get_single_detials(self, id: int):
+    def get_single_details(self, id: int):
         response = self.acquire.send_request(
             url=f"/web/forums/posts/{id}/details", method="get"
         )
-        return response.json()
+        return response.json()  # type: ignore
 
     # 获取帖子回复
     def get_post_replies(

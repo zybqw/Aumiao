@@ -6,9 +6,9 @@ from typing import Any, Callable
 def Singleton(cls):
     _instance = {}
 
-    def _singleton(*args, **kargs):
+    def _singleton(*args, **kwargs):
         if cls not in _instance:
-            _instance[cls] = cls(*args, **kargs)
+            _instance[cls] = cls(*args, **kwargs)
         return _instance[cls]
 
     return _singleton
