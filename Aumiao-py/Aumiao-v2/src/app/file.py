@@ -2,7 +2,7 @@ import json
 from typing import Dict
 
 
-class CodeMaoError:
+class CodeMaoFile:
     # 检查文件
     def check_file(self, path: str) -> bool:
         try:
@@ -20,17 +20,17 @@ class CodeMaoError:
             print(err)
             return False
 
-
-class CodeMaoFile:
     # 从配置文件加载账户信息
-    def file_load(self, path, type="json"):
-        CodeMaoError().check_file(path=path)
+    def file_load(self, path, type: str):
+        self.check_file(path=path)
         with open(path, "r", encoding="utf-8") as file:
             data = file.read()
             if type == "json":
-                data = CodeMaoError().validate_json(data)
-                return data if data else {}
-            return data
+                return json.loads(data) if data else {}
+            if type == "txt":
+                return data
+            else:
+                raise ValueError("不支持的读取方法")
 
     # 将文本写入到指定文件
     def write(
@@ -40,7 +40,7 @@ class CodeMaoFile:
         type: str = "str",
         method: str = "w",
     ) -> None:
-        CodeMaoError().check_file(path=path)
+        self.check_file(path)
         with open(path, mode=method, encoding="utf-8") as file:
             if type == "str":
 
