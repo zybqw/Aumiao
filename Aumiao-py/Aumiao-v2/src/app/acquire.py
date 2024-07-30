@@ -1,5 +1,4 @@
 import time
-from typing import Any, Dict, List, Optional
 
 import requests
 from requests.exceptions import ConnectionError, HTTPError, RequestException, Timeout
@@ -19,16 +18,15 @@ class CodeMaoClient:
         self.BASE_URL = self.data.PROGRAM_DATA["BASE_URL"]
         global session
 
-    @retry(retries=3, delay=5)
     def send_request(
         self,
         url: str,
         method: str,
-        params: Optional[Dict] = None,
-        data: Any = None,
-        headers: Dict = None,
-        sleep: int = 0.3,
-    ) -> Optional[Any]:
+        params=None,
+        data=None,
+        headers=None,
+        sleep=0.3,
+    ):
 
         headers = headers or self.HEADERS
         url = url if "http" in url else f"{self.BASE_URL}{url}"
@@ -40,27 +38,27 @@ class CodeMaoClient:
             response.raise_for_status()
             return response
         except (HTTPError, ConnectionError, Timeout, RequestException) as err:
-            print(f"错误码: {response.status_code} 错误信息: {response.text}")
             print(f"网络请求异常: {err}")
+            print(f"错误码: {response.status_code} 错误信息: {response.text}")
             return response
 
     @retry(retries=3, delay=20)
     def fetch_all_data(
         self,
         url: str,
-        params: Dict[str, any],
+        params: dict[str, str | bool | int],
         total_key: str = "total",
         data_key: str = "item",
         method: str = "offset",
-        args: Dict = {"amount": "limit", "remove": "offset"},
-    ) -> List[Dict]:
+        args: dict = {"amount": "limit", "remove": "offset"},
+    ) -> list[dict]:
         initial_response = self.send_request(url=url, method="get", params=params)
         total_items = int(
-            self.tool_process.process_path(initial_response.json(), total_key)
+            self.tool_process.process_path(initial_response.json(), total_key)  # type: ignore
         )
         items_per_page = params[args["amount"]]
-        total_pages = (total_items // items_per_page) + (
-            1 if total_items % items_per_page > 0 else 0
+        total_pages = (total_items // items_per_page) + (  # type: ignore
+            1 if total_items % items_per_page > 0 else 0  # type: ignore
         )
         all_data = []
         for page in range(total_pages):
@@ -73,11 +71,11 @@ class CodeMaoClient:
         return all_data
 
     def update_cookie(self, cookie: str):
-        if isinstance(cookie, requests.cookies.RequestsCookieJar):
+        if isinstance(cookie, requests.cookies.RequestsCookieJar):  # type: ignore
             cookie = requests.utils.dict_from_cookiejar(cookie)
         elif isinstance(cookie, dict):
             pass
         else:
             raise ValueError("不支持的数据类型")
-        session.cookies.update(cookie)
+        session.cookies.update(cookie)  # type: ignore
         return True
