@@ -1,6 +1,5 @@
 import json
 import os
-from typing import Dict
 
 DATA_FILE_PATH: str = os.path.join(os.getcwd(), "data/" "data.json")
 CACHE_FILE_PATH: str = os.path.join(os.getcwd(), "data/" "cache.json")
@@ -10,7 +9,7 @@ __version__ = "2.0.0"
 
 def write(
     path: str,
-    text: str | Dict,
+    text: str | dict,
     type: str = "str",
     method: str = "w",
 ) -> None:
@@ -18,7 +17,7 @@ def write(
     with open(path, mode=method, encoding="utf-8") as file:
         if type == "str":
 
-            file.write(text + "\n")
+            file.write(text + "\n")  # type: ignore
         elif type == "dict":
             file.write(json.dumps(text, ensure_ascii=False, indent=4, sort_keys=False))
         else:
@@ -49,12 +48,12 @@ data = {
         "password": "password",
         "id": "12770114",
         "nickname": "猫鱼a",
-        "descrption": "咕咕咕()",
-        "creat_time": "1605554626",
+        "description": "咕咕咕()",
+        "create_time": "1605554626",
         "author_level": "4",
     },
     "USER_DATA": {
-        "blackroom": {
+        "black_room": {
             "user": ["114514", "1919810", "2233"],
             "work": ["114514", "1919810", "2233"],
             "post": ["114514", "1919810", "2233"],
@@ -84,7 +83,7 @@ data = {
             "雷电猴_哈哈哈",
             "雷电猴_嘻嘻嘻",
         ],
-        "anwsers": [
+        "answers": [
             "How are you? |I'm fine Thank you ",
             "Let's play,OK? |&Great!",
             "What's your name? |I'm {}",

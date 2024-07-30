@@ -1,6 +1,5 @@
 import json
 import uuid
-from typing import Any, Dict, List, Optional
 
 import src.app.acquire as Acquire
 import src.app.data as Data
@@ -16,10 +15,10 @@ class Login:
     # 密码登录函数
     def login_password(
         self,
-        identity: str | int = None,
-        password: Any = None,
+        identity: str,
+        password: str,
         pid: str = "65edCTyg",
-    ) -> Optional[str]:
+    ) -> str | None:
 
         # cookies = utils.dict_from_cookiejar(response.cookies)
 
@@ -43,7 +42,7 @@ class Login:
         self.check_login(response)
 
     # cookie登录
-    def login_cookie(self, cookies):
+    def login_cookie(self, cookies: str) -> None | bool:
 
         try:
             dict([item.split("=", 1) for item in cookies.split("; ")])
@@ -60,7 +59,7 @@ class Login:
         self.check_login(response)
 
     # token登录(毛毡最新登录方式)
-    def login_token(self, identity: str | int = None, password: Any = None):
+    def login_token(self, identity: str, password: str):
         timestamp = Obtain().get_timestamp()["data"]
         response = self.get_login_ticket(identity=identity, timestamp=timestamp)
         ticket = response["ticket"]
@@ -90,7 +89,7 @@ class Login:
         response = self.acquire.send_request(
             method="get", url="/web/users/details", headers=headers
         )
-        _auth = response.cookies.get_dict()
+        _auth = response.cookies.get_dict()  # type: ignore
         auth_cookie = {**token_ca, **_auth}
         return auth_cookie
 
@@ -111,17 +110,17 @@ class Login:
         response = self.acquire.send_request(
             url="/tiger/v3/web/accounts/logout", method="post", data=json.dumps({})
         )
-        return response.status_code == 204
+        return response.status_code == 204  # type: ignore
 
     # 登录信息
     def get_login_security(
         self,
-        identity: str | int,
-        password: Any,
+        identity: str,
+        password: str,
         ticket: str,
         pid: str = "65edCTyg",
-        agreement_ids: List = [-1],
-        cookies_ali: Dict = {"ca": "", "acw_tc": "", "aliyungf_tc": ""},
+        agreement_ids: list = [-1],
+        cookies_ali: dict = {"ca": "", "acw_tc": "", "aliyungf_tc": ""},
     ):
         data = json.dumps(
             {
@@ -144,7 +143,7 @@ class Login:
             data=data,
             headers={**headers_auth, "x-captcha-ticket": ticket},
         )
-        return response.json()
+        return response.json()  # type: ignore
 
     #
     # 登录ticket获取
@@ -175,7 +174,7 @@ class Login:
             data=data,
             headers=headers,
         )
-        return response.json()
+        return response.json()  # type: ignore
 
 
 class Obtain:
@@ -188,16 +187,16 @@ class Obtain:
             method="get",
             url="/api/user/random/nickname",
         )
-        return response.json()["data"]["nickname"]
+        return response.json()["data"]["nickname"]  # type: ignore
 
     # 获取新回复(传入参数就获取前*个回复,若没传入就获取新回复数量, 再获取新回复数量个回复)
-    def get_replies(self, limit: int = 0) -> List[Dict[str, Any]]:
+    def get_replies(self, limit: int = 0) -> list[dict[str, str | int]]:
         _list = []
         record = self.acquire.send_request(
             url="/web/message-record/count",
             method="get",
         )
-        reply_num = record.json()[0]["count"]
+        reply_num = record.json()[0]["count"]  # type: ignore
         if reply_num == limit == 0:
             return [{}]
         result_num = reply_num if limit == 0 else limit
@@ -213,14 +212,14 @@ class Obtain:
                 method="get",
                 params=params,
             )
-            _list.extend(response.json()["items"][:result_num])
+            _list.extend(response.json()["items"][:result_num])  # type: ignore
             result_num -= list_num
             if result_num <= 0:
                 break
         return _list
 
     # 清除邮箱红点
-    def clear_redpoint(self) -> bool:
+    def all_read(self) -> bool:
         item = 0
         query_types = ["LIKE_FORK", "COMMENT_REPLY", "SYSTEM"]
         while True:
@@ -229,7 +228,7 @@ class Obtain:
                 url="/web/message-record/count",
                 method="get",
             )
-            counts = [record.json()[i]["count"] for i in range(3)]
+            counts = [record.json()[i]["count"] for i in range(3)]  # type: ignore
             if all(count == 0 for count in counts):
                 return True  # 所有消息类型处理完毕
 
@@ -247,7 +246,7 @@ class Obtain:
                     method="get",
                     params=params,
                 )
-                responses[query_type] = response.status_code
+                responses[query_type] = response.status_code  # type: ignore
             if any(status != 200 for status in responses.values()):
                 return False
             item += 200
@@ -264,11 +263,11 @@ class Obtain:
             method="get",
             params=params,
         )  # 为防止封号,limit建议调大
-        return response.json()
+        return response.json()  # type: ignore
 
     # 获取时间戳
     def get_timestamp(self):
         response = self.acquire.send_request(
             url="/coconut/clouddb/currentTime", method="get"
         )
-        return response.json()
+        return response.json()  # type: ignore

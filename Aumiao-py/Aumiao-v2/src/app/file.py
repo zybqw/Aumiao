@@ -1,5 +1,4 @@
 import json
-from typing import Dict
 
 
 class CodeMaoFile:
@@ -36,7 +35,7 @@ class CodeMaoFile:
     def write(
         self,
         path: str,
-        text: str | Dict,
+        text: str | dict,
         type: str = "str",
         method: str = "w",
     ) -> None:
@@ -44,7 +43,7 @@ class CodeMaoFile:
         with open(path, mode=method, encoding="utf-8") as file:
             if type == "str":
 
-                file.write(text + "\n")
+                file.write(text + "\n")  # type: ignore
             elif type == "dict":
                 file.write(
                     json.dumps(text, ensure_ascii=False, indent=4, sort_keys=False)

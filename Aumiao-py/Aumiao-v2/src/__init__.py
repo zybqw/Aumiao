@@ -1,11 +1,12 @@
 from .app import acquire, data, file, tool
-from .client import community, pickduck, post, shop, union, user, work
+from .client import community, other, post, shop, union, user, work
 
 # 定义版本、作者和团队信息
 version = "2.0.0"
 author = "Aurzex"
 team = "Aumiao Team"
 team_members = "Aurzex, MoonLeaaaf, Nomen, MiTao"
+
 
 # 实例化app模块中的类
 app_acquire = acquire.CodeMaoClient()
@@ -27,4 +28,4 @@ client_user_obtain = user.Obtain()
 client_user_motion = user.Motion()
 client_work_motion = work.Motion()
 client_work_obtain = work.Obtain()
-client_pickduck = pickduck.PickDuck()
+client_other = other.PickDuck()
