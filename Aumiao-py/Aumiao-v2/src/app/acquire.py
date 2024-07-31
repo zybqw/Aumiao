@@ -49,6 +49,8 @@ class CodeMaoClient:
         self,
         url: str,
         params,
+        data=None,
+        fetch_method: Literal["get", "post"] = "get",
         total_key: str = "total",
         data_key: str = "item",
         method: Literal["offset", "page"] = "offset",
@@ -57,7 +59,9 @@ class CodeMaoClient:
             "remove": "offset",
         },
     ) -> list[dict]:
-        initial_response = self.send_request(url=url, method="get", params=params)
+        initial_response = self.send_request(
+            url=url, method=fetch_method, params=params
+        )
         total_items = int(
             self.tool_process.process_path(initial_response.json(), total_key)  # type: ignore
         )
@@ -71,7 +75,7 @@ class CodeMaoClient:
                 params[args["remove"]] = page * items_per_page
             elif method == "page":
                 params[args["remove"]] = page + 1 if page != total_pages else page
-            response = self.send_request(url=url, method="get", params=params)
+            response = self.send_request(url=url, method=fetch_method, params=params)
             all_data.extend(self.tool_process.process_path(response.json(), data_key))
         return all_data
 
