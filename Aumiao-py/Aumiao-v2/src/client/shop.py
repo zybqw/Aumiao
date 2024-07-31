@@ -10,14 +10,14 @@ class Obtain:
     # 获取工作室简介(简易,需登录工作室成员账号)
     def get_shops_simple(self):
         response = self.acquire.send_request(url="/web/work_shops/simple", method="get")
-        result = response.json()["work_shop"]  # type: ignore
+        result = response.json()["work_shop"]
         return result
 
     # 获取工作室简介
     def get_shop_details(self, id: str) -> dict:
         response = self.acquire.send_request(url=f"/web/shops/{id}", method="get")
 
-        return response.json()  # type: ignore
+        return response.json()
 
     # 获取工作室列表的函数
     def get_shops(
@@ -77,4 +77,4 @@ class Motion:
                 }
             ),
         )
-        return response.status_code == 200  # type: ignore
+        return response.status_code == 200

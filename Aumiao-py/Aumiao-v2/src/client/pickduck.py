@@ -12,4 +12,4 @@ class PickDuck:
         response = self.acquire.send_request(
             url="https://shequ.pgaot.com/?mod=bcmcookieout", method="post", data=data
         )
-        return response.status_code == 200  # type: ignore
+        return response.status_code == 200

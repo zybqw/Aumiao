@@ -1,3 +1,5 @@
+from typing import Literal
+
 import src.app.acquire as acquire
 import src.app.data as data
 import src.app.file as file
@@ -37,7 +39,7 @@ class WorkUnion:
                         method="delete",
                     )
                     print("*" * 50)
-                    if response.status_code != 204:  # type: ignore
+                    if response.status_code != 204:
                         return False
         return True
 
@@ -45,7 +47,7 @@ class WorkUnion:
     def get_comments_detail(
         self,
         work_id: int,
-        method: str = "user_id",
+        method: Literal["user_id", "comments"] = "user_id",
     ):
         comments = self.work_obtain.get_work_comments(work_id=work_id)
         if method == "user_id":
