@@ -1,6 +1,9 @@
 import json
 
+from .decorator import singleton
 
+
+@singleton
 class CodeMaoFile:
     # 检查文件
     def check_file(self, path: str) -> bool:

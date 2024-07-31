@@ -1,6 +1,9 @@
 import time
 
+from .decorator import singleton
 
+
+@singleton
 class CodeMaoProcess:
 
     def process_reject(

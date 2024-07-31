@@ -3,13 +3,14 @@ import time
 import requests
 from requests.exceptions import ConnectionError, HTTPError, RequestException, Timeout
 
-from ..decorator import retry
 from . import data as Data
 from . import tool as Tool
+from .decorator import retry, singleton
 
 session = requests.session()
 
 
+@singleton
 class CodeMaoClient:
     def __init__(self) -> None:
         self.data = Data.CodeMaoData()
@@ -46,7 +47,7 @@ class CodeMaoClient:
     def fetch_all_data(
         self,
         url: str,
-        params: dict[str, str | bool | int],
+        params,
         total_key: str = "total",
         data_key: str = "item",
         method: str = "offset",

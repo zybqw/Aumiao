@@ -3,7 +3,7 @@ from time import sleep
 from typing import Any, Callable
 
 
-def Singleton(cls):
+def singleton(cls):
     _instance = {}
 
     def _singleton(*args, **kwargs):
