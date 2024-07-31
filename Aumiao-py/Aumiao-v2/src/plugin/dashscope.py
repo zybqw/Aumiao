@@ -20,13 +20,13 @@ class Dashscope:
         self,
         method: str,
         modal: str,
-        message: str = [
+        message: list = [
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": "你好"},
             {"role": "assistant", "content": "你好啊，我是通义千问。"},
             {"role": "user", "content": "你有哪些技能？"},
         ],
-        multiple_assistant_message: str = [],
+        multiple_assistant_message: list = [],
         more={
             "stream": False,
             "extra_body": {"enable_search": True},

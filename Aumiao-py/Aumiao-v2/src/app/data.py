@@ -1,11 +1,13 @@
 import os
 
 from . import file as File
+from .decorator import singleton
 
 DATA_FILE_PATH: str = os.path.join(os.getcwd(), "data/" "data.json")
 CACHE_FILE_PATH: str = os.path.join(os.getcwd(), "data/" "cache.json")
 
 
+@singleton
 class CodeMaoData:
     def __init__(self) -> None:
         data = File.CodeMaoFile().file_load(path=DATA_FILE_PATH, type="json")
