@@ -14,14 +14,14 @@ class Obtain:
         response = self.acquire.send_request(
             url="/web/forums/posts/all", method="get", params=params
         )
-        return response.json()  # type: ignore
+        return response.json()
 
     # 获取单个帖子信息
     def get_single_details(self, id: int):
         response = self.acquire.send_request(
             url=f"/web/forums/posts/{id}/details", method="get"
         )
-        return response.json()  # type: ignore
+        return response.json()
 
     # 获取帖子回复
     def get_post_replies(

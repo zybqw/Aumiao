@@ -1,4 +1,5 @@
 import time
+from typing import Literal
 
 import requests
 from requests.exceptions import ConnectionError, HTTPError, RequestException, Timeout
@@ -50,8 +51,11 @@ class CodeMaoClient:
         params,
         total_key: str = "total",
         data_key: str = "item",
-        method: str = "offset",
-        args: dict = {"amount": "limit", "remove": "offset"},
+        method: Literal["offset", "page"] = "offset",
+        args: dict[Literal["amount", "remove"], str] = {
+            "amount": "limit",
+            "remove": "offset",
+        },
     ) -> list[dict]:
         initial_response = self.send_request(url=url, method="get", params=params)
         total_items = int(

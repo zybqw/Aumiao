@@ -13,7 +13,7 @@ class Obtain:
             method="get", url=f"/api/user/info/detail/{user_id}"
         )
 
-        return response.json()["data"]["userInfo"]  # type: ignore
+        return response.json()["data"]["userInfo"]
 
     # 获取账户信息(详细)
     def get_data_details(self) -> dict:
@@ -21,7 +21,7 @@ class Obtain:
             method="get",
             url="/web/users/details",
         )
-        return response.json()  # type: ignore
+        return response.json()
 
     # 获取账户信息(简略)
     def get_data_info(self) -> dict:
@@ -30,21 +30,21 @@ class Obtain:
             url="/web/users/info",
         )
 
-        return response.json()  # type: ignore
+        return response.json()
 
     # 获取账户信息
     def get_data_profile(self):
         response = self.acquire.send_request(
             method="get", url="/tiger/v3/web/accounts/profile"
         )
-        return response.json()  # type: ignore
+        return response.json()
 
     # 获取账户安全信息
     def get_data_privacy(self):
         response = self.acquire.send_request(
             method="get", url="/tiger/v3/web/accounts/privacy"
         )
-        return response.json()  # type: ignore
+        return response.json()
 
     # 获取用户荣誉
     def get_user_honor(self, user_id: str) -> dict:
@@ -55,7 +55,7 @@ class Obtain:
             params=params,
         )
 
-        return response.json()  # type: ignore
+        return response.json()
 
     # 获取个人作品列表的函数
     def get_user_works(self, user_id: str) -> list[dict[str, str]]:
@@ -80,7 +80,7 @@ class Obtain:
             "offset": 0,
             "limit": 15,
         }
-        fans = self.fetch_all_data(  # type: ignore
+        fans = self.acquire.fetch_all_data(
             url="/creation-tools/v1/user/fans",
             params=params,
             total_key="total",
@@ -116,7 +116,7 @@ class Motion:
             method="patch",
             data=json.dumps({"username": username}),
         )
-        return response.status_code  # type: ignore
+        return response.status_code
 
     # 验证手机号
     def verify_phone(self, phone_num: int):
@@ -124,4 +124,4 @@ class Motion:
         response = self.acquire.send_request(
             url="/web/users/phone_number/is_consistent", method="get", params=params
         )
-        return response.json()  # type: ignore
+        return response.json()
