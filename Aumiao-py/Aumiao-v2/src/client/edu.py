@@ -75,7 +75,7 @@ class Obtain:
         time_stamp = community.Obtain().get_timestamp()["data"]
         params = {"page": 1, "TIME": time_stamp}
         reminder = method if method == "simple" else ""
-        url = f"{"https://eduzone.codemao.cn/edu/zone/classes"}{reminder}"
+        url = f"https://eduzone.codemao.cn/edu/zone/classes{reminder}"
         classes = self.acquire.fetch_all_data(
             url=url,
             params=params,
