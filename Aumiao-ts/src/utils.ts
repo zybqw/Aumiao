@@ -113,9 +113,9 @@ export class Logger {
             const envData = trackedData.map((key) => process.env[key]);
 
             let msg = message;
-            if (envData.some((v) => v && message.includes(v))) {
-                msg = message.replace(new RegExp(envData.join("|"), "g"), "****");
-            }
+            envData.forEach((data, i) => {
+                if (data) msg = msg.replace(data, `${trackedData[i]}: [*****]`);
+            });
 
             console.log(
                 this.generate({ level: this.Levels.VERBOSE, message: msg })
