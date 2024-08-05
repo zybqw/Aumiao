@@ -68,6 +68,14 @@ class Obtain:
     def __init__(self) -> None:
         self.acquire = Acquire.CodeMaoClient()
 
+    def get_data_details(self):
+        time_stamp = community.Obtain().get_timestamp()["data"]
+        params = {"TIME": time_stamp}
+        response = self.acquire.send_request(
+            url="https://eduzone.codemao.cn/edu/zone", method="get", params=params
+        )
+        return response.json()
+
     # 获取所有班级
     def get_classes(
         self, limit: int = 15, method: Literal["detail", "simple"] = "simple"
