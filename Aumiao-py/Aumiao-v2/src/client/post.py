@@ -1,3 +1,5 @@
+from typing import Literal
+
 import src.app.acquire as acquire
 
 
@@ -6,7 +8,7 @@ class Obtain:
         self.acquire = acquire.CodeMaoClient()
 
     # 获取多个帖子信息
-    def get_posts_details(self, ids: int | list):
+    def get_posts_details(self, ids: int | list[int]):
         if isinstance(ids, int):
             params = {"ids": ids}
         elif isinstance(ids, list):
@@ -37,3 +39,19 @@ class Obtain:
             args={"amount": "limit", "remove": "page"},
         )
         return replies
+
+    def get_post_mine(
+        self,
+        method: Literal["created", "replied"],
+        page: int = 1,
+        limit: int = 20,
+    ):
+        params = {"page": page, "limit": limit}
+        posts = self.acquire.fetch_all_data(
+            url=f"https://api.codemao.cn/web/forums/posts/mine/{method}",
+            params=params,
+            data_key="items",
+            method="page",
+            args={"amount": "limit", "remove": "page"},
+        )
+        return posts

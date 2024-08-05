@@ -27,7 +27,7 @@ class CodeMaoClient:
         params=None,
         data=None,
         headers=None,
-        sleep=0.3,
+        sleep=0,
     ):
 
         headers = headers or self.HEADERS

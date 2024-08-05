@@ -125,3 +125,18 @@ class Motion:
             url="/web/users/phone_number/is_consistent", method="get", params=params
         )
         return response.json()
+
+    def modify_password(self, old_password: str, new_password: str):
+        data = json.dumps(
+            {
+                "old_password": old_password,
+                "password": new_password,
+                "confirm_password": new_password,
+            }
+        )
+        response = self.acquire.send_request(
+            url="https://api.codemao.cn/tiger/v3/web/accounts/password",
+            method="patch",
+            data=data,
+        )
+        return response.status_code == 204
