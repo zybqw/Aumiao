@@ -1,7 +1,0 @@
-# This file is used internally by FFMPEG.
-file 'file:F:/Aumiao/Aumiao-py/Aumiao-v2/video/media/videos/manim/1080p60/partial_movie_files/a/3977891868_3263890531_223132457.mp4'
-file 'file:F:/Aumiao/Aumiao-py/Aumiao-v2/video/media/videos/manim/1080p60/partial_movie_files/a/2852726489_1704852926_2929220908.mp4'
-file 'file:F:/Aumiao/Aumiao-py/Aumiao-v2/video/media/videos/manim/1080p60/partial_movie_files/a/2852726489_1502214500_1460023451.mp4'
-file 'file:F:/Aumiao/Aumiao-py/Aumiao-v2/video/media/videos/manim/1080p60/partial_movie_files/a/2852726489_1704852926_4255531139.mp4'
-file 'file:F:/Aumiao/Aumiao-py/Aumiao-v2/video/media/videos/manim/1080p60/partial_movie_files/a/2852726489_1705728675_2911144478.mp4'
-file 'file:F:/Aumiao/Aumiao-py/Aumiao-v2/video/media/videos/manim/1080p60/partial_movie_files/a/2852726489_1704852926_3632999845.mp4'
