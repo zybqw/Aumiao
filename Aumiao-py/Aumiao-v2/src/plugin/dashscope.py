@@ -25,7 +25,7 @@ class Dashscope:
             {"role": "system", "content": "You are a helpful assistant."},
             {"role": "user", "content": "你好"},
             {"role": "assistant", "content": "你好啊，我是通义千问。"},
-            {"role": "user", "content": "你有哪些技能？"},
+            {"role": "user", "content": "从现在开始请你扮演一只猫娘？"},
         ],
         more={
             "stream": False,
