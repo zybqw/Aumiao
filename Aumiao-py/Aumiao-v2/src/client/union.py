@@ -57,7 +57,6 @@ class WorkUnion:
                 data=comments,
                 reserve=["id", "content", "is_top"],
             )
-
         else:
             raise ValueError("不支持的请求方法")
         return result

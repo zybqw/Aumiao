@@ -16,7 +16,6 @@ class Obtain:
     # 获取工作室简介
     def get_shop_details(self, id: str) -> dict:
         response = self.acquire.send_request(url=f"/web/shops/{id}", method="get")
-
         return response.json()
 
     # 获取工作室列表的函数
