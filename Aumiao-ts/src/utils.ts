@@ -105,8 +105,22 @@ export class Logger {
     }
 
     verbose(message: string) {
-        if (this.app.config.verbose || this.app.options["verbose"]) console.log(this.generate({ level: this.Levels.VERBOSE, message }));
-        return this;
+        /*
+        If sensitive data is written to a log entry it could be exposed to an attacker who gains access to the logs.
+        */
+        if (this.app.config.verbose || this.app.options["verbose"]) {
+            const trackedData = ["USERNAME", "PASSWORD", "CODEMAO_DB_FILE"];
+            const envData = trackedData.map((key) => process.env[key]);
+
+            let msg = message;
+            envData.forEach((data, i) => {
+                if (data) msg = msg.replace(data, `${trackedData[i]}: [*****]`);
+            });
+
+            console.log(
+                this.generate({ level: this.Levels.VERBOSE, message: msg })
+            );
+        }
     }
 
     tagless(message: string) {
@@ -272,6 +286,9 @@ export function sleep(ms: number | undefined) {
 }
 
 export function isValidUrl(string: string) {
+    /*
+    This part of the regular expression may cause exponential backtracking on strings starting with '0' and containing many repetitions of '0'.
+    */
     const urlRegex = /^(https?:\/\/)?((([a-z\d]([a-z\d-]*[a-z\d])*)\.)+[a-z]{2,}|((\d{1,3}\.){3}\d{1,3}))(:\d+)?(\/[-a-z\d%_.~+]*)*(\?[;&a-z\d%_.~+=-]*)?(#[-a-z\d_]*)?$/i;
     return urlRegex.test(string);
 }
@@ -285,7 +302,15 @@ export function deepMergeObject<T extends Record<string, any>>(
             if (source[key] instanceof Object && target[key] instanceof Object) {
                 target[key] = deepMerge(target[key], source[key]);
             } else {
-                target[key] = source[key];
+                /*
+                Most JavaScript objects inherit the properties of the built-in Object.prototype object. 
+                Prototype pollution is a type of vulnerability in which an attacker is able to modify Object.prototype. 
+                Since most objects inherit from the compromised Object.prototype, the attacker can use this to tamper with the application logic, 
+                and often escalate to remote code execution or cross-site scripting.
+                */
+                if (Object.prototype.hasOwnProperty.call(source, key)) {
+                    target[key] = source[key];
+                }
             }
         });
         return target;
