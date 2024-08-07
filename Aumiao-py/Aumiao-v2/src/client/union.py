@@ -100,9 +100,14 @@ class UserUnion:
         before_data = self.file.file_load(path=data.CACHE_FILE_PATH, type="json")
         if before_data != {}:
             self.tool_routine.print_changes(
-                before_data=before_data,
+                before_data=before_data,  # type: ignore
                 after_data=user_data,
-                keys=["fans", "collected", "liked", "view"],
+                data={
+                    "fans": "粉丝",
+                    "collected": "被收藏",
+                    "liked": "被赞",
+                    "view": "被预览",
+                },
             )
         self.file.write(path=data.CACHE_FILE_PATH, text=user_data, type="dict")
 
