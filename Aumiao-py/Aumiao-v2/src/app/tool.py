@@ -63,10 +63,10 @@ class CodeMaoRoutine:
         timestamp = time.time()
         return timestamp
 
-    def print_changes(self, before_data, after_data, keys):
-        for key in keys:
+    def print_changes(self, before_data: dict, after_data: dict, data: dict):
+        for key, label in data.items():
             if key in before_data and key in after_data:
                 change = after_data[key] - before_data[key]
-                print(f"{key} 增加 {change} 个")
+                print(f"{label} 增加了 {change} 个")
             else:
                 print(f"{key} 没有找到")
