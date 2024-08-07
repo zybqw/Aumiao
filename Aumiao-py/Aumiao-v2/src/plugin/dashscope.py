@@ -1,13 +1,15 @@
 import json
 
 import src.app.acquire as Acquire
+from src.app.decorator import singleton
 
-version = "2024.7.21"
+version = "2024.8.6"
 
 HEADERS = Acquire.CodeMaoClient().HEADERS
 docs = "https://help.aliyun.com/zh/dashscope/developer-reference/use-qwen-by-api"
 
 
+@singleton
 class Dashscope:
     def __init__(self) -> None:
         self.acquire = Acquire.CodeMaoClient()
@@ -18,7 +20,6 @@ class Dashscope:
 
     def chat(
         self,
-        method: str,
         modal: str,
         message: list = [
             {"role": "system", "content": "You are a helpful assistant."},
@@ -26,21 +27,12 @@ class Dashscope:
             {"role": "assistant", "content": "你好啊，我是通义千问。"},
             {"role": "user", "content": "你有哪些技能？"},
         ],
-        multiple_assistant_message: list = [],
         more={
             "stream": False,
             "extra_body": {"enable_search": True},
             # 更多参数详见文档
         },
     ):
-        if method == "single":
-            pass
-        elif method == "multiple":
-            if multiple_assistant_message == []:
-                raise ValueError("multiple_assistant_message不能为空")
-            if multiple_assistant_message[-1]["role"] != "user":
-                raise ValueError("messages中最后一个元素的role必须为user")
-
         data = json.dumps(
             {
                 "model": modal,

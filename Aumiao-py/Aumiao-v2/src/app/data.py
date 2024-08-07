@@ -5,6 +5,7 @@ from .decorator import singleton
 
 DATA_FILE_PATH: str = os.path.join(os.getcwd(), "data/" "data.json")
 CACHE_FILE_PATH: str = os.path.join(os.getcwd(), "data/" "cache.json")
+SETTING_FILE_PATH: str = os.path.join(os.getcwd(), "data/" "setting.json")
 
 
 @singleton

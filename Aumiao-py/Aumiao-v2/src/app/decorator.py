@@ -1,4 +1,5 @@
 from functools import wraps
+from locale import Error
 from time import sleep
 from typing import Any, Callable
 
@@ -34,6 +35,7 @@ def retry(retries: int = 3, delay: float = 1) -> Callable:
                     else:
                         print(f"Error: {repr(e)} -> Retrying...")
                         sleep(delay)
+            raise Error()
 
         return wrapper
 

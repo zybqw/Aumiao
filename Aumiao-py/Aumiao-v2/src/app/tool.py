@@ -67,6 +67,6 @@ class CodeMaoRoutine:
         for key in keys:
             if key in before_data and key in after_data:
                 change = after_data[key] - before_data[key]
-                print(f"{key} 改变 {change} 个")
+                print(f"{key} 增加 {change} 个")
             else:
                 print(f"{key} 没有找到")

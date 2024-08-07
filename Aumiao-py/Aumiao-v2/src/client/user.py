@@ -126,6 +126,7 @@ class Motion:
         )
         return response.json()
 
+    # 修改密码
     def modify_password(self, old_password: str, new_password: str):
         data = json.dumps(
             {
