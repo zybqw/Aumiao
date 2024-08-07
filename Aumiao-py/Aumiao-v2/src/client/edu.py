@@ -9,10 +9,6 @@ class Motion:
     def __init__(self) -> None:
         self.acquire = Acquire.CodeMaoClient()
 
-    # 教师登录
-    def teacher_login(self):
-        pass
-
     # 创建班级
     def create_class(self, name: str):
         data = json.dumps({"name": name})
@@ -68,6 +64,7 @@ class Obtain:
     def __init__(self) -> None:
         self.acquire = Acquire.CodeMaoClient()
 
+    # 获取老师信息
     def get_data_details(self):
         time_stamp = community.Obtain().get_timestamp()["data"]
         params = {"TIME": time_stamp}

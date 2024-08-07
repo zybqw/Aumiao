@@ -12,6 +12,7 @@ session = requests.session()
 
 
 @singleton
+@retry(retries=3, delay=1)
 class CodeMaoClient:
     def __init__(self) -> None:
         self.data = Data.CodeMaoData()

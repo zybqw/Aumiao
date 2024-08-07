@@ -60,12 +60,14 @@ class Login:
         self.check_login(response)
 
     # token登录(毛毡最新登录方式)
-    def login_token(self, identity: str, password: str):
+    def login_token(self, identity: str, password: str, pid: str = "65edCTyg"):
         timestamp = Obtain().get_timestamp()["data"]
-        response = self.get_login_ticket(identity=identity, timestamp=timestamp)
+        response = self.get_login_ticket(
+            identity=identity, timestamp=timestamp, pid=pid
+        )
         ticket = response["ticket"]
         response = self.get_login_security(
-            identity=identity, password=password, ticket=ticket
+            identity=identity, password=password, ticket=ticket, pid=pid
         )
         token = response["auth"]["token"]
         # src.client_community_login.logout()
@@ -229,7 +231,7 @@ class Obtain:
                 url="/web/message-record/count",
                 method="get",
             )
-            counts = [record.json()[i]["count"] for i in range(3)]
+            counts = [record.json()[query_type]["count"] for query_type in query_types]
             if all(count == 0 for count in counts):
                 return True  # 所有消息类型处理完毕
 
