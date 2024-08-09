@@ -12,13 +12,12 @@ session = requests.session()
 
 
 @singleton
-@retry(retries=3, delay=1)
 class CodeMaoClient:
     def __init__(self) -> None:
-        self.data = Data.CodeMaoData()
+        self.data = Data.CodeMaoSetting()
         self.tool_process = Tool.CodeMaoProcess()
-        self.HEADERS = self.data.PROGRAM_DATA["HEADERS"]
-        self.BASE_URL = self.data.PROGRAM_DATA["BASE_URL"]
+        self.HEADERS = self.data.PROGRAM["HEADERS"]
+        self.BASE_URL = self.data.PROGRAM["BASE_URL"]
         global session
 
     def send_request(

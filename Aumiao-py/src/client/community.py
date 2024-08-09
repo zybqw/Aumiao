@@ -3,14 +3,12 @@ import uuid
 from typing import Literal
 
 import src.app.acquire as Acquire
-import src.app.data as Data
 import src.app.tool as Tool
 
 
 class Login:
     def __init__(self) -> None:
         self.acquire = Acquire.CodeMaoClient()
-        self.data = Data.CodeMaoData()
         self.tool_process = Tool.CodeMaoProcess()
 
     # 密码登录函数
@@ -55,7 +53,7 @@ class Login:
             url="/nemo/v2/works/174408420/like",
             method="post",
             data=json.dumps({}),
-            headers={**self.data.PROGRAM_DATA["HEADERS"], "cookie": cookies},
+            headers={**self.acquire.HEADERS, "cookie": cookies},
         )
         self.check_login(response)
 
@@ -69,17 +67,6 @@ class Login:
         response = self.get_login_security(
             identity=identity, password=password, ticket=ticket, pid=pid
         )
-        token = response["auth"]["token"]
-        # src.client_community_login.logout()
-        _auth = self.get_login_auth(token)
-        cookie_str = self.tool_process.process_cookie(_auth)
-        # 可以仅在cookie中填写authorization=token
-        headers = {**self.data.PROGRAM_DATA["HEADERS"], "cookie": cookie_str}
-        response = self.acquire.send_request(
-            method="get", url="/web/users/details", headers=headers
-        )
-        self.check_login(response, _auth)
-        # 可以不用填第二个参数，从而取消存储ca—uid这个cookie键值
 
     # 返回完整鉴权cookie
     def get_login_auth(self, token):
@@ -88,7 +75,7 @@ class Login:
         uuid_ca = uuid.uuid1()
         token_ca = {"authorization": token, "__ca_uid_key__": str(uuid_ca)}
         cookie_str = self.tool_process.process_cookie(token_ca)
-        headers = {**self.data.PROGRAM_DATA["HEADERS"], "cookie": cookie_str}
+        headers = {**self.acquire.HEADERS, "cookie": cookie_str}
         response = self.acquire.send_request(
             method="get", url="/web/users/details", headers=headers
         )
@@ -139,13 +126,14 @@ class Login:
             "aliyungf_tc": cookies_ali["aliyungf_tc"],
         }
         cookie_str = self.tool_process.process_cookie(_ca)
-        headers_auth = {**self.data.PROGRAM_DATA["HEADERS"], "cookie": cookie_str}
+        headers_auth = {**self.acquire.HEADERS, "cookie": cookie_str}
         response = self.acquire.send_request(
             url="/tiger/v3/web/accounts/login/security",
             method="post",
             data=data,
             headers={**headers_auth, "x-captcha-ticket": ticket},
         )
+        self.check_login(response)
         return response.json()
 
     #
@@ -161,7 +149,7 @@ class Login:
     ):
         _ca = {"__ca_uid_key__": str(cookies_ca)}
         cookie_str = self.tool_process.process_cookie(_ca)
-        headers = {**self.data.PROGRAM_DATA["HEADERS"], "cookie": cookie_str}
+        headers = {**self.acquire.HEADERS, "cookie": cookie_str}
         data = json.dumps(
             {
                 "identity": identity,
