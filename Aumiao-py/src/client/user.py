@@ -141,3 +141,25 @@ class Motion:
             data=data,
         )
         return response.status_code == 204
+
+    # 修改手机号(获取验证码)
+    def modify_phonenum_captcha(self, old_phonenum: int, new_phonenum: int) -> bool:
+        data = json.dumps(
+            {"phone_number": new_phonenum, "old_phone_number": old_phonenum}
+        )
+        response = self.acquire.send_request(
+            url="https://api.codemao.cn/tiger/v3/web/accounts/captcha/phone/change",
+            method="post",
+            data=data,
+        )
+        return response.status_code == 204
+
+    # 修改手机号
+    def modify_phonenum(self, captcha: int, phonenum: int) -> bool:
+        data = json.dumps({"phone_number": phonenum, "captcha": captcha})
+        response = self.acquire.send_request(
+            url="https://api.codemao.cn/tiger/v3/web/accounts/phone/change",
+            method="patch",
+            data=data,
+        )
+        return response.json()
