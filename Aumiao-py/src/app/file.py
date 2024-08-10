@@ -1,4 +1,5 @@
 import json
+from typing import Literal
 
 from .decorator import singleton
 
@@ -23,7 +24,7 @@ class CodeMaoFile:
             return False
 
     # 从配置文件加载账户信息
-    def file_load(self, path, type: str) -> dict | str:
+    def file_load(self, path, type: Literal["txt", "json"]) -> dict | str:
         self.check_file(path=path)
         with open(path, "r", encoding="utf-8") as file:
             data = file.read()
