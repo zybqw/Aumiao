@@ -180,14 +180,24 @@ class Obtain:
         )
         return response.json()["data"]["nickname"]
 
+    # 获取新消息数量
+    def get_message_count(self, method: Literal["web", "nemo"]):
+        if method == "web":
+            url = "/web/message-record/count"
+        elif method == "nemo":
+            url = "/nemo/v2/user/message/count"
+        else:
+            raise ValueError("不支持的方法")
+        record = self.acquire.send_request(
+            url=url,
+            method="get",
+        )
+        return record.json()
+
     # 获取新回复(传入参数就获取前*个回复,若没传入就获取新回复数量, 再获取新回复数量个回复)
     def get_replies(self, limit: int = 0) -> list[dict[str, str | int]]:
         _list = []
-        record = self.acquire.send_request(
-            url="/web/message-record/count",
-            method="get",
-        )
-        reply_num = record.json()[0]["count"]
+        reply_num = self.get_message_count(method="web")[0]["count"]
         if reply_num == limit == 0:
             return [{}]
         result_num = reply_num if limit == 0 else limit
@@ -243,7 +253,7 @@ class Obtain:
             item += 200
 
     # 获取作品
-    def get_works(
+    def get_works_web(
         self, method: Literal["subject", "newest"], limit: int, offset: int = 0
     ):
         params = {"limit": limit, "offset": offset}
@@ -258,9 +268,51 @@ class Obtain:
         )  # 为防止封号,limit建议调大
         return response.json()
 
+    # 获取作品(nemo端)
+    def get_works_nemo(self):
+        response = self.acquire.send_request(
+            url="/creation-tools/v1/home/discover", method="get"
+        )
+        return response.json()
+
+    # 获取nemo更新消息
+    def get_update_message(self):
+        response = self.acquire.send_request(
+            url="https://update.codemao.cn/updatev2/appsdk", method="get"
+        )
+        return response.json()
+
     # 获取时间戳
     def get_timestamp(self):
         response = self.acquire.send_request(
             url="/coconut/clouddb/currentTime", method="get"
+        )
+        return response.json()
+
+    # 获取推荐头图
+    def get_banner(self, type: str = "FLOAT_BANNER"):
+        response = self.acquire.send_request(
+            url=f"https://api.codemao.cn/web/banners/all?type={type}", method="get"
+        )
+        return response.json()
+
+    # 获取举报类型
+    def get_report_reason(self):
+        response = self.acquire.send_request(
+            url="https://api.codemao.cn/web/reports/reasons/all", method="get"
+        )
+        return response.json()
+
+    # 未知
+    def get_nemo_config(self):
+        response = self.acquire.send_request(
+            url="https://nemo.codemao.cn/config", method="get"
+        )
+        return response.json()
+
+    # 获取编程猫网络服务
+    def get_client_config(self):
+        response = self.acquire.send_request(
+            url="https://player.codemao.cn/new/client_config.json", method="get"
         )
         return response.json()

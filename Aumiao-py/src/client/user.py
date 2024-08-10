@@ -8,12 +8,19 @@ class Obtain:
         self.acquire = Acquire.CodeMaoClient()
 
     # 获取某人账号信息
-    def get_user_data(self, user_id: str) -> dict:
+    def get_user_detials(self, user_id: str) -> dict:
         response = self.acquire.send_request(
             method="get", url=f"/api/user/info/detail/{user_id}"
         )
+        return response.json()
 
-        return response.json()["data"]["userInfo"]
+    # 获取某人账号信息(简略)
+    def get_user_info(self, user_id: str) -> dict:
+        params = {"user_id": user_id}
+        response = self.acquire.send_request(
+            method="get", url="/nemo/v2/user/dynamic/info", params=params
+        )
+        return response.json()
 
     # 获取账户信息(详细)
     def get_data_details(self) -> dict:
@@ -43,6 +50,13 @@ class Obtain:
     def get_data_privacy(self):
         response = self.acquire.send_request(
             method="get", url="/tiger/v3/web/accounts/privacy"
+        )
+        return response.json()
+
+    # 获取账户信息
+    def get_data_tiger(self):
+        response = self.acquire.send_request(
+            url="https://api.codemao.cn/tiger/user", method="get"
         )
         return response.json()
 

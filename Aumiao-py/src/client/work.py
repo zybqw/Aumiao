@@ -54,6 +54,20 @@ class Motion:
         )
         return response.status_code == 201
 
+    # 对某个作品举报
+    def report_work(self, describe: str, reason: str, work_id: int):
+        data = json.dumps(
+            {
+                "work_id": work_id,
+                "report_reason": reason,
+                "report_describe": describe,
+            }
+        )
+        response = self.acquire.send_request(
+            url="https://api.codemao.cn/nemo/v2/report/work", method="post", data=data
+        )
+        return response.status_code == 200
+
 
 class Obtain:
 
@@ -92,5 +106,28 @@ class Obtain:
     def get_work_info(self, work_id: int):
         response = self.acquire.send_request(
             url=f"https://api.codemao.cn/api/work/info/{work_id}", method="get"
+        )
+        return response.json()
+
+    # 获取作品标签
+    def get_work_label(self, work_id: int):
+        response = self.acquire.send_request(
+            url=f"https://api.codemao.cn/creation-tools/v1/work-details/work-labels?work_id={work_id}",
+            method="get",
+        )
+        return response.json()
+
+    # 获取作者更多作品
+    def get_author_work(self, user_id: str):
+        response = self.acquire.send_request(
+            url=f"https://api.codemao.cn/web/works/users/{user_id}", method="get"
+        )
+        return response.json()
+
+    # 获取作品源码
+    def get_work_source(self, work_id: int):
+        response = self.acquire.send_request(
+            url=f"https://api.codemao.cn/creation-tools/v1/works/{work_id}/source/public",
+            method="get",
         )
         return response.json()
