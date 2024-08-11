@@ -194,27 +194,38 @@ class Obtain:
         )
         return record.json()
 
+    # 获取回复
+    def get_replies(
+        self,
+        type: Literal["LIKE_FORK", "COMMENT_REPLY", "SYSTEM"],
+        limit: int = 15,
+        offset: int = 0,
+    ):
+        params = {"query_type": type, "limit": limit, "offset": offset}
+        # 获取前*个回复
+        response = self.acquire.send_request(
+            url="/web/message-record",
+            method="get",
+            params=params,
+        )
+        return response.json()
+
     # 获取新回复(传入参数就获取前*个回复,若没传入就获取新回复数量, 再获取新回复数量个回复)
-    def get_replies(self, limit: int = 0) -> list[dict[str, str | int]]:
+    def get_new_replies(self, limit: int = 0) -> list[dict[str, str | int]]:
         _list = []
         reply_num = self.get_message_count(method="web")[0]["count"]
         if reply_num == limit == 0:
             return [{}]
         result_num = reply_num if limit == 0 else limit
+        offset = 0
         while True:
-            list_num = sorted([5, result_num, 200])[1]
-            params = {
-                "query_type": "COMMENT_REPLY",
-                "limit": list_num,
-            }
-            # 获取前*个回复
-            response = self.acquire.send_request(
-                url="/web/message-record",
-                method="get",
-                params=params,
+            limit = sorted([5, result_num, 200])[1]
+            response = self.get_replies(
+                type="COMMENT_REPLY", limit=limit, offset=offset
             )
-            _list.extend(response.json()["items"][:result_num])
-            result_num -= list_num
+            _list.extend(response["items"][:result_num])
+            result_num -= limit
+            offset += limit
             if result_num <= 0:
                 break
         return _list
