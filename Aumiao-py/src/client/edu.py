@@ -64,7 +64,7 @@ class Obtain:
     def __init__(self) -> None:
         self.acquire = Acquire.CodeMaoClient()
 
-    # 获取老师信息
+    # 获取个人信息
     def get_data_details(self):
         time_stamp = community.Obtain().get_timestamp()["data"]
         params = {"TIME": time_stamp}
@@ -73,21 +73,59 @@ class Obtain:
         )
         return response.json()
 
+    # 获取账户信息
+    def get_account_details(self):
+        time_stamp = community.Obtain().get_timestamp()["data"]
+        params = {"TIME": time_stamp}
+        response = self.acquire.send_request(
+            url="https://eduzone.codemao.cn/api/home/account",
+            method="get",
+            params=params,
+        )
+        return response.json()
+
+    # 获取未读消息数
+    def get_message_count(self):
+        time_stamp = community.Obtain().get_timestamp()["data"]
+        params = {"TIME": time_stamp}
+        response = self.acquire.send_request(
+            url="https://eduzone.codemao.cn/edu/zone/system/message/unread/num",
+            method="get",
+            params=params,
+        )
+        return response.json()
+
+    # 获取学校分类列表
+    def get_school_label(self):
+        time_stamp = community.Obtain().get_timestamp()["data"]
+        params = {"TIME": time_stamp}
+        response = self.acquire.send_request(
+            url="https://eduzone.codemao.cn/edu/zone/school/open/grade/list",
+            method="get",
+            params=params,
+        )
+        return response.json()
+
     # 获取所有班级
     def get_classes(
         self, limit: int = 15, method: Literal["detail", "simple"] = "simple"
     ):
-        time_stamp = community.Obtain().get_timestamp()["data"]
-        params = {"page": 1, "TIME": time_stamp}
-        reminder = method if method == "simple" else ""
-        url = f"https://eduzone.codemao.cn/edu/zone/classes{reminder}"
-        classes = self.acquire.fetch_all_data(
-            url=url,
-            params=params,
-            data_key="items",
-            method="page",
-            args={"amount": "limit", "remove": "page"},
-        )
+        if method == "simple":
+            classes = self.acquire.send_request(
+                url="https://eduzone.codemao.cn/edu/zone/classes/simple", method="get"
+            ).json()
+        elif method == "detail":
+            url = "https://eduzone.codemao.cn/edu/zone/classes/"
+            time_stamp = community.Obtain().get_timestamp()["data"]
+            params = {"page": 1, "TIME": time_stamp}
+
+            classes = self.acquire.fetch_all_data(
+                url=url,
+                params=params,
+                data_key="items",
+                method="page",
+                args={"amount": "", "remove": "page"},
+            )
         return classes
 
     # 获取删除学生记录

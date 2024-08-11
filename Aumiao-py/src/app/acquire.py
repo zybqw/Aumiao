@@ -6,7 +6,7 @@ from requests.exceptions import ConnectionError, HTTPError, RequestException, Ti
 
 from . import data as Data
 from . import tool as Tool
-from .decorator import retry, singleton
+from .decorator import singleton
 
 session = requests.session()
 
@@ -44,7 +44,6 @@ class CodeMaoClient:
             print(f"错误码: {response.status_code} 错误信息: {response.text}")
             return response
 
-    @retry(retries=3, delay=20)
     def fetch_all_data(
         self,
         url: str,
@@ -62,10 +61,15 @@ class CodeMaoClient:
         initial_response = self.send_request(
             url=url, method=fetch_method, params=params
         )
+        print(initial_response.json(), total_key)
         total_items = int(
             self.tool_process.process_path(initial_response.json(), total_key)  # type: ignore
         )
-        items_per_page = params[args["amount"]]
+        items_per_page = (
+            params[args["amount"]]
+            if args["amount"]
+            else initial_response.json()["limit"]
+        )
         total_pages = (total_items // items_per_page) + (  # type: ignore
             1 if total_items % items_per_page > 0 else 0  # type: ignore
         )
