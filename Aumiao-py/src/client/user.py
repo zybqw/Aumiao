@@ -14,6 +14,25 @@ class Obtain:
         )
         return response.json()
 
+    # 获取用户荣誉
+    def get_user_honor(self, user_id: str) -> dict:
+        params = {"user_id": user_id}
+        response = self.acquire.send_request(
+            url="/creation-tools/v1/user/center/honor",
+            method="get",
+            params=params,
+        )
+
+        return response.json()
+
+    # 获取用户精确数据
+    def get_user_business(self, user_id: str) -> dict:
+        params = {"user_id": user_id}
+        response = self.acquire.send_request(
+            url="/nemo/v2/works/business/total", method="get", params=params
+        )
+        return response.json()
+
     # 获取某人账号信息(简略)
     def get_user_info(self, user_id: str) -> dict:
         params = {"user_id": user_id}
@@ -60,15 +79,18 @@ class Obtain:
         )
         return response.json()
 
-    # 获取用户荣誉
-    def get_user_honor(self, user_id: str) -> dict:
-        params = {"user_id": user_id}
+    # 获取用户点赞，再创作，收藏分
+    def get_data_score(self):
         response = self.acquire.send_request(
-            url="/creation-tools/v1/user/center/honor",
-            method="get",
-            params=params,
+            url="/nemo/v3/user/grade/details", method="get"
         )
+        return response.json()
 
+    # 获取用户等级
+    def get_data_level(self):
+        response = self.acquire.send_request(
+            url="/nemo/v3/user/level/info", method="get"
+        )
         return response.json()
 
     # 获取个人作品列表的函数

@@ -6,9 +6,10 @@ import src.app.file as file
 import src.app.tool as tool
 import src.client.user as user
 import src.client.work as work
+from src.client import community
 
 
-class WorkUnion:
+class Union:
 
     def __init__(self) -> None:
         self.acquire = acquire.CodeMaoClient()
@@ -16,6 +17,11 @@ class WorkUnion:
         self.work_obtain = work.Obtain()
         self.data = data.CodeMaoData()
         self.tool_process = tool.CodeMaoProcess()
+        self.work_motion = work.Motion()
+        self.community_obtain = community.Obtain()
+        self.file = file.CodeMaoFile()
+        self.user_motion = user.Motion()
+        self.tool_routine = tool.CodeMaoRoutine()
 
     # 清除作品广告的函数
     def clear_ad(self, keys) -> bool:
@@ -61,13 +67,6 @@ class WorkUnion:
             raise ValueError("不支持的请求方法")
         return result
 
-
-class CommunityUnion:
-
-    def __init__(self) -> None:
-        self.work_motion = work.Motion()
-        self.user_obtain = user.Obtain()
-
     # 给某人作品全点赞
     def like_all_work(self, user_id: str):
         works_list = self.user_obtain.get_user_works(user_id)
@@ -76,13 +75,25 @@ class CommunityUnion:
                 return False
         return True
 
-
-class UserUnion:
-    def __init__(self) -> None:
-        self.file = file.CodeMaoFile()
-        self.user_obtain = user.Obtain()
-        self.user_motion = user.Motion()
-        self.tool_routine = tool.CodeMaoRoutine()
+    # 获取新回复(传入参数就获取前*个回复,若没传入就获取新回复数量, 再获取新回复数量个回复)
+    def get_new_replies(self, limit: int = 0) -> list[dict[str, str | int]]:
+        _list = []
+        reply_num = self.community_obtain.get_message_count(method="web")[0]["count"]
+        if reply_num == limit == 0:
+            return [{}]
+        result_num = reply_num if limit == 0 else limit
+        offset = 0
+        while True:
+            limit = sorted([5, result_num, 200])[1]
+            response = self.community_obtain.get_replies(
+                type="COMMENT_REPLY", limit=limit, offset=offset
+            )
+            _list.extend(response["items"][:result_num])
+            result_num -= limit
+            offset += limit
+            if result_num <= 0:
+                break
+        return _list
 
     # 新增粉丝提醒
     def message_report(self, user_id: str):

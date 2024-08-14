@@ -6,6 +6,7 @@ import src.app.acquire as Acquire
 import src.app.tool as Tool
 
 
+# 编程猫所有api中若包含v2等字样，表示第几版本，同样比它低的版本也可使用
 class Login:
     def __init__(self) -> None:
         self.acquire = Acquire.CodeMaoClient()
@@ -210,83 +211,33 @@ class Obtain:
         )
         return response.json()
 
-    # 获取新回复(传入参数就获取前*个回复,若没传入就获取新回复数量, 再获取新回复数量个回复)
-    def get_new_replies(self, limit: int = 0) -> list[dict[str, str | int]]:
-        _list = []
-        reply_num = self.get_message_count(method="web")[0]["count"]
-        if reply_num == limit == 0:
-            return [{}]
-        result_num = reply_num if limit == 0 else limit
-        offset = 0
-        while True:
-            limit = sorted([5, result_num, 200])[1]
-            response = self.get_replies(
-                type="COMMENT_REPLY", limit=limit, offset=offset
-            )
-            _list.extend(response["items"][:result_num])
-            result_num -= limit
-            offset += limit
-            if result_num <= 0:
-                break
-        return _list
+    # 获取nemo消息
+    def get_nemo_message(self, method: Literal["fork", "like"]):
+        extra_url = 1 if method == "like" else 3
+        url = f"/nemo/v2/user/message/{extra_url}"
+        response = self.acquire.send_request(url=url, method="get")
+        return response.json()
 
     # 清除邮箱红点
-    def all_read(self) -> bool:
-        item = 0
-        query_types = ["LIKE_FORK", "COMMENT_REPLY", "SYSTEM"]
+    def all_read(
+        self, query_types: list[Literal["LIKE_FORK", "COMMENT_REPLY", "SYSTEM"]]
+    ) -> bool:
+        offset = 0
         while True:
-            # 检查是否所有消息类型的红点数为0
-            record = self.acquire.send_request(
-                url="/web/message-record/count",
-                method="get",
-            )
-            counts = [record.json()[query_type]["count"] for query_type in query_types]
-            if all(count == 0 for count in counts):
+            record = self.get_message_count(method="web")
+            type_to_count = {item["query_type"]: item["count"] for item in record}
+            if all(type_to_count.get(type, 0) == 0 for type in query_types):
                 return True  # 所有消息类型处理完毕
-
             # 如果还有未处理的消息,按类型查询并清理
-            params = {
-                "query_type": "ANYTHING",
-                "limit": 200,
-                "offset": item,
-            }
             responses = {}
             for query_type in query_types:
-                params["query_type"] = query_type
-                response = self.acquire.send_request(
-                    url="/web/message-record",
-                    method="get",
-                    params=params,
-                )
+                response = self.get_replies(type=query_type, limit=200, offset=offset)
                 responses[query_type] = response.status_code
             if any(status != 200 for status in responses.values()):
                 return False
-            item += 200
+            offset += 200
 
-    # 获取作品
-    def get_works_web(
-        self, method: Literal["subject", "newest"], limit: int, offset: int = 0
-    ):
-        params = {"limit": limit, "offset": offset}
-        if method == "subject":
-            url = "/creation-tools/v1/pc/discover/subject-work"
-        elif method == "newest":
-            url = "/creation-tools/v1/pc/discover/newest-work"
-        response = self.acquire.send_request(
-            url=url,
-            method="get",
-            params=params,
-        )  # 为防止封号,limit建议调大
-        return response.json()
-
-    # 获取作品(nemo端)
-    def get_works_nemo(self):
-        response = self.acquire.send_request(
-            url="/creation-tools/v1/home/discover", method="get"
-        )
-        return response.json()
-
-    # 获取nemo更新消息
+    # 获取点个猫更新
     def get_update_message(self):
         response = self.acquire.send_request(
             url="https://update.codemao.cn/updatev2/appsdk", method="get"
@@ -315,7 +266,7 @@ class Obtain:
         return response.json()
 
     # 未知
-    def get_nemo_config(self):
+    def get_nemo_config(self) -> str:
         response = self.acquire.send_request(
             url="https://nemo.codemao.cn/config", method="get"
         )
@@ -325,5 +276,27 @@ class Obtain:
     def get_client_config(self):
         response = self.acquire.send_request(
             url="https://player.codemao.cn/new/client_config.json", method="get"
+        )
+        return response.json()
+
+    # 获取随机作品主题
+    def get_subject_random(self) -> list[int]:
+        response = self.acquire.send_request(
+            url="/nemo/v3/work-subject/random", method="get"
+        )
+        return response.json()
+
+    # 获取作品主题介绍
+    def get_subject_info(self, id: int):
+        response = self.acquire.send_request(
+            url=f"/nemo/v3/work-subject/{id}/info", method="get"
+        )
+        return response.json()
+
+    # 获取作品主题下作品
+    def get_subject_work(self, id: int, limit: int = 15, offset: int = 0):
+        params = {"limit": limit, "offset": offset}
+        response = self.acquire.send_request(
+            url=f"/nemo/v3/work-subject/{id}/works", method="get", params=params
         )
         return response.json()

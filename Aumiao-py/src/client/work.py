@@ -131,3 +131,54 @@ class Obtain:
             method="get",
         )
         return response.json()
+
+    # 获取最新或最热作品
+    def discover_works_web(
+        self, method: Literal["subject", "newest"], limit: int, offset: int = 0
+    ):
+        params = {"limit": limit, "offset": offset}
+        if method == "subject":
+            url = "/creation-tools/v1/pc/discover/subject-work"
+        elif method == "newest":
+            url = "/creation-tools/v1/pc/discover/newest-work"
+        response = self.acquire.send_request(
+            url=url,
+            method="get",
+            params=params,
+        )  # 为防止封号,limit建议调大
+        return response.json()
+
+    # 获取推荐作品(nemo端)
+    def discover_works_nemo(self):
+        response = self.acquire.send_request(
+            url="/creation-tools/v1/home/discover", method="get"
+        )
+        return response.json()
+
+    # 获取用户KN或nemo作品
+    def get_user_nemo(
+        self, method: Literal["published", "total"], type: Literal["KN", "nemo"]
+    ):
+        extra_url = "nemo" if type == "nemo" else "neko"
+        if method == "published":
+            url = (
+                f"https://api-creation.codemao.cn/{extra_url}/works/list/user/published"
+            )
+        elif method == "total":
+            url = f"https://api-creation.codemao.cn/{extra_url}/works/v2/list/user"
+        params = {"offset": 0, "limit": 15}
+        works = self.acquire.fetch_all_data(url=url, params=params, data_key="items")
+        return works
+
+    # 获取nemo端最新作品
+    def get_new_nemo(
+        self,
+        type: Literal["course-work", "template", "original"],
+        limit: int = 15,
+        offset=0,
+    ):
+        params = {"limit": limit, "offset": offset}
+        response = self.acquire.send_request(
+            url=f"/nemo/v3/newest/work/{type}/list", method="get", params=params
+        )
+        return response.json()
