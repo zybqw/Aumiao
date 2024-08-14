@@ -229,12 +229,8 @@ class Obtain:
             if all(type_to_count.get(type, 0) == 0 for type in query_types):
                 return True  # 所有消息类型处理完毕
             # 如果还有未处理的消息,按类型查询并清理
-            responses = {}
             for query_type in query_types:
-                response = self.get_replies(type=query_type, limit=200, offset=offset)
-                responses[query_type] = response.status_code
-            if any(status != 200 for status in responses.values()):
-                return False
+                self.get_replies(type=query_type, limit=200, offset=offset)
             offset += 200
 
     # 获取点个猫更新
