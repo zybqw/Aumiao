@@ -25,7 +25,7 @@ class Union:
 
     # 清除作品广告的函数
     def clear_ad(self, keys) -> bool:
-        works_list = self.user_obtain.get_user_works(self.data.ACCOUNT_DATA["id"])
+        works_list = self.user_obtain.get_user_works_web(self.data.ACCOUNT_DATA["id"])
         for item0 in works_list:
 
             comments = self.work_obtain.get_work_detail(work_id=item0["id"])  # type: ignore
@@ -69,7 +69,7 @@ class Union:
 
     # 给某人作品全点赞
     def like_all_work(self, user_id: str):
-        works_list = self.user_obtain.get_user_works(user_id)
+        works_list = self.user_obtain.get_user_works_web(user_id)
         for item in works_list:
             if not self.work_motion.like_work(work_id=item["id"]):  # type: ignore
                 return False
