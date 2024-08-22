@@ -1,4 +1,5 @@
 import json
+from typing import Literal
 
 import src.app.acquire as Acquire
 
@@ -94,7 +95,7 @@ class Obtain:
         return response.json()
 
     # 获取个人作品列表的函数
-    def get_user_works(self, user_id: str) -> list[dict[str, str]]:
+    def get_user_works_web(self, user_id: str) -> list[dict[str, str]]:
         params = {
             "type": "newest",
             "user_id": user_id,
@@ -107,6 +108,21 @@ class Obtain:
             total_key="total",
             data_key="items",
         )
+        return works
+
+    # 获取用户KN或nemo作品
+    def get_user_works_nemo(
+        self, method: Literal["published", "total"], type: Literal["KN", "nemo"]
+    ):
+        extra_url = "nemo" if type == "nemo" else "neko"
+        if method == "published":
+            url = (
+                f"https://api-creation.codemao.cn/{extra_url}/works/list/user/published"
+            )
+        elif method == "total":
+            url = f"https://api-creation.codemao.cn/{extra_url}/works/v2/list/user"
+        params = {"offset": 0, "limit": 15}
+        works = self.acquire.fetch_all_data(url=url, params=params, data_key="items")
         return works
 
     # 获取粉丝列表

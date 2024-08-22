@@ -132,17 +132,25 @@ class Obtain:
         )
         return response.json()
 
-    # 获取最新或最热作品
-    def discover_works_web(
-        self, method: Literal["subject", "newest"], limit: int, offset: int = 0
-    ):
-        params = {"limit": limit, "offset": offset}
-        if method == "subject":
-            url = "/creation-tools/v1/pc/discover/subject-work"
-        elif method == "newest":
-            url = "/creation-tools/v1/pc/discover/newest-work"
+    # 获取最新作品
+    def discover_works_new_web(self, limit: int, offset: int = 0, origin: bool = False):
+        extra_params = {"work_origin_type": "ORIGINAL_WORK"} if origin else {}
+        params = {**extra_params, "limit": limit, "offset": offset}
         response = self.acquire.send_request(
-            url=url,
+            url="/creation-tools/v1/pc/discover/newest-work",
+            method="get",
+            params=params,
+        )  # 为防止封号,limit建议调大
+        return response.json()
+
+    # 获取最新或最热作品
+    def discover_works_subject_web(
+        self, limit: int, offset: int = 0, subject_id: int = 0
+    ):
+        extra_params = {"subject_id": subject_id} if subject_id else {}
+        params = {**extra_params, "limit": limit, "offset": offset}
+        response = self.acquire.send_request(
+            url="/creation-tools/v1/pc/discover/subject-work",
             method="get",
             params=params,
         )  # 为防止封号,limit建议调大
@@ -155,23 +163,8 @@ class Obtain:
         )
         return response.json()
 
-    # 获取用户KN或nemo作品
-    def get_user_nemo(
-        self, method: Literal["published", "total"], type: Literal["KN", "nemo"]
-    ):
-        extra_url = "nemo" if type == "nemo" else "neko"
-        if method == "published":
-            url = (
-                f"https://api-creation.codemao.cn/{extra_url}/works/list/user/published"
-            )
-        elif method == "total":
-            url = f"https://api-creation.codemao.cn/{extra_url}/works/v2/list/user"
-        params = {"offset": 0, "limit": 15}
-        works = self.acquire.fetch_all_data(url=url, params=params, data_key="items")
-        return works
-
     # 获取nemo端最新作品
-    def get_new_nemo(
+    def discover_works_new_nemo(
         self,
         type: Literal["course-work", "template", "original"],
         limit: int = 15,
@@ -180,5 +173,27 @@ class Obtain:
         params = {"limit": limit, "offset": offset}
         response = self.acquire.send_request(
             url=f"/nemo/v3/newest/work/{type}/list", method="get", params=params
+        )
+        return response.json()
+
+    # 获取随机作品主题
+    def get_subject_random_nemo(self) -> list[int]:
+        response = self.acquire.send_request(
+            url="/nemo/v3/work-subject/random", method="get"
+        )
+        return response.json()
+
+    # 获取作品主题介绍
+    def get_subject_info_nemo(self, id: int):
+        response = self.acquire.send_request(
+            url=f"/nemo/v3/work-subject/{id}/info", method="get"
+        )
+        return response.json()
+
+    # 获取作品主题下作品
+    def get_subject_work_nemo(self, id: int, limit: int = 15, offset: int = 0):
+        params = {"limit": limit, "offset": offset}
+        response = self.acquire.send_request(
+            url=f"/nemo/v3/work-subject/{id}/works", method="get", params=params
         )
         return response.json()
