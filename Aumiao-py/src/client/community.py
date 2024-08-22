@@ -248,7 +248,7 @@ class Obtain:
         return response.json()
 
     # 获取推荐头图
-    def get_banner(self, type: str = "FLOAT_BANNER"):
+    def get_banner(self, type: Literal["FLOAT_BANNER", "OFFICIAL", "CODE_TV"]):
         response = self.acquire.send_request(
             url=f"https://api.codemao.cn/web/banners/all?type={type}", method="get"
         )
@@ -261,7 +261,7 @@ class Obtain:
         )
         return response.json()
 
-    # 未知
+    # 未知 TODO
     def get_nemo_config(self) -> str:
         response = self.acquire.send_request(
             url="https://nemo.codemao.cn/config", method="get"
@@ -275,24 +275,40 @@ class Obtain:
         )
         return response.json()
 
-    # 获取随机作品主题
-    def get_subject_random(self) -> list[int]:
+    # 获取编程猫首页作品
+    def discover_works_recommended_home(self, type: Literal[1, 2]):
+        # 1为点猫精选，2为新作喵喵看
+        params = {"type": type}
         response = self.acquire.send_request(
-            url="/nemo/v3/work-subject/random", method="get"
+            url="https://api.codemao.cn/creation-tools/v1/pc/home/recommend-work",
+            method="get",
+            params=params,
         )
         return response.json()
 
-    # 获取作品主题介绍
-    def get_subject_info(self, id: int):
+    # 获取编程猫首页推荐channel
+    def get_channels_list(self, type: Literal["KITTEN", "NEMO"]):
+        params = {"type": type}
         response = self.acquire.send_request(
-            url=f"/nemo/v3/work-subject/{id}/info", method="get"
+            url="https://api.codemao.cn/web/works/channels/list",
+            method="get",
+            params=params,
         )
         return response.json()
 
-    # 获取作品主题下作品
-    def get_subject_work(self, id: int, limit: int = 15, offset: int = 0):
-        params = {"limit": limit, "offset": offset}
+    # 获取指定channel
+    def get_channel(self, id: int, type: Literal["KITTEN", "NEMO"], limit=5, page=1):
+        params = {"type": type, "page": 1, "limit": 5}
         response = self.acquire.send_request(
-            url=f"/nemo/v3/work-subject/{id}/works", method="get", params=params
+            url=f"https://api.codemao.cn/web/works/channels/{id}/works",
+            method="get",
+            params=params,
+        )
+        return response.json()
+
+    # 获取推荐作者
+    def get_user_recommended(self):
+        response = self.acquire.send_request(
+            url="https://api.codemao.cn/web/users/recommended", method="get"
         )
         return response.json()
