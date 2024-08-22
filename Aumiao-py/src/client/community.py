@@ -312,3 +312,10 @@ class Obtain:
             url="https://api.codemao.cn/web/users/recommended", method="get"
         )
         return response.json()
+
+    # 获取训练师小课堂
+    def get_post_lesion(self):
+        response = self.acquire.send_request(
+            url="https://backend.box3.fun/diversion/codemao/post", method="get"
+        )
+        return response.json()
