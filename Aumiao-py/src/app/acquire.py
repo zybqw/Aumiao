@@ -59,9 +59,8 @@ class CodeMaoClient:
         },
     ) -> list[dict]:
         initial_response = self.send_request(
-            url=url, method=fetch_method, params=params
+            url=url, method=fetch_method, params=params, data=data
         )
-        print(initial_response.json(), total_key)
         total_items = int(
             self.tool_process.process_path(initial_response.json(), total_key)  # type: ignore
         )
