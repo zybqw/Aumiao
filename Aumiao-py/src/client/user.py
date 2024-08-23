@@ -95,9 +95,11 @@ class Obtain:
         return response.json()
 
     # 获取个人作品列表的函数
-    def get_user_works_web(self, user_id: str) -> list[dict[str, str]]:
+    def get_user_works_web(
+        self, user_id: str, type: Literal["newest", "hot"] = "newest"
+    ) -> list[dict[str, str | int]]:
         params = {
-            "type": "newest",
+            "type": type,
             "user_id": user_id,
             "offset": 0,
             "limit": 5,
