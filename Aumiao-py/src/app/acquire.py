@@ -23,7 +23,7 @@ class CodeMaoClient:
     def send_request(
         self,
         url: str,
-        method: Literal["post", "get", "delete", "patch"],
+        method: Literal["post", "get", "delete", "patch", "put"],
         params=None,
         data=None,
         headers=None,

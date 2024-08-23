@@ -41,7 +41,9 @@ class Motion:
         return response.status_code == 200
 
     # 对某个作品进行评论的函数
-    def comment_work(self, comment, emoji, work_id: int) -> bool:
+    def comment_work(
+        self, comment, emoji, work_id: int, return_data: bool = False
+    ) -> bool | dict:
         response = self.acquire.send_request(
             url=f"/creation-tools/v1/works/{work_id}/comment",
             method="post",
@@ -52,7 +54,32 @@ class Motion:
                 }
             ),
         )
-        return response.status_code == 201
+        return response.json() if return_data else response.status_code == 201
+
+    # 对某个作品下评论进行回复
+    def reply_work(
+        self,
+        comment,
+        work_id: int,
+        comment_id: int,
+        parent_id: int = 0,
+        return_data: bool = False,
+    ) -> bool | dict:
+        data = json.dumps({"parent_id": parent_id, "content": comment})
+        response = self.acquire.send_request(
+            url=f"/creation-tools/v1/works/{work_id}/comment/{comment_id}/reply",
+            method="post",
+            data=data,
+        )
+        return response.json() if return_data else response.status_code == 201
+
+    # 删除作品某个评论或评论的回复（评论和回复都会分配一个唯一id）
+    def del_comment_work(self, work_id: int, comment_id: int) -> bool:
+        response = self.acquire.send_request(
+            url=f"/creation-tools/v1/works/{work_id}/comment/{comment_id}",
+            method="delete",
+        )
+        return response.status_code == 204
 
     # 对某个作品举报
     def report_work(self, describe: str, reason: str, work_id: int):
@@ -67,6 +94,17 @@ class Motion:
             url="https://api.codemao.cn/nemo/v2/report/work", method="post", data=data
         )
         return response.status_code == 200
+
+    # 设置某个评论置顶
+    def set_comment_top(
+        self, method: Literal["put", "delete"], work_id: int, comment_id: int
+    ) -> bool:
+        response = self.acquire.send_request(
+            url=f"/creation-tools/v1/works/{work_id}/comment/{comment_id}/top",
+            method=method,
+            data=json.dumps({}),
+        )
+        return response.status_code == 204
 
 
 class Obtain:

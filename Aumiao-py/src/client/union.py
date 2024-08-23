@@ -25,28 +25,47 @@ class Union:
 
     # 清除作品广告的函数
     def clear_ad(self, keys) -> bool:
-        works_list = self.user_obtain.get_user_works_web(self.data.ACCOUNT_DATA["id"])
-        for item0 in works_list:
-
-            comments = self.work_obtain.get_work_detail(work_id=item0["id"])  # type: ignore
-            work_id = item0["id"]
-            for item1 in comments:
-                comment_id = item1["id"]
-                content = item1["content"].lower()  # 转换小写
+        # works_list = self.user_obtain.get_user_works_web(self.data.ACCOUNT_DATA["id"])
+        works_list = self.user_obtain.get_user_works_web("12770114")
+        for works_item in works_list:
+            work_id = works_item["id"]
+            comments: list = self.get_comments_detail(
+                work_id=works_item["id"], method="comments"  # type: ignore
+            )
+            for comments_item in comments:
+                comment_id = comments_item["id"]
+                content = comments_item["content"].lower()  # 转换小写
                 if (
-                    any(item2 in content for item2 in keys)
-                    and not item1["is_top"]  # 取消置顶评论监测
+                    any(item in content for item in keys)
+                    and not comments_item["is_top"]  # 取消置顶评论监测
                 ):
                     print(
-                        "在作品 {} 中发现广告: {} ".format(item0["work_name"], content)
+                        "在作品 {} 中发现广告: {} ".format(
+                            works_item["work_name"], content
+                        )
                     )
-                    response = self.acquire.send_request(
-                        url=f"/creation-tools/v1/works/{work_id}/comment/{comment_id}",
-                        method="delete",
+                    response = self.work_motion.del_comment_work(
+                        work_id=work_id, comment_id=comment_id  # type: ignore
                     )
                     print("*" * 50)
-                    if response.status_code != 204:
+                    if not response:
                         return False
+                for replies_item in comments_item["replies"]:
+                    reply_id = replies_item["id"]
+                    reply = replies_item["content"].lower()  # 转换小写
+                    if any(item in reply for item in keys):
+                        print(
+                            "在作品 {} 中 {} 评论中发现广告: {} ".format(
+                                works_item["work_name"], content, reply
+                            )
+                        )
+                        response = self.work_motion.del_comment_work(
+                            work_id=work_id,  # type: ignore
+                            comment_id=reply_id,  # type: ignore
+                        )
+                        print("*" * 50)
+                        if not response:
+                            return False
         return True
 
     # 获取评论区特定信息
@@ -59,10 +78,22 @@ class Union:
         if method == "user_id":
             result = [item["user"]["id"] for item in comments]
         elif method == "comments":
-            result = self.tool_process.process_reject(
-                data=comments,
-                reserve=["id", "content", "is_top"],
-            )
+            result = []
+            for item in comments:
+                comment_detail = {
+                    "id": item["id"],
+                    "content": item["content"],
+                    "is_top": item["is_top"],
+                    "replies": [],
+                }
+                if "replies" in item and "items" in item["replies"]:
+                    for reply in item["replies"]["items"]:
+                        reply_detail = {
+                            "id": reply["id"],
+                            "content": reply["content"],
+                        }
+                        comment_detail["replies"].append(reply_detail)
+                result.append(comment_detail)
         else:
             raise ValueError("不支持的请求方法")
         return result
