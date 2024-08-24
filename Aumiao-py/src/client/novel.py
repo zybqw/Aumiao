@@ -1,6 +1,9 @@
+import json
 from typing import Literal
 
 import src.app.acquire as Acquire
+
+select = Literal["post", "delete"]
 
 
 class Obtain:
@@ -49,3 +52,68 @@ class Obtain:
             params=params,
         )
         return response.json()
+
+    # 获取小说详情
+    def get_novel_detail(self, novel_id: int):
+        response = self.acquire.send_request(
+            url=f"/api/fanfic/{novel_id}", method="get"
+        )
+        return response.json()
+
+    # 获取小说章节信息
+    def get_chapter_detail(self, chapter_id: int):
+        response = self.acquire.send_request(
+            url=f"/api/fanfic/section/{chapter_id}",
+            method="get",
+        )
+        return response.json()
+
+    # 获取小说评论
+    def get_novel_comment(self, novel_id: int, page: int = 0, limit: int = 10):
+        # page从0开始
+        params = {"page": page, "limit": limit}
+        response = self.acquire.send_request(
+            url=f"/api/fanfic/comments/list/{novel_id}",
+            method="get",
+            params=params,
+        )
+        return response.json()
+
+    # 获取搜索小说结果
+    def search_novel(self, keyword: str, page: int = 0, limit: int = 10):
+        # page从0开始
+        params = {"searchContent": keyword, "page": page, "limit": limit}
+        response = self.acquire.send_request(
+            url="/api/fanfic/list/search",
+            method="get",
+            params=params,
+        )
+        return response.json()
+
+
+class Motion:
+    def __init__(self) -> None:
+        self.acquire = Acquire.CodeMaoClient()
+
+    # 收藏小说
+    def collect_novel(self, novel_id: int, method: select):
+        response = self.acquire.send_request(
+            url=f"/web/fanfic/collect/{novel_id}",
+            method=method,
+        )
+        return response.json()
+
+    # 评论小说
+    def comment_novel(
+        self, comment: str, novel_id: int, return_data: bool = False
+    ) -> bool | dict:
+        response = self.acquire.send_request(
+            url=f"/api/fanfic/comments/{novel_id}",
+            method="post",
+            data=json.dumps(
+                {
+                    "content": comment,
+                }
+            ),
+        )
+        return response.json() if return_data else response.status_code == 200
