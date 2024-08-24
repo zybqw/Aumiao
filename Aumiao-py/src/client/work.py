@@ -97,14 +97,42 @@ class Motion:
 
     # 设置某个评论置顶
     def set_comment_top(
-        self, method: Literal["put", "delete"], work_id: int, comment_id: int
+        self,
+        method: Literal["put", "delete"],
+        work_id: int,
+        comment_id: int,
+        return_data: bool = False,
     ) -> bool:
         response = self.acquire.send_request(
             url=f"/creation-tools/v1/works/{work_id}/comment/{comment_id}/top",
             method=method,
             data=json.dumps({}),
         )
-        return response.status_code == 204
+        return response.json() if return_data else response.status_code == 204
+
+    # 点赞作品的评论
+    def like_comment_work(self, work_id: int, comment_id: int, method: select = "post"):
+        response = self.acquire.send_request(
+            url=f"/creation-tools/v1/works/{work_id}/comment/{comment_id}/liked",
+            method=method,
+            data=json.dumps({}),
+        )
+        return response.status_code == 201
+
+    # 举报作品的评论
+    def report_comment_work(self, work_id: int, comment_id: int, reason: str):
+        data = json.dumps(
+            {
+                "comment_id": comment_id,
+                "report_reason": reason,
+            }
+        )
+        response = self.acquire.send_request(
+            url=f"/creation-tools/v1/works/{work_id}/comment/report",
+            method="post",
+            data=data,
+        )
+        return response.status_code == 200
 
 
 class Obtain:
@@ -149,9 +177,11 @@ class Obtain:
 
     # 获取作品标签
     def get_work_label(self, work_id: int):
+        params = {"work_id": work_id}
         response = self.acquire.send_request(
-            url=f"/creation-tools/v1/work-details/work-labels?work_id={work_id}",
+            url="/creation-tools/v1/work-details/work-labels",
             method="get",
+            params=params,
         )
         return response.json()
 
