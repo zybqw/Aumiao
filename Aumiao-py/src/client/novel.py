@@ -117,3 +117,21 @@ class Motion:
             ),
         )
         return response.json() if return_data else response.status_code == 200
+
+    # 点赞小说评论
+    def like_comment(
+        self, method: select, comment_id: int, return_data: bool = False
+    ) -> bool | dict:
+        response = self.acquire.send_request(
+            url=f"/api/fanfic/comments/praise/{comment_id}",
+            method=method,
+        )
+        return response.json() if return_data else response.status_code == 200
+
+    # 删除小说评论
+    def delete_comment(self, comment_id: int, return_data: bool = False) -> bool | dict:
+        response = self.acquire.send_request(
+            url=f"/api/fanfic/comments/{comment_id}",
+            method="delete",
+        )
+        return response.json() if return_data else response.status_code == 200
