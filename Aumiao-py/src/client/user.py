@@ -75,9 +75,7 @@ class Obtain:
 
     # 获取账户信息
     def get_data_tiger(self):
-        response = self.acquire.send_request(
-            url="/tiger/user", method="get"
-        )
+        response = self.acquire.send_request(url="/tiger/user", method="get")
         return response.json()
 
     # 获取用户点赞，再创作，收藏分
@@ -91,6 +89,13 @@ class Obtain:
     def get_data_level(self):
         response = self.acquire.send_request(
             url="/nemo/v3/user/level/info", method="get"
+        )
+        return response.json()
+
+    # 获取用户姓名
+    def get_data_name(self):
+        response = self.acquire.send_request(
+            url="/api/v2/pc/lesson/user/info", method="get"
         )
         return response.json()
 
