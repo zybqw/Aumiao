@@ -19,7 +19,7 @@ class Obtain:
         return response.json()
 
     # 获取单个帖子信息
-    def get_single_details(self, id: int):
+    def get_single_post_details(self, id: int):
         response = self.acquire.send_request(
             url=f"/web/forums/posts/{id}/details", method="get"
         )

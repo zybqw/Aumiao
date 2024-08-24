@@ -248,7 +248,9 @@ class Obtain:
         return response.json()
 
     # 获取推荐头图
-    def get_banner(self, type: Literal["FLOAT_BANNER", "OFFICIAL", "CODE_TV"]):
+    def get_banner(
+        self, type: Literal["FLOAT_BANNER", "OFFICIAL", "CODE_TV", "WOKE_SHOP"]
+    ):
         response = self.acquire.send_request(
             url=f"/web/banners/all?type={type}", method="get"
         )
@@ -261,10 +263,17 @@ class Obtain:
         )
         return response.json()
 
-    # 未知 TODO:待完善
+    # 获取nemo配置 TODO:待完善
     def get_nemo_config(self) -> str:
         response = self.acquire.send_request(
             url="https://nemo.codemao.cn/config", method="get"
+        )
+        return response.json()
+
+    # 获取社区网络服务
+    def get_community_config(self):
+        response = self.acquire.send_request(
+            url="https://c.codemao.cn/config", method="get"
         )
         return response.json()
 
@@ -319,7 +328,9 @@ class Obtain:
         return response.json()
 
     # 获取社区各个部分开启状态 TODO:待完善
-    def get_community_status(self, type: Literal["WEB_FORUM_STATUS"]):
+    def get_community_status(
+        self, type: Literal["WEB_FORUM_STATUS", "WEB_FICTION_STATUS"]
+    ):
         response = self.acquire.send_request(
             url=f"/web/config/tab/on-off/status?config_type={type}", method="get"
         )
