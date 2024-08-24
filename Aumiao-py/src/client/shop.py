@@ -47,7 +47,7 @@ class Obtain:
     def get_shops_members(self, id: int, limit: int = 40, offset: int = 0):
         params = {"limit": limit, "offset": offset}
         members = self.acquire.fetch_all_data(
-            url=f"https://api.codemao.cn/web/shops/{id}/users",
+            url=f"/web/shops/{id}/users",
             params=params,
             total_key="total",
             data_key="items",

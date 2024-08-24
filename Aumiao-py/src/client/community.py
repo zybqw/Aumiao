@@ -250,18 +250,18 @@ class Obtain:
     # 获取推荐头图
     def get_banner(self, type: Literal["FLOAT_BANNER", "OFFICIAL", "CODE_TV"]):
         response = self.acquire.send_request(
-            url=f"https://api.codemao.cn/web/banners/all?type={type}", method="get"
+            url=f"/web/banners/all?type={type}", method="get"
         )
         return response.json()
 
     # 获取举报类型
     def get_report_reason(self):
         response = self.acquire.send_request(
-            url="https://api.codemao.cn/web/reports/reasons/all", method="get"
+            url="/web/reports/reasons/all", method="get"
         )
         return response.json()
 
-    # 未知 TODO
+    # 未知 TODO:待完善
     def get_nemo_config(self) -> str:
         response = self.acquire.send_request(
             url="https://nemo.codemao.cn/config", method="get"
@@ -280,7 +280,7 @@ class Obtain:
         # 1为点猫精选，2为新作喵喵看
         params = {"type": type}
         response = self.acquire.send_request(
-            url="https://api.codemao.cn/creation-tools/v1/pc/home/recommend-work",
+            url="/creation-tools/v1/pc/home/recommend-work",
             method="get",
             params=params,
         )
@@ -290,7 +290,7 @@ class Obtain:
     def get_channels_list(self, type: Literal["KITTEN", "NEMO"]):
         params = {"type": type}
         response = self.acquire.send_request(
-            url="https://api.codemao.cn/web/works/channels/list",
+            url="/web/works/channels/list",
             method="get",
             params=params,
         )
@@ -300,7 +300,7 @@ class Obtain:
     def get_channel(self, id: int, type: Literal["KITTEN", "NEMO"], limit=5, page=1):
         params = {"type": type, "page": 1, "limit": 5}
         response = self.acquire.send_request(
-            url=f"https://api.codemao.cn/web/works/channels/{id}/works",
+            url=f"/web/works/channels/{id}/works",
             method="get",
             params=params,
         )
@@ -308,14 +308,19 @@ class Obtain:
 
     # 获取推荐作者
     def get_user_recommended(self):
-        response = self.acquire.send_request(
-            url="https://api.codemao.cn/web/users/recommended", method="get"
-        )
+        response = self.acquire.send_request(url="/web/users/recommended", method="get")
         return response.json()
 
     # 获取训练师小课堂
     def get_post_lesion(self):
         response = self.acquire.send_request(
             url="https://backend.box3.fun/diversion/codemao/post", method="get"
+        )
+        return response.json()
+
+    # 获取社区各个部分开启状态 TODO:待完善
+    def get_community_status(self, type: Literal["WEB_FORUM_STATUS"]):
+        response = self.acquire.send_request(
+            url=f"/web/config/tab/on-off/status?config_type={type}", method="get"
         )
         return response.json()

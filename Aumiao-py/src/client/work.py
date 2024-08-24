@@ -91,7 +91,7 @@ class Motion:
             }
         )
         response = self.acquire.send_request(
-            url="https://api.codemao.cn/nemo/v2/report/work", method="post", data=data
+            url="/nemo/v2/report/work", method="post", data=data
         )
         return response.status_code == 200
 
@@ -127,7 +127,7 @@ class Obtain:
     # 获取作品信息
     def get_work_detail(self, work_id: int):
         response = self.acquire.send_request(
-            url=f"https://api.codemao.cn/creation-tools/v1/works/{work_id}",
+            url=f"/creation-tools/v1/works/{work_id}",
             method="get",
         )
         return response.json()
@@ -135,7 +135,7 @@ class Obtain:
     # 获取其他作品推荐
     def get_other_recommended(self, work_id: int):
         response = self.acquire.send_request(
-            url=f"https://api.codemao.cn/nemo/v2/works/web/{work_id}/recommended",
+            url=f"/nemo/v2/works/web/{work_id}/recommended",
             method="get",
         )
         return response.json()
@@ -143,14 +143,14 @@ class Obtain:
     # 获取作品信息(info)
     def get_work_info(self, work_id: int):
         response = self.acquire.send_request(
-            url=f"https://api.codemao.cn/api/work/info/{work_id}", method="get"
+            url=f"/api/work/info/{work_id}", method="get"
         )
         return response.json()
 
     # 获取作品标签
     def get_work_label(self, work_id: int):
         response = self.acquire.send_request(
-            url=f"https://api.codemao.cn/creation-tools/v1/work-details/work-labels?work_id={work_id}",
+            url=f"/creation-tools/v1/work-details/work-labels?work_id={work_id}",
             method="get",
         )
         return response.json()
@@ -158,14 +158,14 @@ class Obtain:
     # 获取作者更多作品
     def get_author_work(self, user_id: str):
         response = self.acquire.send_request(
-            url=f"https://api.codemao.cn/web/works/users/{user_id}", method="get"
+            url=f"/web/works/users/{user_id}", method="get"
         )
         return response.json()
 
     # 获取作品源码
     def get_work_source(self, work_id: int):
         response = self.acquire.send_request(
-            url=f"https://api.codemao.cn/creation-tools/v1/works/{work_id}/source/public",
+            url=f"/creation-tools/v1/works/{work_id}/source/public",
             method="get",
         )
         return response.json()

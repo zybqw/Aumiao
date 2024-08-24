@@ -76,7 +76,7 @@ class Obtain:
     # 获取账户信息
     def get_data_tiger(self):
         response = self.acquire.send_request(
-            url="https://api.codemao.cn/tiger/user", method="get"
+            url="/tiger/user", method="get"
         )
         return response.json()
 
@@ -190,7 +190,7 @@ class Motion:
             }
         )
         response = self.acquire.send_request(
-            url="https://api.codemao.cn/tiger/v3/web/accounts/password",
+            url="/tiger/v3/web/accounts/password",
             method="patch",
             data=data,
         )
@@ -202,7 +202,7 @@ class Motion:
             {"phone_number": new_phonenum, "old_phone_number": old_phonenum}
         )
         response = self.acquire.send_request(
-            url="https://api.codemao.cn/tiger/v3/web/accounts/captcha/phone/change",
+            url="/tiger/v3/web/accounts/captcha/phone/change",
             method="post",
             data=data,
         )
@@ -212,7 +212,7 @@ class Motion:
     def modify_phonenum(self, captcha: int, phonenum: int) -> bool:
         data = json.dumps({"phone_number": phonenum, "captcha": captcha})
         response = self.acquire.send_request(
-            url="https://api.codemao.cn/tiger/v3/web/accounts/phone/change",
+            url="/tiger/v3/web/accounts/phone/change",
             method="patch",
             data=data,
         )
