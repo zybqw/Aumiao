@@ -1,4 +1,5 @@
 import json
+from turtle import st
 from typing import Literal
 
 import src.app.acquire as Acquire
@@ -157,3 +158,45 @@ class NovelMotion:
             method="delete",
         )
         return response.json() if return_data else response.status_code == 200
+
+
+class BookObtain:
+    def __init__(self) -> None:
+        self.acquire = Acquire.CodeMaoClient()
+
+    # 获取全部图鉴
+    def get_all_book(self):
+        response = self.acquire.send_request(url="/api/sprite/list/all", method="get")
+        return response.json()
+
+    # 获取所有属性
+    def get_all_attr(self):
+        response = self.acquire.send_request(url="/api/sprite/factio", method="get")
+        return response.json()
+
+    # 按星级获取图鉴
+    def get_book_by_star(self, star: Literal[1, 2, 3, 4, 5, 6]):
+        # 1:一星 2:二星 3:三星 4:四星 5:五星 6:六星
+        return self._get_book_by_params({"star": star})
+
+    # 按属性获取图鉴
+    def get_book_by_attr(self, attr_id: Literal[2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]):
+        # 2:普通 3:草 4:地 5:电 6:虫 7:水 8:火 9:机械 10:飞行 11:超能 12:神圣
+        return self._get_book_by_params({"faction_id": attr_id})
+
+    # 通用获取图鉴方法
+    def _get_book_by_params(self, params: dict):
+        response = self.acquire.send_request(
+            url="https://api.codemao.cn/api/sprite/list/all",
+            method="get",
+            params=params,
+        )  # 检查HTTP请求是否成功
+        return response.json()
+
+    # 获取指定图鉴详情
+    def get_book_detail(self, book_id: int):
+        response = self.acquire.send_request(
+            url=f"/api/sprite/{book_id}",
+            method="get",
+        )
+        return response.json()
