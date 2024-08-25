@@ -199,3 +199,13 @@ class BookObtain:
             method="get",
         )
         return response.json()
+
+    # 点赞图鉴
+    def like_book(
+        self, method: select, book_id: int, return_data: bool = False
+    ) -> bool | dict:
+        response = self.acquire.send_request(
+            url=f"/api/sprite/praise/{book_id}",
+            method=method,
+        )
+        return response.json() if return_data else response.status_code == 200
