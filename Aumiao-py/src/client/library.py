@@ -6,7 +6,29 @@ import src.app.acquire as Acquire
 select = Literal["post", "delete"]
 
 
-class Obtain:
+class CartoonObtain:
+    def __init__(self):
+        self.acquire = Acquire.CodeMaoClient()
+
+    # 获取全部漫画
+    def get_all_cartoon(self):
+        response = self.acquire.send_request(url="/api/comic/list/all", method="get")
+        return response.json()
+
+    # 获取漫画信息
+    def get_cartoon_info(self, comic_id):
+        response = self.acquire.send_request(url=f"/api/comic/{comic_id}", method="get")
+        return response.json()
+
+    # 获取漫画某个章节信息（每个章节会分配一个唯一id）
+    def get_cartoon_chapters(self, chapter_id):
+        response = self.acquire.send_request(
+            url=f"/api/comic/page/list/{chapter_id}", method="get"
+        )
+        return response.json()
+
+
+class NovelObtain:
     def __init__(self) -> None:
         self.acquire = Acquire.CodeMaoClient()
 
@@ -91,7 +113,7 @@ class Obtain:
         return response.json()
 
 
-class Motion:
+class NovelMotion:
     def __init__(self) -> None:
         self.acquire = Acquire.CodeMaoClient()
 
