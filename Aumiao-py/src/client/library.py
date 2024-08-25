@@ -1,5 +1,4 @@
 import json
-from turtle import st
 from typing import Literal
 
 import src.app.acquire as Acquire
