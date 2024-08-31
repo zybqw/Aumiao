@@ -100,7 +100,7 @@ class Obtain:
         return response.json()
 
     # 获取个人作品列表的函数
-    def get_user_works_web(
+    def get_data_works_web(
         self, user_id: str, type: Literal["newest", "hot"] = "newest"
     ) -> list[dict[str, str | int]]:
         params = {
@@ -118,7 +118,7 @@ class Obtain:
         return works
 
     # 获取用户KN或nemo作品
-    def get_user_works_nemo(
+    def get_data_works_nemo_kn(
         self, method: Literal["published", "total"], type: Literal["KN", "nemo"]
     ):
         extra_url = "nemo" if type == "nemo" else "neko"
@@ -130,6 +130,126 @@ class Obtain:
             url = f"https://api-creation.codemao.cn/{extra_url}/works/v2/list/user"
         params = {"offset": 0, "limit": 15}
         works = self.acquire.fetch_all_data(url=url, params=params, data_key="items")
+        return works
+
+    # 获取用户kitten作品列表
+    def get_data_my_works_kitten(
+        self,
+        version: Literal["KITTEN_V4", "KITTEN_V3"],
+        status: Literal["PUBLISHED", "UNPUBLISHED", "all"],
+        work_status: Literal["SHOW"] = "SHOW",
+        limit: int = 30,
+        offset: int = 0,
+    ):
+        params = {
+            "offset": offset,
+            "limit": limit,
+            "version_no": version,
+            "work_status": work_status,
+            "published_status": status,
+        }
+        works = self.acquire.fetch_all_data(
+            url="https://api-creation.codemao.cn/kitten/common/work/list2",
+            params=params,
+            data_key="items",
+        )
+        return works
+
+    # 获取用户nemo作品列表
+    def get_data_my_works_nemo(
+        self,
+        status: Literal["PUBLISHED", "UNPUBLISHED", "all"],
+        limit: int = 30,
+        offset: int = 0,
+    ):
+        params = {"offset": offset, "limit": limit, "published_status": status}
+        works = self.acquire.fetch_all_data(
+            url="https://api.codemao.cn/creation-tools/v1/works/list",
+            params=params,
+            data_key="items",
+        )
+        return works
+
+    # 获取用户海龟编辑器作品列表
+    def get_data_my_works_wood(
+        self,
+        status: Literal["PUBLISHED", "UNPUBLISHED"],
+        limit: int = 30,
+        offset: int = 0,
+        language_type: int = 0,
+        work_status: Literal["SHOW"] = "SHOW",
+    ):
+        params = {
+            "offset": offset,
+            "limit": limit,
+            "language_type": language_type,
+            "work_status": work_status,
+            "published_status": status,
+        }
+        works = self.acquire.fetch_all_data(
+            url="https://api-creation.codemao.cn/wood/comm/work/list",
+            params=params,
+            data_key="items",
+        )
+        return works
+
+    # 获取用户box作品列表
+    def get_data_my_works_box(
+        self,
+        status: Literal["all", "PUBLISHED", "UNPUBLISHED"],
+        limit: int = 30,
+        offset: int = 0,
+        work_status: Literal["SHOW"] = "SHOW",
+    ):
+        params = {
+            "offset": offset,
+            "limit": limit,
+            "work_status": work_status,
+            "published_status": status,
+        }
+        works = self.acquire.fetch_all_data(
+            url="https://api-creation.codemao.cn/box/v2/work/list",
+            params=params,
+            data_key="items",
+        )
+        return works
+
+    # 获取用户小说列表
+    def get_data_my_works_fanfic(
+        self,
+        limit: int = 30,
+        offset: int = 0,
+        fiction_status: Literal["SHOW"] = "SHOW",
+    ):
+        params = {"offset": offset, "limit": limit, "fiction_status": fiction_status}
+        works = self.acquire.fetch_all_data(
+            url="https://api.codemao.cn/web/fanfic/my/new",
+            params=params,
+            data_key="items",
+        )
+        return works
+
+    # 获取用户coco作品列表 TODO:参数不确定
+    # https://api-creation.codemao.cn/coconut/web/work/list?offset=0&limit=30&status=1&published=true
+    def get_data_my_works_coco(
+        self,
+        status: int = 1,
+        published: bool = True,
+        limit: int = 30,
+        offset: int = 0,
+    ):
+        params = {
+            "offset": offset,
+            "limit": limit,
+            "status": status,
+            "published": published,
+        }
+        works = self.acquire.fetch_all_data(
+            url="https://api-creation.codemao.cn/coconut/web/work/list",
+            params=params,
+            data_key="data.items",
+            total_key="data.total",
+        )
         return works
 
     # 获取粉丝列表
