@@ -100,7 +100,7 @@ class Obtain:
         return response.json()
 
     # 获取个人作品列表的函数
-    def get_data_works_web(
+    def get_user_works_web(
         self, user_id: str, type: Literal["newest", "hot"] = "newest"
     ) -> list[dict[str, str | int]]:
         params = {

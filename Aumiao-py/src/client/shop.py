@@ -1,4 +1,5 @@
 import json
+from typing import Literal
 
 import src.app.acquire as Acquire
 
@@ -25,26 +26,29 @@ class Obtain:
         limit: int = 14,
         works_limit: int = 4,
         offset: int = 0,
-        sort: str | None = None,
+        sort: list[Literal["-latest_joined_at", "-created_at"]] = [
+            "-created_at",
+            "-latest_joined_at",
+        ],
     ):  # 不要问我limit默认值为啥是14，因为api默认获取14个
-        # sort可以不填,参数为-latest_joined_at,-created_at这两个可以互换位置，但不能填一个
+        if isinstance(sort, list):
+            _sort = ",".join(sort)
         params = {
             "level": level,
             "works_limit": works_limit,
             "limit": limit,
             "offset": offset,
-            "sort": sort,
+            "sort": _sort,
         }
-        shops = self.acquire.fetch_all_data(
+        shops = self.acquire.send_request(
             url="/web/work-shops/search",
             params=params,
-            total_key="total",
-            data_key="items",
+            method="get",
         )
         return shops
 
     # 获取工作室成员
-    def get_shops_members(self, id: int, limit: int = 40, offset: int = 0):
+    def get_shops_members_all(self, id: int, limit: int = 40, offset: int = 0):
         params = {"limit": limit, "offset": offset}
         members = self.acquire.fetch_all_data(
             url=f"/web/shops/{id}/users",
@@ -55,8 +59,7 @@ class Obtain:
         return members
 
     # 获取工作室列表，包括工作室成员，工作室作品
-
-    def get_shop(
+    def get_shops_details(
         self,
         levels: list[int] | int = [1, 2, 3, 4],
         max_number: int = 4,

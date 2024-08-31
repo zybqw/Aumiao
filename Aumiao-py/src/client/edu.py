@@ -108,7 +108,7 @@ class Obtain:
 
     # 获取所有班级
     def get_classes(
-        self, limit: int = 15, method: Literal["detail", "simple"] = "simple"
+        self, page: int = 1, method: Literal["detail", "simple"] = "simple"
     ):
         if method == "simple":
             classes = self.acquire.send_request(
@@ -117,7 +117,7 @@ class Obtain:
         elif method == "detail":
             url = "https://eduzone.codemao.cn/edu/zone/classes/"
             time_stamp = community.Obtain().get_timestamp()["data"]
-            params = {"page": 1, "TIME": time_stamp}
+            params = {"page": page, "TIME": time_stamp}
 
             classes = self.acquire.fetch_all_data(
                 url=url,
