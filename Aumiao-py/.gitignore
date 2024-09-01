@@ -2,3 +2,4 @@
 test.py
 .vscode/
 *.venv/
+*dist/

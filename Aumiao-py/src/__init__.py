@@ -1,4 +1,16 @@
-from .client import community, edu, pickduck, post, shop, union, user, work
+from .client import community, edu, library, pickduck, post, shop, union, user, work
+
+__all__ = [
+    "community",
+    "edu",
+    "pickduck",
+    "post",
+    "shop",
+    "union",
+    "user",
+    "work",
+    "library",
+]
 
 # 定义版本、作者和团队信息
 version = "2.0.0"
