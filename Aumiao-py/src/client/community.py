@@ -19,7 +19,6 @@ class Login:
         password: str,
         pid: str = "65edCTyg",
     ) -> str | None:
-
         # cookies = utils.dict_from_cookiejar(response.cookies)
 
         #   soup = BeautifulSoup(
@@ -43,7 +42,6 @@ class Login:
 
     # cookie登录
     def login_cookie(self, cookies: str) -> None | bool:
-
         try:
             dict([item.split("=", 1) for item in cookies.split("; ")])
             # 检查是否合规,不能放到headers中
