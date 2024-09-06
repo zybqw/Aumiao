@@ -86,9 +86,16 @@ class Obtain:
         return response.json()
 
     # 获取论坛帖子各个栏目
-    def get_post_categories(self):
+    def get_post_boards(self):
         response = self.acquire.send_request(
             url="/web/forums/boards/simples/all", method="get"
+        )
+        return response.json()
+
+    # 获取论坛单个版块详细信息T
+    def get_board_details(self, board_id: int):
+        response = self.acquire.send_request(
+            url=f"/web/forums/boards/{board_id}", method="get"
         )
         return response.json()
 
@@ -145,7 +152,6 @@ class Obtain:
         return response.json()
 
 
-# 回帖及回帖下的评论id均唯一分配，二者没有从属关系，所以二者方法通用
 class Motion:
     def __init__(self) -> None:
         self.acquire = acquire.CodeMaoClient()
@@ -162,6 +168,16 @@ class Motion:
             url=f"/web/forums/posts/{post_id}/replies",
             method="post",
             data=data,
+        )
+        return response.json() if return_data else response.status_code == 201
+
+    # 对某个回帖评论进行回复
+    def reply_comment(
+        self, reply_id: int, parent_id: int, content: str, return_data: bool = False
+    ):
+        data = json.dumps({"content": content, "parent_id": parent_id})
+        response = self.acquire.send_request(
+            url=f"/web/forums/replies/{reply_id}/comments", method="post", data=data
         )
         return response.json() if return_data else response.status_code == 201
 
@@ -238,7 +254,6 @@ class Motion:
         return response.status_code == 204
 
     # 删除某个帖子
-
     def delete_post(self, post_id: int):
         response = self.acquire.send_request(
             url=f"/web/forums/posts/{post_id}",
@@ -257,15 +272,21 @@ class Motion:
     # 发布帖子
     def create_post(
         self,
-        board_id: Literal[17, 2, 10, 5, 3, 6, 27, 11, 26, 13, 7, 4, 28],
+        method: Literal["board", "work_shop"],
         title: str,
         content: str,
+        board_id: None | Literal[17, 2, 10, 5, 3, 6, 27, 11, 26, 13, 7, 4, 28] = None,
+        work_shop_id: None | int = None,
         return_data: bool = False,
     ):
         # board_id类型可从get_post_categories()获取
         data = json.dumps({"title": title, "content": content})
+        if method == "board":
+            url = f"/web/forums/boards/{board_id}/posts"
+        elif method == "work_shop":
+            url = f"/web/works/subjects/{work_shop_id}/post"
         response = self.acquire.send_request(
-            url=f"/web/forums/boards/{board_id}/posts",
+            url=url,
             method="post",
             data=data,
         )

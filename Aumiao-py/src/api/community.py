@@ -247,8 +247,15 @@ class Obtain:
 
     # 获取推荐头图
     def get_banner(
-        self, type: Literal["FLOAT_BANNER", "OFFICIAL", "CODE_TV", "WOKE_SHOP"]
+        self,
+        type: (
+            None
+            | Literal[
+                "FLOAT_BANNER", "OFFICIAL", "CODE_TV", "WOKE_SHOP", "MATERIAL_NORMAL"
+            ]
+        ) = None,
     ):
+        # 所有:不设置type,首页:OFFICIAL, 工作室页:WORK_SHOP, 素材页:MATERIAL_NORMAL, 右下角浮动区域:FLOAT_BANNER, 编程TV:CODE_TV,
         response = self.acquire.send_request(
             url=f"/web/banners/all?type={type}", method="get"
         )
@@ -333,3 +340,15 @@ class Obtain:
             url=f"/web/config/tab/on-off/status?config_type={type}", method="get"
         )
         return response.json()
+
+
+class Motion:
+    def __init__(self) -> None:
+        self.acquire = Acquire.CodeMaoClient()
+
+    # 签订友好协议
+    def sign_nature(self) -> bool:
+        response = self.acquire.send_request(
+            url="/nemo/v3/user/level/signature", method="post"
+        )
+        return response.status_code == 200
