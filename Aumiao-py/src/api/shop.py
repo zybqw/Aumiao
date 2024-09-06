@@ -1,7 +1,7 @@
 import json
 from typing import Literal
 
-import src.app.acquire as Acquire
+import src.base.acquire as Acquire
 
 
 class Obtain:

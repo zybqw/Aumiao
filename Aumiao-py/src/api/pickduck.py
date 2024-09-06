@@ -1,6 +1,6 @@
 import json
 
-import src.app.acquire as Acquire
+import src.base.acquire as Acquire
 
 
 class PickDuck:
