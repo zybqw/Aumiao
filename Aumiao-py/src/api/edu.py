@@ -1,8 +1,9 @@
 import json
 from typing import Literal
 
-import src.app.acquire as Acquire
-import src.client.community as community
+import src.base.acquire as Acquire
+
+from . import community as community
 
 
 class Motion:

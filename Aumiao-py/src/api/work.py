@@ -1,8 +1,8 @@
 import json
 from typing import Literal
 
-import src.app.acquire as acquire
-import src.app.tool as tool
+import src.base.acquire as acquire
+import src.base.tool as tool
 
 select = Literal["post", "delete"]
 

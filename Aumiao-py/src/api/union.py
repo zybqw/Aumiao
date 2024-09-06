@@ -1,12 +1,13 @@
 from typing import Literal
 
-import src.app.acquire as acquire
-import src.app.data as data
-import src.app.file as file
-import src.app.tool as tool
-import src.client.user as user
-import src.client.work as work
-from src.client import community
+import src.base.acquire as acquire
+import src.base.data as data
+import src.base.file as file
+import src.base.tool as tool
+
+from . import community as community
+from . import user as user
+from . import work as work
 
 
 class Union:

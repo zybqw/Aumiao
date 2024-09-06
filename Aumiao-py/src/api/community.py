@@ -2,8 +2,8 @@ import json
 import uuid
 from typing import Literal
 
-import src.app.acquire as Acquire
-import src.app.tool as Tool
+import src.base.acquire as Acquire
+import src.base.tool as Tool
 
 
 # 编程猫所有api中若包含v2等字样，表示第几版本，同样比它低的版本也可使用
@@ -69,7 +69,7 @@ class Login:
 
     # 返回完整鉴权cookie
     def get_login_auth(self, token):
-        # response = src.app_acquire.send_request(url="https://shequ.codemao.cn/",method="get",)
+        # response = src.base_acquire.send_request(url="https://shequ.codemao.cn/",method="get",)
         # aliyungf_tc = response.cookies.get_dict()["aliyungf_tc"]
         uuid_ca = uuid.uuid1()
         token_ca = {"authorization": token, "__ca_uid_key__": str(uuid_ca)}
