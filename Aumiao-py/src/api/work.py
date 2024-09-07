@@ -42,7 +42,7 @@ class Motion:
 
     # 对某个作品进行评论的函数
     def comment_work(
-        self, comment, emoji, work_id: int, return_data: bool = False
+        self,work_id: int, comment, emoji=None ,return_data: bool = False
     ) -> bool | dict:
         response = self.acquire.send_request(
             url=f"/creation-tools/v1/works/{work_id}/comment",
