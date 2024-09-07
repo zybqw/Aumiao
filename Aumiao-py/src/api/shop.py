@@ -48,8 +48,11 @@ class Obtain:
         return shops
 
     # 获取工作室成员
-    def get_shops_members_all(self, id: int, limit: int = 40, offset: int = 0):
-        params = {"limit": limit, "offset": offset}
+    def get_shops_members(
+        self,
+        id: int,
+    ):
+        params = {"limit": 40, "offset": 0}
         members = self.acquire.fetch_all_data(
             url=f"/web/shops/{id}/users",
             params=params,

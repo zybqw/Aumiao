@@ -134,6 +134,41 @@ class Motion:
         )
         return response.status_code == 200
 
+    # 将一个作品设置为协作作品
+    def set_coll_work(self, work_id: int) -> bool:
+        response = self.acquire.send_request(
+            url=f"https://socketcoll.codemao.cn/coll/kitten/{work_id}",
+            method="post",
+            data=json.dumps({}),
+        )
+        return response.status_code == 200
+
+    # 删除一个未发布的作品
+    def del_work(self, work_id: int) -> bool:
+        response = self.acquire.send_request(
+            url=f"https://api-creation.codemao.cn/kitten/common/work/{work_id}/temporarily",
+            method="delete",
+        )
+        return response.status_code == 204
+
+    # 取消发布一个已发布的作品(TODO: 待测试)
+    def unpublish_work(self, work_id: int) -> bool:
+        response = self.acquire.send_request(
+            url=f"/tiger/work/{work_id}/unpublish",
+            method="patch",
+            data=json.dumps({}),
+        )
+        return response.status_code == 200
+
+    # 取消发布一个已发布的作品
+    def unpublish_work_web(self, work_id: int) -> bool:
+        response = self.acquire.send_request(
+            url=f"/web/works/r2/unpublish/{work_id}",
+            method="put",
+            data=json.dumps({}),
+        )
+        return response.status_code == 200
+
 
 class Obtain:
 
@@ -160,11 +195,21 @@ class Obtain:
         )
         return response.json()
 
-    # 获取其他作品推荐
-    def get_other_recommended(self, work_id: int):
+    # 获取其他作品推荐_web端
+    def get_other_recommended_web(self, work_id: int):
         response = self.acquire.send_request(
             url=f"/nemo/v2/works/web/{work_id}/recommended",
             method="get",
+        )
+        return response.json()
+
+    # 获取其他作品推荐_nemo端
+    def get_other_recommended_nemo(self, work_id: int):
+        params = {"work_id": work_id}
+        response = self.acquire.send_request(
+            url="/nemo/v3/work-details/recommended/list",
+            method="get",
+            params=params,
         )
         return response.json()
 
@@ -234,7 +279,7 @@ class Obtain:
     # 获取nemo端最新作品
     def discover_works_new_nemo(
         self,
-        type: Literal["course-work", "template", "original"],
+        type: Literal["course-work", "template", "original", "fork"],
         limit: int = 15,
         offset=0,
     ):
@@ -263,5 +308,42 @@ class Obtain:
         params = {"limit": limit, "offset": offset}
         response = self.acquire.send_request(
             url=f"/nemo/v3/work-subject/{id}/works", method="get", params=params
+        )
+        return response.json()
+
+    # 获取协作邀请码
+    def get_coll_code(self, work_id: int, method: Literal["get", "delete"] = "get"):
+        response = self.acquire.send_request(
+            url=f"https://socketcoll.codemao.cn/coll/kitten/collaborator/code/{work_id}",
+            method=method,
+        )
+        return response.json()
+
+    # 获取协作者列表
+    def get_coll_list(self, work_id: int):
+        params = {"current_page": 1, "page_size": 100}
+        list = self.acquire.fetch_all_data(
+            url=f"https://socketcoll.codemao.cn/coll/kitten/collaborator/{work_id}",
+            params=params,
+            total_key="data.total",
+            data_key="data.items",
+            method="page",
+            args={"amount": "current_page", "remove": "page_size"},
+        )
+        return list
+
+    # 获取作品再创作情况_web端
+    def get_recreate_info_web(self, work_id: int):
+        response = self.acquire.send_request(
+            url=f"/tiger/work/tree/{work_id}",
+            method="get",
+        )
+        return response.json()
+
+    # 获取作品再创作情况_nemo端
+    def get_recreate_info_nemo(self, work_id: int):
+        response = self.acquire.send_request(
+            url=f"/nemo/v2/works/root/{work_id}",
+            method="get",
         )
         return response.json()
