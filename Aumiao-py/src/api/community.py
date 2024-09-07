@@ -341,6 +341,14 @@ class Obtain:
         )
         return response.json()
 
+    # 获取kitten编辑页面精选活动
+    def get_kitten_activity(self):
+        response = self.acquire.send_request(
+            url="https://api-creation.codemao.cn/kitten/activity/choiceness/list",
+            method="get",
+        )
+        return response.json()
+
 
 class Motion:
     def __init__(self) -> None:

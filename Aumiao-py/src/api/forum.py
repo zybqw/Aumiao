@@ -26,11 +26,9 @@ class Obtain:
         )
         return response.json()
 
-    # 获取帖子回复
-    def get_post_replies_all(
-        self, id: int, page: int = 1, limit: int = 10, sort: str = "-created_at"
-    ):
-        params = {"page": page, "limit": limit, "sort": sort}
+    # 获取帖子回帖
+    def get_post_replies_posts(self, id: int, sort: str = "-created_at"):
+        params = {"page": 1, "limit": 10, "sort": sort}
         replies = self.acquire.fetch_all_data(
             url=f"/web/forums/posts/{id}/replies",
             params=params,
@@ -41,26 +39,28 @@ class Obtain:
         )
         return replies
 
-    # 获取帖子回复
-    def get_post_replies(
-        self, id: int, page: int = 1, limit: int = 10, sort: str = "-created_at"
+    # 获取回帖评论
+    # https://api.codemao.cn/web/forums/replies/1750952/comments?limit=10&page=1
+    def get_reply_post_comments(
+        self,
+        post_id: int,
     ):
-        params = {"page": page, "limit": limit, "sort": sort}
-        response = self.acquire.send_request(
-            url=f"/web/forums/posts/{id}/replies",
+        params = {"page": 1, "limit": 10}
+        comments = self.acquire.fetch_all_data(
+            url=f"/web/forums/replies/{post_id}/comments",
             params=params,
-            method="get",
+            data_key="items",
+            method="page",
+            args={"amount": "limit", "remove": "page"},
         )
-        return response.json()
+        return comments
 
     # 获取我的帖子或回复的帖子
     def get_post_mine_all(
         self,
         method: Literal["created", "replied"],
-        page: int = 1,
-        limit: int = 20,
     ):
-        params = {"page": page, "limit": limit}
+        params = {"page": 1, "limit": 10}
         posts = self.acquire.fetch_all_data(
             url=f"/web/forums/posts/mine/{method}",
             params=params,
@@ -69,21 +69,6 @@ class Obtain:
             args={"amount": "limit", "remove": "page"},
         )
         return posts
-
-    # 获取我的帖子或回复的帖子
-    def get_post_mine(
-        self,
-        method: Literal["created", "replied"],
-        page: int = 1,
-        limit: int = 20,
-    ):
-        params = {"page": page, "limit": limit}
-        response = self.acquire.send_request(
-            url=f"/web/forums/posts/mine/{method}",
-            params=params,
-            method="get",
-        )
-        return response.json()
 
     # 获取论坛帖子各个栏目
     def get_post_boards(self):
@@ -151,6 +136,19 @@ class Obtain:
         )
         return response.json()
 
+    # 通过标题搜索帖子
+    def search_posts(self, title: str):
+        params = {"title": title, "limit": 20, "page": 1}
+        response = self.acquire.fetch_all_data(
+            url="/web/forums/posts/search",
+            method="page",
+            params=params,
+            data_key="items",
+            args={"amount": "limit", "remove": "page"},
+        )
+
+        return response
+
 
 class Motion:
     def __init__(self) -> None:
@@ -181,29 +179,29 @@ class Motion:
         )
         return response.json() if return_data else response.status_code == 201
 
-    # 点赞某个回帖
-    def like_comment(
+    # 点赞某个回帖或评论
+    def like_comment_or_reply(
         self,
         method: Literal["put", "delete"],
-        comment_id: int,
-        source: Literal["REPLY"] = "REPLY",
+        id: int,
+        source: Literal["REPLY", "COMMENT"],
     ):
         # 每个回帖都有唯一id
         params = {"source": source}
         response = self.acquire.send_request(
-            url=f"/web/forums/comments/{comment_id}/liked",
+            url=f"/web/forums/comments/{id}/liked",
             method=method,
             params=params,
         )
         return response.status_code == 204
 
     # 举报某个回帖
-    def report_post_comment(
+    def report_reply_or_comment(
         self,
         comment_id: int,
         reason_id: Literal[0, 1, 2, 3, 4, 5, 6, 7, 8],
         description: str,
-        source: Literal["REPLY"] = "REPLY",
+        source: Literal["REPLY", "COMMENT"],
         return_data: bool = False,
     ):
         # get_report_reasons()仅返回1-8的reason_id,其中description与reason_id一一对应 0为自定义举报理由
@@ -245,18 +243,12 @@ class Motion:
         )
         return response.json() if return_data else response.status_code == 201
 
-    # 删除某个回帖
-    def delete_comment(self, comment_id: int):
+    # 删除某个回帖或评论或帖子
+    def delete_comment_post_reply(
+        self, id: int, type: Literal["replies", "comments", "posts"]
+    ):
         response = self.acquire.send_request(
-            url=f"/web/forums/replies/{comment_id}",
-            method="delete",
-        )
-        return response.status_code == 204
-
-    # 删除某个帖子
-    def delete_post(self, post_id: int):
-        response = self.acquire.send_request(
-            url=f"/web/forums/posts/{post_id}",
+            url=f"/web/forums/{type}/{id}",
             method="delete",
         )
         return response.status_code == 204

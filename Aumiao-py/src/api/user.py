@@ -138,12 +138,10 @@ class Obtain:
         version: Literal["KITTEN_V4", "KITTEN_V3"],
         status: Literal["PUBLISHED", "UNPUBLISHED", "all"],
         work_status: Literal["SHOW"] = "SHOW",
-        limit: int = 30,
-        offset: int = 0,
     ):
         params = {
-            "offset": offset,
-            "limit": limit,
+            "offset": 0,
+            "limit": 30,
             "version_no": version,
             "work_status": work_status,
             "published_status": status,
@@ -159,10 +157,8 @@ class Obtain:
     def get_data_my_works_nemo(
         self,
         status: Literal["PUBLISHED", "UNPUBLISHED", "all"],
-        limit: int = 30,
-        offset: int = 0,
     ):
-        params = {"offset": offset, "limit": limit, "published_status": status}
+        params = {"offset": 0, "limit": 30, "published_status": status}
         works = self.acquire.fetch_all_data(
             url="https://api.codemao.cn/creation-tools/v1/works/list",
             params=params,
@@ -174,14 +170,12 @@ class Obtain:
     def get_data_my_works_wood(
         self,
         status: Literal["PUBLISHED", "UNPUBLISHED"],
-        limit: int = 30,
-        offset: int = 0,
         language_type: int = 0,
         work_status: Literal["SHOW"] = "SHOW",
     ):
         params = {
-            "offset": offset,
-            "limit": limit,
+            "offset": 0,
+            "limit": 30,
             "language_type": language_type,
             "work_status": work_status,
             "published_status": status,
@@ -197,13 +191,11 @@ class Obtain:
     def get_data_my_works_box(
         self,
         status: Literal["all", "PUBLISHED", "UNPUBLISHED"],
-        limit: int = 30,
-        offset: int = 0,
         work_status: Literal["SHOW"] = "SHOW",
     ):
         params = {
-            "offset": offset,
-            "limit": limit,
+            "offset": 0,
+            "limit": 30,
             "work_status": work_status,
             "published_status": status,
         }
@@ -217,11 +209,9 @@ class Obtain:
     # 获取用户小说列表
     def get_data_my_works_fanfic(
         self,
-        limit: int = 30,
-        offset: int = 0,
         fiction_status: Literal["SHOW"] = "SHOW",
     ):
-        params = {"offset": offset, "limit": limit, "fiction_status": fiction_status}
+        params = {"offset": 0, "limit": 30, "fiction_status": fiction_status}
         works = self.acquire.fetch_all_data(
             url="https://api.codemao.cn/web/fanfic/my/new",
             params=params,
@@ -230,17 +220,14 @@ class Obtain:
         return works
 
     # 获取用户coco作品列表 TODO:参数不确定
-    # https://api-creation.codemao.cn/coconut/web/work/list?offset=0&limit=30&status=1&published=true
     def get_data_my_works_coco(
         self,
         status: int = 1,
         published: bool = True,
-        limit: int = 30,
-        offset: int = 0,
     ):
         params = {
-            "offset": offset,
-            "limit": limit,
+            "offset": 0,
+            "limit": 30,
             "status": status,
             "published": published,
         }
@@ -281,6 +268,21 @@ class Obtain:
             data_key="items",
         )
         return follows
+
+    # 获取用户收藏的作品的信息
+    def get_user_collects(self, user_id: str) -> list[dict[str, str]]:
+        params = {
+            "user_id": user_id,
+            "offset": 0,
+            "limit": 5,
+        }
+        collects = self.acquire.fetch_all_data(
+            url="/creation-tools/v1/user/center/collect/list",
+            params=params,
+            total_key="total",
+            data_key="items",
+        )
+        return collects
 
 
 class Motion:
