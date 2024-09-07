@@ -1,10 +1,10 @@
-from .client import community, edu, library, pickduck, post, shop, union, user, work
+from .api import community, edu, forum, library, pickduck, shop, union, user, work
 
 __all__ = [
     "community",
     "edu",
     "pickduck",
-    "post",
+    "forum",
     "shop",
     "union",
     "user",
