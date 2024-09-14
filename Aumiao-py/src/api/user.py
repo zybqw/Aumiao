@@ -109,7 +109,7 @@ class Obtain:
             "offset": 0,
             "limit": 5,
         }
-        works = self.acquire.fetch_all_data(
+        works = self.acquire.fetch_data(
             url="/creation-tools/v2/user/center/work-list",
             params=params,
             total_key="total",
@@ -129,7 +129,7 @@ class Obtain:
         elif method == "total":
             url = f"https://api-creation.codemao.cn/{extra_url}/works/v2/list/user"
         params = {"offset": 0, "limit": 15}
-        works = self.acquire.fetch_all_data(url=url, params=params, data_key="items")
+        works = self.acquire.fetch_data(url=url, params=params, data_key="items")
         return works
 
     # 获取用户kitten作品列表
@@ -146,7 +146,7 @@ class Obtain:
             "work_status": work_status,
             "published_status": status,
         }
-        works = self.acquire.fetch_all_data(
+        works = self.acquire.fetch_data(
             url="https://api-creation.codemao.cn/kitten/common/work/list2",
             params=params,
             data_key="items",
@@ -159,7 +159,7 @@ class Obtain:
         status: Literal["PUBLISHED", "UNPUBLISHED", "all"],
     ):
         params = {"offset": 0, "limit": 30, "published_status": status}
-        works = self.acquire.fetch_all_data(
+        works = self.acquire.fetch_data(
             url="https://api.codemao.cn/creation-tools/v1/works/list",
             params=params,
             data_key="items",
@@ -180,7 +180,7 @@ class Obtain:
             "work_status": work_status,
             "published_status": status,
         }
-        works = self.acquire.fetch_all_data(
+        works = self.acquire.fetch_data(
             url="https://api-creation.codemao.cn/wood/comm/work/list",
             params=params,
             data_key="items",
@@ -199,7 +199,7 @@ class Obtain:
             "work_status": work_status,
             "published_status": status,
         }
-        works = self.acquire.fetch_all_data(
+        works = self.acquire.fetch_data(
             url="https://api-creation.codemao.cn/box/v2/work/list",
             params=params,
             data_key="items",
@@ -212,7 +212,7 @@ class Obtain:
         fiction_status: Literal["SHOW"] = "SHOW",
     ):
         params = {"offset": 0, "limit": 30, "fiction_status": fiction_status}
-        works = self.acquire.fetch_all_data(
+        works = self.acquire.fetch_data(
             url="https://api.codemao.cn/web/fanfic/my/new",
             params=params,
             data_key="items",
@@ -231,7 +231,7 @@ class Obtain:
             "status": status,
             "published": published,
         }
-        works = self.acquire.fetch_all_data(
+        works = self.acquire.fetch_data(
             url="https://api-creation.codemao.cn/coconut/web/work/list",
             params=params,
             data_key="data.items",
@@ -246,7 +246,7 @@ class Obtain:
             "offset": 0,
             "limit": 15,
         }
-        fans = self.acquire.fetch_all_data(
+        fans = self.acquire.fetch_data(
             url="/creation-tools/v1/user/fans",
             params=params,
             total_key="total",
@@ -261,7 +261,7 @@ class Obtain:
             "offset": 0,
             "limit": 15,
         }
-        follows = self.acquire.fetch_all_data(
+        follows = self.acquire.fetch_data(
             url="/creation-tools/v1/user/followers",
             params=params,
             total_key="total",
@@ -276,7 +276,7 @@ class Obtain:
             "offset": 0,
             "limit": 5,
         }
-        collects = self.acquire.fetch_all_data(
+        collects = self.acquire.fetch_data(
             url="/creation-tools/v1/user/center/collect/list",
             params=params,
             total_key="total",
@@ -289,6 +289,13 @@ class Motion:
 
     def __init__(self) -> None:
         self.acquire = Acquire.CodeMaoClient()
+
+    # 设置正在做的事
+    def set_doing(self, doing: str):
+        response = self.acquire.send_request(
+            url="/nemo/v2/user/basic", method="put", data=json.dumps({"doing": doing})
+        )
+        return response.status_code == 200
 
     # 设置登录用户名(实验性功能)
     def set_username(self, username):

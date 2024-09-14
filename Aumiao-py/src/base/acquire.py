@@ -44,18 +44,23 @@ class CodeMaoClient:
             print(f"错误码: {response.status_code} 错误信息: {response.text}")
             return response
 
-    def fetch_all_data(
+    def fetch_data(
         self,
         url: str,
         params,
         data=None,
+        limit: int | None = None,
         fetch_method: Literal["get", "post"] = "get",
         total_key: str = "total",
         data_key: str = "item",
         method: Literal["offset", "page"] = "offset",
-        args: dict[Literal["amount", "remove"], str] = {
+        args: dict[
+            Literal["amount", "remove", "res_amount_key", "res_remove_key"], str
+        ] = {
             "amount": "limit",
             "remove": "offset",
+            "res_amount_key": "limit",
+            "res_remove_key": "offset",
         },
     ) -> list[dict]:
         initial_response = self.send_request(
@@ -64,22 +69,27 @@ class CodeMaoClient:
         total_items = int(
             self.tool_process.process_path(initial_response.json(), total_key)  # type: ignore
         )
+        # 尝试从 params 中获取 items_per_page，如果没有则使用初始响应中的值
         items_per_page = (
             params[args["amount"]]
-            if args["amount"]
-            else initial_response.json()["limit"]
+            if "amount" in args.keys()
+            else initial_response.json()[args["res_amount_key"]]
         )
-        total_pages = (total_items // items_per_page) + (  # type: ignore
-            1 if total_items % items_per_page > 0 else 0  # type: ignore
-        )
+
+        total_pages = (total_items + items_per_page - 1) // items_per_page  # 向上取整
         all_data = []
+        fetch_count = 0
         for page in range(total_pages):
             if method == "offset":
                 params[args["remove"]] = page * items_per_page
             elif method == "page":
-                params[args["remove"]] = page + 1 if page != total_pages else page
+                params[args["remove"]] = page + 1
             response = self.send_request(url=url, method=fetch_method, params=params)
-            all_data.extend(self.tool_process.process_path(response.json(), data_key))
+            data = self.tool_process.process_path(response.json(), data_key)
+            all_data.extend(data)
+            fetch_count += len(data)
+            if limit and fetch_count >= limit:
+                return all_data[:limit]
         return all_data
 
     def update_cookie(self, cookie: str):
