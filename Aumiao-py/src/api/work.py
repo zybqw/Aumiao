@@ -42,7 +42,7 @@ class Motion:
 
     # 对某个作品进行评论的函数
     def comment_work(
-        self,work_id: int, comment, emoji=None ,return_data: bool = False
+        self, work_id: int, comment, emoji=None, return_data: bool = False
     ) -> bool | dict:
         response = self.acquire.send_request(
             url=f"/creation-tools/v1/works/{work_id}/comment",
@@ -177,13 +177,14 @@ class Obtain:
         self.tool = tool.CodeMaoProcess()
 
     # 获取评论区评论
-    def get_work_comments(self, work_id: int):
+    def get_work_comments(self, work_id: int, limit: int = 15):
         params = {"limit": 15, "offset": 0}
-        comments = self.acquire.fetch_all_data(
+        comments = self.acquire.fetch_data(
             url=f"/creation-tools/v1/works/{work_id}/comments",
             params=params,
             total_key="page_total",
             data_key="items",
+            limit=limit,
         )
         return comments
 
@@ -322,7 +323,7 @@ class Obtain:
     # 获取协作者列表
     def get_coll_list(self, work_id: int):
         params = {"current_page": 1, "page_size": 100}
-        list = self.acquire.fetch_all_data(
+        list = self.acquire.fetch_data(
             url=f"https://socketcoll.codemao.cn/coll/kitten/collaborator/{work_id}",
             params=params,
             total_key="data.total",
