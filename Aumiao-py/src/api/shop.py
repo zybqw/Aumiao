@@ -53,7 +53,7 @@ class Obtain:
         id: int,
     ):
         params = {"limit": 40, "offset": 0}
-        members = self.acquire.fetch_all_data(
+        members = self.acquire.fetch_data(
             url=f"/web/shops/{id}/users",
             params=params,
             total_key="total",

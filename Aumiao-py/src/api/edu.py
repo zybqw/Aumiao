@@ -118,12 +118,12 @@ class Obtain:
             time_stamp = community.Obtain().get_timestamp()["data"]
             params = {"page": 1, "TIME": time_stamp}
 
-            classes = self.acquire.fetch_all_data(
+            classes = self.acquire.fetch_data(
                 url=url,
                 params=params,
                 data_key="items",
                 method="page",
-                args={"amount": "", "remove": "page"},
+                args={"remove": "page", "res_amount_key": "limit"},
             )
         return classes
 
@@ -131,7 +131,7 @@ class Obtain:
     def get_record_del(self):
         time_stamp = community.Obtain().get_timestamp()["data"]
         params = {"page": 1, "limit": 10, "TIME": time_stamp}
-        records = self.acquire.fetch_all_data(
+        records = self.acquire.fetch_data(
             url="https://eduzone.codemao.cn/edu/zone/student/remove/record",
             params=params,
             data_key="items",
@@ -145,7 +145,7 @@ class Obtain:
         # invalid为1时为已加入班级学生，为0则反之
         data = json.dumps({"invalid": invalid})
         params = {"page": 1, "limit": 100}
-        students = self.acquire.fetch_all_data(
+        students = self.acquire.fetch_data(
             url="https://eduzone.codemao.cn/edu/zone/students",
             params=params,
             data=data,
