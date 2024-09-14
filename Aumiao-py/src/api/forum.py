@@ -29,7 +29,7 @@ class Obtain:
     # 获取帖子回帖
     def get_post_replies_posts(self, id: int, sort: str = "-created_at"):
         params = {"page": 1, "limit": 10, "sort": sort}
-        replies = self.acquire.fetch_all_data(
+        replies = self.acquire.fetch_data(
             url=f"/web/forums/posts/{id}/replies",
             params=params,
             total_key="total",
@@ -44,12 +44,14 @@ class Obtain:
     def get_reply_post_comments(
         self,
         post_id: int,
+        limit: int = 10,
     ):
         params = {"page": 1, "limit": 10}
-        comments = self.acquire.fetch_all_data(
+        comments = self.acquire.fetch_data(
             url=f"/web/forums/replies/{post_id}/comments",
             params=params,
             data_key="items",
+            limit=limit,
             method="page",
             args={"amount": "limit", "remove": "page"},
         )
@@ -61,7 +63,7 @@ class Obtain:
         method: Literal["created", "replied"],
     ):
         params = {"page": 1, "limit": 10}
-        posts = self.acquire.fetch_all_data(
+        posts = self.acquire.fetch_data(
             url=f"/web/forums/posts/mine/{method}",
             params=params,
             data_key="items",
@@ -137,13 +139,14 @@ class Obtain:
         return response.json()
 
     # 通过标题搜索帖子
-    def search_posts(self, title: str):
+    def search_posts(self, title: str, limit: int = 20):
         params = {"title": title, "limit": 20, "page": 1}
-        response = self.acquire.fetch_all_data(
+        response = self.acquire.fetch_data(
             url="/web/forums/posts/search",
             method="page",
             params=params,
             data_key="items",
+            limit=limit,
             args={"amount": "limit", "remove": "page"},
         )
 

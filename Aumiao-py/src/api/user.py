@@ -240,7 +240,7 @@ class Obtain:
         return works
 
     # 获取粉丝列表
-    def get_user_fans(self, user_id: str) -> list[dict[str, str]]:
+    def get_user_fans(self, user_id: str, limit: int = 15) -> list[dict[str, str]]:
         params = {
             "user_id": user_id,
             "offset": 0,
@@ -251,11 +251,12 @@ class Obtain:
             params=params,
             total_key="total",
             data_key="items",
+            limit=limit,
         )
         return fans
 
     # 获取关注列表
-    def get_user_follows(self, user_id: str) -> list[dict[str, str]]:
+    def get_user_follows(self, user_id: str, limit: int = 15) -> list[dict[str, str]]:
         params = {
             "user_id": user_id,
             "offset": 0,
@@ -266,11 +267,12 @@ class Obtain:
             params=params,
             total_key="total",
             data_key="items",
+            limit=limit,
         )
         return follows
 
     # 获取用户收藏的作品的信息
-    def get_user_collects(self, user_id: str) -> list[dict[str, str]]:
+    def get_user_collects(self, user_id: str, limit: int = 5) -> list[dict[str, str]]:
         params = {
             "user_id": user_id,
             "offset": 0,
@@ -281,6 +283,7 @@ class Obtain:
             params=params,
             total_key="total",
             data_key="items",
+            limit=limit,
         )
         return collects
 
