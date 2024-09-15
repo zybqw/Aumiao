@@ -108,3 +108,65 @@ class Motion:
             ),
         )
         return response.status_code == 200
+
+    # 创建工作室
+    def create_shop(self, name: str, description: str, preview_url: str):
+        response = self.acquire.send_request(
+            url="/web/work_shops/create",
+            method="post",
+            data=json.dumps(
+                {
+                    "name": name,
+                    "description": description,
+                    "preview_url": preview_url,
+                }
+            ),
+        )
+        return response.json()
+
+    # 解散工作室
+    def dissolve_shop(self, shop_id: int):
+        response = self.acquire.send_request(
+            url="/web/work_shops/dissolve",
+            method="post",
+            data=json.dumps({"id": shop_id}),
+        )
+        return response.status_code == 200
+
+    # 在指定工作室投稿作品
+    def contribute_work(self, shop_id: int, work_id: int):
+        response = self.acquire.send_request(
+            url="/web/work_shops/works/contribute",
+            method="post",
+            data=json.dumps({"id": shop_id, "work_id": work_id}),
+        )
+        return response.status_code == 200
+
+    # 在指定工作室删除作品
+    def remove_work(self, shop_id: int, work_id: int):
+        response = self.acquire.send_request(
+            url="/web/work_shops/works/remove",
+            method="post",
+            data=json.dumps({"id": shop_id, "work_id": work_id}),
+        )
+        return response.status_code == 200
+
+    # 申请加入工作室
+    def apply_join(self, shop_id: int, qq: str | None = None):
+        response = self.acquire.send_request(
+            url="/web/work_shops/users/apply/join",
+            method="post",
+            data=json.dumps({"id": shop_id, "qq": qq}),
+        )
+        return response.status_code == 200
+
+    # 审核已经申请加入工作室的用户
+    def audit_join(
+        self, shop_id: int, status: Literal["UNACCEPTED", "ACCEPTED"], user_id: int
+    ):
+        response = self.acquire.send_request(
+            url="/web/work_shops/users/audit",
+            method="post",
+            data=json.dumps({"id": shop_id, "status": status, "user_id": user_id}),
+        )
+        return response.status_code == 200
