@@ -360,3 +360,37 @@ class Motion:
             url="/nemo/v3/user/level/signature", method="post"
         )
         return response.status_code == 200
+
+    # 获取用户协议
+    def get_nature(self):
+        response = self.acquire.send_request(
+            url="/tiger/v3/web/accounts/agreements", method="get"
+        )
+        return response.json()
+
+    # 注册
+    def register(
+        self,
+        identity: str,
+        password: str,
+        captcha: str,
+        pid: str = "65edCTyg",
+        agreement_ids: list = [186, 13],
+    ):
+        data = json.dumps(
+            {
+                "identity": identity,
+                "password": password,
+                "captcha": captcha,
+                "pid": pid,
+                "agreement_ids": agreement_ids,
+            }
+        )
+
+        response = self.acquire.send_request(
+            url="/tiger/v3/web/accounts/register/phone/with-agreement",
+            method="post",
+            data=data,
+        )
+
+        return response.json()
