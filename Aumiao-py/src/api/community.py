@@ -332,6 +332,20 @@ class Obtain:
         )
         return response.json()
 
+    # 获取KN公开课
+    # https://api-creation.codemao.cn/neko/course/publish/list?limit=10&offset=0
+    def get_kn_course(self, limit=10):
+        params = {"limit": 10, "offset": 0}
+        course = self.acquire.fetch_data(
+            url="https://api-creation.codemao.cn/neko/course/publish/list",
+            params=params,
+            limit=limit,
+            total_key="total_course",
+            # total_key也可设置为"course_page.total",
+            data_key="course_page.items",
+        )
+        return course
+
     # 获取社区各个部分开启状态 TODO:待完善
     def get_community_status(
         self, type: Literal["WEB_FORUM_STATUS", "WEB_FICTION_STATUS"]

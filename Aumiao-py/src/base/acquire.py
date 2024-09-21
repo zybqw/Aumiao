@@ -1,5 +1,5 @@
 import time
-from typing import Literal
+from typing import Literal, Mapping
 
 import requests
 from requests.exceptions import ConnectionError, HTTPError, RequestException, Timeout
@@ -47,7 +47,7 @@ class CodeMaoClient:
     def fetch_data(
         self,
         url: str,
-        params,
+        params: dict,
         data=None,
         limit: int | None = None,
         fetch_method: Literal["get", "post"] = "get",

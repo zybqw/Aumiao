@@ -121,6 +121,7 @@ class Obtain:
     def get_data_works_nemo_kn(
         self, method: Literal["published", "total"], type: Literal["KN", "nemo"]
     ):
+        # kn获取全部作品示例链接:https://api-creation.codemao.cn/neko/works/v2/list/user?name=&limit=24&offset=0&status=1&work_business_classify=1
         extra_url = "nemo" if type == "nemo" else "neko"
         if method == "published":
             url = (
