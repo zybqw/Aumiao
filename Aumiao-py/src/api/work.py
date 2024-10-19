@@ -149,16 +149,16 @@ class Motion:
             url=f"https://api-creation.codemao.cn/kitten/common/work/{work_id}/temporarily",
             method="delete",
         )
-        return response.status_code == 204
+        return response.status_code == 200
 
-    # 取消发布一个已发布的作品(TODO: 待测试)
+    # 取消发布一个已发布的作品
     def unpublish_work(self, work_id: int) -> bool:
         response = self.acquire.send_request(
             url=f"/tiger/work/{work_id}/unpublish",
             method="patch",
             data=json.dumps({}),
         )
-        return response.status_code == 200
+        return response.status_code == 204
 
     # 取消发布一个已发布的作品
     def unpublish_work_web(self, work_id: int) -> bool:
@@ -168,6 +168,97 @@ class Motion:
             data=json.dumps({}),
         )
         return response.status_code == 200
+
+    # 获取回收站作品列表
+    def get_recycle_kitten_works(
+        self,
+        version_no: Literal["KITTEN_V3", "KITTEN_V4"],
+        limit: int = 30,
+        offset: int = 0,
+        work_status: str = "CYCLED",
+    ):
+        params = {
+            "limit": limit,
+            "offset": offset,
+            "version_no": version_no,
+            "work_status": work_status,
+        }
+        response = self.acquire.send_request(
+            url="https://api-creation.codemao.cn/tiger/work/recycle/list",
+            method="get",
+            params=params,
+        )
+        return response.json()
+
+    # 获取回收站海龟编辑器作品列表
+    def get_recycle_wood_works(
+        self,
+        limit: int = 30,
+        offset: int = 0,
+        language_type: int = 0,
+        work_status: str = "CYCLED",
+        published_status: str = "undefined",
+    ):
+        params = {
+            "limit": limit,
+            "offset": offset,
+            "language_type": language_type,
+            "work_status": work_status,
+            "published_status": published_status,
+        }
+        response = self.acquire.send_request(
+            url="https://api-creation.codemao.cn/wood/comm/work/list",
+            method="get",
+            params=params,
+        )
+        return response.json()
+
+    # 获取代码岛回收站作品列表
+    def get_recycle_box_works(
+        self,
+        limit: int = 30,
+        offset: int = 0,
+        work_status: str = "CYCLED",
+    ):
+        params = {
+            "limit": limit,
+            "offset": offset,
+            "work_status": work_status,
+        }
+        response = self.acquire.send_request(
+            url="https://api-creation.codemao.cn/box/v2/work/list",
+            method="get",
+            params=params,
+        )
+        return response.json()
+
+    # 获取回收站小说列表
+    def get_recycle_fanfic_works(
+        self,
+        limit: int = 30,
+        offset: int = 0,
+        fiction_status: str = "CYCLED",
+    ):
+        params = {
+            "limit": limit,
+            "offset": offset,
+            "fiction_status": fiction_status,
+        }
+        response = self.acquire.send_request(
+            url="https://api.codemao.cn/web/fanfic/my/new",
+            method="get",
+            params=params,
+        )
+        return response.json()
+
+    # 删除回收站作品
+    def del_recycle_kitten_works(self):
+        response = self.acquire.send_request(
+            url="https://api-creation.codemao.cn/tiger/work/recycle/permanently",
+            method="delete",
+        )
+
+        return response.status_code == 204
 
 
 class Obtain:
@@ -192,6 +283,14 @@ class Obtain:
     def get_work_detail(self, work_id: int):
         response = self.acquire.send_request(
             url=f"/creation-tools/v1/works/{work_id}",
+            method="get",
+        )
+        return response.json()
+
+    # 获取kitten作品信息
+    def get_kitten_work_detail(self, work_id: int):
+        response = self.acquire.send_request(
+            url=f"https://api-creation.codemao.cn/kitten/work/detail/{work_id}",
             method="get",
         )
         return response.json()
@@ -228,6 +327,29 @@ class Obtain:
             url="/creation-tools/v1/work-details/work-labels",
             method="get",
             params=params,
+        )
+        return response.json()
+
+    # 获取所有kitten作品标签
+    def get_kitten_work_label(self):
+        response = self.acquire.send_request(
+            url="https://api-creation.codemao.cn/kitten/work/labels", method="get"
+        )
+        return response.json()
+
+    # 获取所有kitten默认封面
+    def get_kitten_default_cover(self):
+        response = self.acquire.send_request(
+            url="https://api-creation.codemao.cn/kitten/work/cover/defaultCovers",
+            method="get",
+        )
+        return response.json()
+
+    # 检查作品名称是否可用
+    def check_work_name(self, name: str, work_id: int):
+        params = {"name": name, "work_id": work_id}
+        response = self.acquire.send_request(
+            url="/tiger/work/checkname", method="get", params=params
         )
         return response.json()
 
